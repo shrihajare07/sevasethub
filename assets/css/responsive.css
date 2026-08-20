@@ -1,0 +1,423 @@
+/* ============================================================
+   SevaSetuHub – Responsive Breakpoints
+   responsive.css
+   ============================================================ */
+
+/* ══════════════════════════════════════════════════════════
+   LARGE DESKTOP  ≥ 1440px
+   ══════════════════════════════════════════════════════════ */
+@media (min-width: 1440px) {
+    .container {
+        max-width: 1280px;
+    }
+
+    .hero-headline {
+        font-size: 3.75rem;
+    }
+
+    .services-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .popular-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* ══════════════════════════════════════════════════════════
+   DESKTOP  1024px – 1439px
+   ══════════════════════════════════════════════════════════ */
+@media (min-width: 1024px) and (max-width: 1439px) {
+    .services-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* ══════════════════════════════════════════════════════════
+   COLLAPSED NAVBAR (< 1200px - Tablets & Mobile)
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 1199px) {
+    .setu-navbar {
+        min-height: 66px;
+    }
+
+    .setu-navbar .navbar-collapse {
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-4) var(--space-5);
+        margin-top: 10px;
+        margin-bottom: 12px;
+        box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .setu-navbar .navbar-nav {
+        flex-direction: column;
+        gap: 4px;
+        padding-bottom: var(--space-3);
+    }
+
+    .setu-navbar .navbar-nav .nav-link {
+        padding: 0.65rem 1rem !important;
+        font-size: 0.95rem;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .setu-navbar .navbar-nav .nav-link:hover,
+    .setu-navbar .navbar-nav .nav-link.active {
+        background: var(--primary-muted);
+        color: var(--primary);
+    }
+
+    .nav-right-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-3);
+        padding-top: var(--space-3);
+        border-top: 1px solid var(--border);
+        margin-left: 0;
+    }
+
+    .nav-right-controls .lang-switcher {
+        width: 100%;
+        justify-content: center;
+        padding: 4px;
+    }
+
+    .nav-right-controls .lang-btn {
+        flex: 1;
+        text-align: center;
+        padding: 6px 12px;
+    }
+
+    .nav-auth-group {
+        flex-direction: column;
+        gap: var(--space-2);
+        width: 100%;
+    }
+
+    .nav-auth-group .btn-nav-login,
+    .nav-auth-group .btn-nav-register,
+    .nav-auth-group .nav-book-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.65rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════
+   TABLET  768px – 1023px
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 1023px) {
+    #hero {
+        padding-top: calc(var(--navbar-height) + var(--space-10));
+        padding-bottom: var(--space-16);
+        text-align: center;
+    }
+
+    .hero-subtext {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero-cta-group {
+        justify-content: center;
+    }
+
+    .hero-visual {
+        margin-top: var(--space-10);
+    }
+
+    .hero-badge-1,
+    .hero-badge-2 {
+        display: none;
+    }
+
+    .steps-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-6);
+    }
+
+    .steps-connector {
+        display: none;
+    }
+
+    .services-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .popular-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .offers-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE  < 768px
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+
+    /* ── Hero ────────────────────────────────────────────── */
+    #hero {
+        padding-top: calc(var(--navbar-height) + var(--space-8));
+        padding-bottom: var(--space-12);
+        text-align: center;
+    }
+
+    .hero-headline {
+        font-size: 2rem;
+        letter-spacing: -0.01em;
+    }
+
+    .hero-subtext {
+        font-size: var(--text-base);
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 100%;
+    }
+
+    .hero-cta-group {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-3);
+    }
+
+    .hero-cta-group .btn {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .hero-badge-1,
+    .hero-badge-2 {
+        display: none;
+    }
+
+    /* ── Search Widget ───────────────────────────────────── */
+    .search-widget {
+        padding: var(--space-5) var(--space-5);
+        border-radius: var(--radius-lg);
+    }
+
+    /* ── Trust Bar ───────────────────────────────────────── */
+    .trust-scroll {
+        gap: var(--space-6);
+    }
+
+    /* ── Services Grid ───────────────────────────────────── */
+    .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-3);
+    }
+
+    .service-category-card {
+        padding: var(--space-4);
+    }
+
+    /* ── Popular Grid ────────────────────────────────────── */
+    .popular-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-3);
+    }
+
+    /* ── Offers ──────────────────────────────────────────── */
+    .offers-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* ── Steps ───────────────────────────────────────────── */
+    .steps-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-6);
+    }
+
+    .steps-connector {
+        display: none;
+    }
+
+    /* ── Sections ────────────────────────────────────────── */
+    .section-padding {
+        padding: var(--space-16) 0;
+    }
+
+    .section-padding-sm {
+        padding: var(--space-10) 0;
+    }
+
+    #hero,
+    #services,
+    #popular-services,
+    #offers,
+    #how-it-works,
+    #before-after,
+    #why-us,
+    #for-businesses,
+    #for-technicians,
+    #amc,
+    #service-history,
+    #testimonials,
+    #statistics,
+    #faq,
+    #final-cta {
+        padding-top: var(--space-16);
+        padding-bottom: var(--space-16);
+    }
+
+    .section-heading {
+        font-size: var(--text-3xl);
+    }
+
+    /* ── CTA Box ─────────────────────────────────────────── */
+    .cta-box {
+        padding: var(--space-10) var(--space-6);
+    }
+
+    .cta-box .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .cta-box .cta-buttons .btn {
+        width: 100%;
+        max-width: 280px;
+    }
+
+    /* ── Statistics ──────────────────────────────────────── */
+    .stats-divider {
+        display: none;
+    }
+
+    /* ── Footer ──────────────────────────────────────────── */
+    .footer-brand p {
+        max-width: 100%;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .footer-bottom-links {
+        gap: var(--space-4);
+    }
+
+    /* ── FAB ─────────────────────────────────────────────── */
+    #fab-book {
+        display: flex !important;
+    }
+
+    /* ── Toast ───────────────────────────────────────────── */
+    #toast-container {
+        bottom: 80px;
+        right: var(--space-4);
+        left: var(--space-4);
+    }
+
+    .toast-item {
+        min-width: unset;
+        max-width: 100%;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════
+   SMALL MOBILE  < 480px
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+    .popular-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .services-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .steps-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .offers-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-headline {
+        font-size: 1.875rem;
+    }
+
+    .section-heading {
+        font-size: var(--text-2xl);
+    }
+
+    .before-after-container {
+        grid-template-columns: 1fr;
+    }
+
+    .workflow-card {
+        padding: var(--space-4);
+    }
+
+    .biz-features-wrap {
+        gap: var(--space-2);
+    }
+
+    .biz-tag {
+        font-size: var(--text-xs);
+    }
+}
+
+/* ══════════════════════════════════════════════════════════
+   PRINT
+   ══════════════════════════════════════════════════════════ */
+@media print {
+    #fab-book,
+    #toast-container,
+    .setu-navbar {
+        display: none !important;
+    }
+
+    body {
+        background: white;
+        color: black;
+    }
+
+    .section-padding {
+        padding: 2rem 0;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ══════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .animate-on-scroll {
+        opacity: 1;
+        transform: none;
+    }
+
+    #fab-book {
+        animation: none;
+    }
+
+    .hero-badge-1,
+    .hero-badge-2 {
+        animation: none;
+    }
+}
