@@ -88,19 +88,17 @@
 <!-- ══════════════════════════════════════════════════════════
      NAVBAR
      ══════════════════════════════════════════════════════════ -->
-<header>
+<header class="site-header">
     <nav
         id="main-navbar"
         class="setu-navbar navbar navbar-expand-xl"
         role="navigation"
         aria-label="Main navigation"
     >
-        <div class="container">
+        <div class="container-fluid px-3 px-xl-4 navbar-inner-container">
             <!-- Brand -->
-            <a class="navbar-brand" href="#" data-i18n-aria="nav.aria_home" aria-label="SevaSetuHub – Home">
-                <div class="brand-logo-icon" aria-hidden="true">
-                    <i class="bi bi-link-45deg"></i>
-                </div>
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#" data-i18n-aria="nav.aria_home" aria-label="SevaSetuHub – Home">
+                <img src="assets/images/logo.png" alt="SevaSetuHub Logo" class="brand-logo-img" width="38" height="38" />
                 <span>
                     <span class="brand-name-seva">Seva</span><span class="brand-name-setu">Setu</span><span class="brand-name-hub">Hub</span>
                 </span>
@@ -150,9 +148,6 @@
 
                 <!-- Right Controls -->
                 <div class="nav-right-controls">
-                    <!-- Language Switcher -->
-                    <div id="lang-switcher" class="lang-switcher" role="group" aria-label="Select language"></div>
-
                     <!-- Auth + CTA -->
                     <div class="nav-auth-group">
                         <a href="#" class="btn-nav-login" data-i18n-aria="nav.aria_login" aria-label="Login to your account">
@@ -167,6 +162,9 @@
                             <span data-i18n="nav.book_service">Book a Service</span>
                         </a>
                     </div>
+
+                    <!-- Language Switcher -->
+                    <div id="lang-switcher" class="lang-switcher" role="group" aria-label="Select language"></div>
                 </div>
             </div>
         </div>
@@ -225,92 +223,69 @@
                 </div>
             </div>
 
-            <!-- Right: Workflow Visual -->
+            <!-- Right: Hero Visual Showcase with Banner Image -->
             <div class="col-lg-6 animate-on-scroll delay-2">
                 <div class="hero-visual">
                     <!-- Floating Badges -->
                     <div class="hero-badge hero-badge-1" aria-hidden="true">
-                        <i class="bi bi-star-fill text-warning" style="font-size:0.75rem;"></i>
-                        <span data-i18n="hero.badge_rating">4.9 Rating</span>
+                        <i class="bi bi-star-fill text-warning" style="font-size:0.8rem;"></i>
+                        <span data-i18n="hero.badge_rating">4.9 ★ Rating (1,000+ Reviews)</span>
                     </div>
                     <div class="hero-badge hero-badge-2" aria-hidden="true">
-                        <i class="bi bi-check-circle-fill text-success" style="font-size:0.75rem;"></i>
-                        <span data-i18n="hero.badge_complete">Service Complete</span>
+                        <i class="bi bi-shield-fill-check text-success" style="font-size:0.85rem;"></i>
+                        <span data-i18n="hero.trust_verified">100% Verified Pros</span>
+                    </div>
+                    <div class="hero-badge hero-badge-3" aria-hidden="true">
+                        <i class="bi bi-lightning-charge-fill" style="color:#f59e0b; font-size:0.85rem;"></i>
+                        <span>60-Min Express Service</span>
                     </div>
 
-                    <div class="workflow-card" role="img" aria-label="Service workflow: from customer request to service completion">
-                        <p class="workflow-title" data-i18n="hero.workflow_title">How Your Service Works</p>
-
-                        <div class="workflow-steps">
-                            <!-- Step 1 -->
-                            <div class="workflow-step">
-                                <div class="wf-connector">
-                                    <div class="wf-dot" style="background:var(--primary-muted); color:var(--primary);">
-                                        <i class="bi bi-person" style="font-size:0.9rem;"></i>
-                                    </div>
-                                    <div class="wf-line"></div>
-                                </div>
-                                <div class="wf-content">
-                                    <p class="wf-label" data-i18n="hero.wf_step1_label">You Request a Service</p>
-                                    <p class="wf-sublabel" data-i18n="hero.wf_step1_sub">Choose service, location and time</p>
-                                </div>
-                            </div>
-
-                            <!-- Step 2 -->
-                            <div class="workflow-step">
-                                <div class="wf-connector">
-                                    <div class="wf-dot" style="background:var(--info-light); color:var(--info);">
-                                        <i class="bi bi-file-earmark-check" style="font-size:0.9rem;"></i>
-                                    </div>
-                                    <div class="wf-line"></div>
-                                </div>
-                                <div class="wf-content">
-                                    <p class="wf-label" data-i18n="hero.wf_step2_label">Estimate Provided</p>
-                                    <p class="wf-sublabel" data-i18n="hero.wf_step2_sub">Transparent pricing before work begins</p>
-                                </div>
-                            </div>
-
-                            <!-- Step 3 -->
-                            <div class="workflow-step">
-                                <div class="wf-connector">
-                                    <div class="wf-dot" style="background:var(--warning-light); color:var(--warning);">
-                                        <i class="bi bi-person-badge" style="font-size:0.9rem;"></i>
-                                    </div>
-                                    <div class="wf-line"></div>
-                                </div>
-                                <div class="wf-content">
-                                    <p class="wf-label" data-i18n="hero.wf_step3_label">Professional Arrives</p>
-                                    <p class="wf-sublabel" data-i18n="hero.wf_step3_sub">Verified technician at your doorstep</p>
-                                </div>
-                            </div>
-
-                            <!-- Step 4 -->
-                            <div class="workflow-step">
-                                <div class="wf-connector">
-                                    <div class="wf-dot" style="background:var(--success-light); color:var(--success);">
-                                        <i class="bi bi-check2-circle" style="font-size:0.9rem;"></i>
-                                    </div>
-                                </div>
-                                <div class="wf-content">
-                                    <p class="wf-label" data-i18n="hero.wf_step4_label">Service Completed</p>
-                                    <p class="wf-sublabel" data-i18n="hero.wf_step4_sub">Digital report &amp; invoice delivered</p>
+                    <div class="hero-showcase-card" role="region" aria-label="SevaSetuHub Service Overview">
+                        <div class="hero-banner-wrap">
+                            <img src="assets/images/banner.png" alt="SevaSetuHub On-Demand Services Banner" class="hero-banner-img" />
+                            <div class="hero-banner-overlay">
+                                <div class="hero-live-pill">
+                                    <span class="pulse-dot"></span> Live Booking Available
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Mini Process Step Indicators -->
+                        <div class="hero-mini-workflow">
+                            <div class="mini-wf-step">
+                                <div class="mini-wf-icon"><i class="bi bi-search"></i></div>
+                                <span>1. Select</span>
+                            </div>
+                            <i class="bi bi-chevron-right mini-wf-arrow" aria-hidden="true"></i>
+                            <div class="mini-wf-step">
+                                <div class="mini-wf-icon"><i class="bi bi-receipt"></i></div>
+                                <span>2. Estimate</span>
+                            </div>
+                            <i class="bi bi-chevron-right mini-wf-arrow" aria-hidden="true"></i>
+                            <div class="mini-wf-step">
+                                <div class="mini-wf-icon"><i class="bi bi-person-badge"></i></div>
+                                <span>3. Doorstep</span>
+                            </div>
+                            <i class="bi bi-chevron-right mini-wf-arrow" aria-hidden="true"></i>
+                            <div class="mini-wf-step">
+                                <div class="mini-wf-icon success"><i class="bi bi-check2-circle"></i></div>
+                                <span>4. Complete</span>
+                            </div>
+                        </div>
+
                         <!-- Bottom stat bar -->
-                        <div class="d-flex gap-4 pt-4 mt-4 border-top" style="border-color: var(--border) !important;">
-                            <div>
-                                <div style="font-size:1.25rem; font-weight:800; color:var(--primary); font-family:var(--font-heading);">500+</div>
-                                <div style="font-size:0.7rem; color:var(--text-muted);" data-i18n="hero.stat_professionals">Professionals</div>
+                        <div class="hero-stats-strip">
+                            <div class="hero-stat-cell">
+                                <div class="stat-num">500+</div>
+                                <div class="stat-lbl" data-i18n="hero.stat_professionals">Verified Pros</div>
                             </div>
-                            <div>
-                                <div style="font-size:1.25rem; font-weight:800; color:var(--primary); font-family:var(--font-heading);">1,000+</div>
-                                <div style="font-size:0.7rem; color:var(--text-muted);" data-i18n="hero.stat_jobs">Jobs Managed</div>
+                            <div class="hero-stat-cell">
+                                <div class="stat-num">10,000+</div>
+                                <div class="stat-lbl" data-i18n="hero.stat_jobs">Jobs Managed</div>
                             </div>
-                            <div>
-                                <div style="font-size:1.25rem; font-weight:800; color:var(--primary); font-family:var(--font-heading);">4.9★</div>
-                                <div style="font-size:0.7rem; color:var(--text-muted);" data-i18n="hero.stat_rating">Avg. Rating</div>
+                            <div class="hero-stat-cell">
+                                <div class="stat-num">4.9 ★</div>
+                                <div class="stat-lbl" data-i18n="hero.stat_rating">Avg. Rating</div>
                             </div>
                         </div>
                     </div>
@@ -578,15 +553,19 @@
 
                     <div class="ba-content-row">
                         <div>
-                            <p class="ba-section-title" data-i18n="ba.photos_title">Service Photos</p>
+                            <p class="ba-section-title" data-i18n="ba.photos_title">Verified Inspection Photos</p>
                             <div class="ba-photo-grid">
-                                <div class="ba-photo-placeholder before-ph" role="img" aria-label="Before service photo">
-                                    <i class="bi bi-camera" aria-hidden="true"></i>
-                                    <span data-i18n="ba.before">Before</span>
+                                <div class="ba-photo-card" role="img" aria-label="Before service inspection">
+                                    <div class="ba-img-container">
+                                        <img src="assets/images/acservice.png" alt="Before AC Service" class="ba-photo-img" />
+                                        <span class="ba-photo-tag tag-before" data-i18n="ba.before">Before Service</span>
+                                    </div>
                                 </div>
-                                <div class="ba-photo-placeholder after-ph" role="img" aria-label="After service photo">
-                                    <i class="bi bi-camera-fill" aria-hidden="true"></i>
-                                    <span data-i18n="ba.after">After</span>
+                                <div class="ba-photo-card" role="img" aria-label="After completed service">
+                                    <div class="ba-img-container">
+                                        <img src="assets/images/cleaning.png" alt="After Deep Cleaning" class="ba-photo-img" />
+                                        <span class="ba-photo-tag tag-after" data-i18n="ba.after">After Complete</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1522,10 +1501,8 @@
             <!-- Brand Column -->
             <div class="col-lg-3 col-md-6 footer-brand">
                 <a href="#" class="navbar-brand mb-3 d-inline-flex align-items-center gap-2" aria-label="SevaSetuHub Home">
-                    <div class="brand-logo-icon" aria-hidden="true" style="width:34px; height:34px; font-size:1.05rem;">
-                        <i class="bi bi-link-45deg"></i>
-                    </div>
-                    <span style="font-size:1.1rem; font-weight:800; font-family:var(--font-heading);">
+                    <img src="assets/images/logo.png" alt="SevaSetuHub Logo" class="footer-logo-img" width="36" height="36" />
+                    <span style="font-size:1.15rem; font-weight:800; font-family:var(--font-heading);">
                         <span style="color:var(--primary);">Seva</span><span style="color:var(--accent);">Setu</span><span style="color:#fff;">Hub</span>
                     </span>
                 </a>
@@ -1627,24 +1604,12 @@
 <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
 <!-- ══════════════════════════════════════════════════════════
-     SCRIPTS (deferred for performance)
-     Load order: i18n → components → landing
+     SCRIPTS
      ══════════════════════════════════════════════════════════ -->
-<script
-    src="https://code.jquery.com/jquery-3.7.1.min.js"
-    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
-    crossorigin="anonymous"
-    defer
-></script>
-<script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmfcTJyOSeI4G10FBq3vDa6Lfrc"
-    crossorigin="anonymous"
-    defer
-></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="assets/js/i18n.js"></script>
-<script src="assets/js/components.js" defer></script>
-<script src="assets/js/landing.js" defer></script>
+<script src="assets/js/components.js"></script>
+<script src="assets/js/landing.js"></script>
 
 </body>
 </html>

@@ -25,55 +25,63 @@
 
 /** Service category definitions. `i18nKey` maps to `categories.<id>.*` */
 const demoServiceCategories = [
-    { id: 'ac',          icon: 'bi-snow2',         color: '#0891b2' },
-    { id: 'cleaning',    icon: 'bi-stars',         color: '#7c3aed' },
-    { id: 'plumbing',    icon: 'bi-droplet-half',  color: '#0284c7' },
-    { id: 'electrical',  icon: 'bi-lightning-charge', color: '#d97706' },
-    { id: 'pest',        icon: 'bi-shield-check',  color: '#059669' },
-    { id: 'fabrication', icon: 'bi-tools',          color: '#dc2626' },
-    { id: 'maintenance', icon: 'bi-gear',           color: '#475569' },
-    { id: 'more',        icon: 'bi-plus-circle',   color: '#0891b2' },
+    { id: 'ac',          icon: 'bi-snow2',            image: 'assets/images/acservice.png',    color: '#0891b2', bg: 'linear-gradient(135deg, rgba(8,145,178,0.08), rgba(6,182,212,0.15))' },
+    { id: 'cleaning',    icon: 'bi-stars',            image: 'assets/images/cleaning.png',     color: '#7c3aed', bg: 'linear-gradient(135deg, rgba(124,58,237,0.08), rgba(167,139,250,0.15))' },
+    { id: 'plumbing',    icon: 'bi-droplet-half',     image: 'assets/images/plumbing.png',     color: '#0284c7', bg: 'linear-gradient(135deg, rgba(2,132,199,0.08), rgba(56,189,248,0.15))' },
+    { id: 'electrical',  icon: 'bi-lightning-charge', image: 'assets/images/maintainance.png', color: '#d97706', bg: 'linear-gradient(135deg, rgba(217,119,6,0.08), rgba(251,191,36,0.15))' },
+    { id: 'pest',        icon: 'bi-shield-check',     image: 'assets/images/pestcontrol.png',  color: '#059669', bg: 'linear-gradient(135deg, rgba(5,150,105,0.08), rgba(52,211,153,0.15))' },
+    { id: 'fabrication', icon: 'bi-tools',            image: 'assets/images/fibrication.png',  color: '#dc2626', bg: 'linear-gradient(135deg, rgba(220,38,38,0.08), rgba(248,113,113,0.15))' },
+    { id: 'maintenance', icon: 'bi-gear',             image: 'assets/images/maintainance.png', color: '#475569', bg: 'linear-gradient(135deg, rgba(71,85,105,0.08), rgba(148,163,184,0.15))' },
+    { id: 'more',        icon: 'bi-plus-circle',      image: null,                             color: '#0891b2', bg: 'linear-gradient(135deg, rgba(8,145,178,0.08), rgba(6,182,212,0.15))' },
 ];
 
 /** Popular services. `i18nKey` maps to `popular.services.<key>` */
 const demoPopularServices = [
     {
         id: 'ps1', i18nKey: 'ac_general',
+        image: 'assets/images/acservice.png',
         icon: 'bi-snow2',            iconBg: 'linear-gradient(135deg,#e0f2fe,#bae6fd)', iconColor: '#0891b2',
         startingPrice: 499,          rating: 4.8, ratingCount: 312,
     },
     {
         id: 'ps2', i18nKey: 'ac_repair',
+        image: 'assets/images/acservice.png',
         icon: 'bi-wrench-adjustable', iconBg: 'linear-gradient(135deg,#dbeafe,#bfdbfe)', iconColor: '#1d4ed8',
         startingPrice: 349,          rating: 4.7, ratingCount: 218,
     },
     {
         id: 'ps3', i18nKey: 'deep_cleaning',
+        image: 'assets/images/cleaning.png',
         icon: 'bi-stars',            iconBg: 'linear-gradient(135deg,#ede9fe,#ddd6fe)', iconColor: '#7c3aed',
         startingPrice: 1499,         rating: 4.9, ratingCount: 489,
     },
     {
         id: 'ps4', i18nKey: 'office_cleaning',
+        image: 'assets/images/cleaning.png',
         icon: 'bi-building',         iconBg: 'linear-gradient(135deg,#f0fdf4,#dcfce7)', iconColor: '#16a34a',
         startingPrice: 1999,         rating: 4.6, ratingCount: 134,
     },
     {
         id: 'ps5', i18nKey: 'plumbing_repair',
+        image: 'assets/images/plumbing.png',
         icon: 'bi-droplet-half',     iconBg: 'linear-gradient(135deg,#e0f2fe,#bae6fd)', iconColor: '#0284c7',
         startingPrice: 299,          rating: 4.7, ratingCount: 276,
     },
     {
         id: 'ps6', i18nKey: 'electrical_repair',
+        image: 'assets/images/maintainance.png',
         icon: 'bi-lightning-charge', iconBg: 'linear-gradient(135deg,#fef3c7,#fde68a)', iconColor: '#b45309',
         startingPrice: 399,          rating: 4.8, ratingCount: 195,
     },
     {
         id: 'ps7', i18nKey: 'pest_control',
+        image: 'assets/images/pestcontrol.png',
         icon: 'bi-shield-check',     iconBg: 'linear-gradient(135deg,#d1fae5,#a7f3d0)', iconColor: '#059669',
         startingPrice: 799,          rating: 4.9, ratingCount: 367,
     },
     {
         id: 'ps8', i18nKey: 'tank_cleaning',
+        image: 'assets/images/plumbing.png',
         icon: 'bi-water',            iconBg: 'linear-gradient(135deg,#cffafe,#a5f3fc)', iconColor: '#0e7490',
         startingPrice: 599,          rating: 4.6, ratingCount: 142,
     },
@@ -101,7 +109,7 @@ function _(key, fallback) {
 
 /**
  * Renders service category cards into the services grid.
- * Uses i18n for card title, description, and explore link text.
+ * Uses real image previews and i18n for card title, description, and explore link text.
  * TODO: Replace demoServiceCategories with getServiceCategories() API call
  */
 function renderServiceCategories() {
@@ -113,6 +121,17 @@ function renderServiceCategories() {
     const html = demoServiceCategories.map((cat, i) => {
         const name = _(`categories.${cat.id}.name`, cat.id);
         const desc = _(`categories.${cat.id}.desc`, '');
+        const imageHtml = cat.image
+            ? `<div class="card-thumb-wrap" style="background:${cat.bg};">
+                 <img src="${cat.image}" alt="${_escapeAttr(name)}" class="card-thumb-img" loading="lazy" />
+                 <div class="card-icon-floating" style="color:${cat.color};">
+                     <i class="bi ${cat.icon}" aria-hidden="true"></i>
+                 </div>
+               </div>`
+            : `<div class="card-thumb-wrap card-thumb-icon-only" style="background:${cat.bg}; color:${cat.color};">
+                 <i class="bi ${cat.icon}" style="font-size:2.4rem;" aria-hidden="true"></i>
+               </div>`;
+
         return `
         <button
             class="service-category-card animate-on-scroll delay-${Math.min(i + 1, 6)}"
@@ -120,14 +139,14 @@ function renderServiceCategories() {
             aria-label="${_escapeAttr(exploreLabel + ' ' + name)}"
             data-category-id="${cat.id}"
         >
-            <div class="card-icon-wrap">
-                <i class="bi ${cat.icon}" aria-hidden="true"></i>
+            ${imageHtml}
+            <div class="card-content-wrap">
+                <h3 class="card-title">${_escapeHtml(name)}</h3>
+                <p class="card-desc">${_escapeHtml(desc)}</p>
+                <span class="card-link" aria-hidden="true">
+                    ${_escapeHtml(exploreLabel)} <i class="bi bi-arrow-right"></i>
+                </span>
             </div>
-            <h3 class="card-title">${_escapeHtml(name)}</h3>
-            <p class="card-desc">${_escapeHtml(desc)}</p>
-            <span class="card-link" aria-hidden="true">
-                ${_escapeHtml(exploreLabel)} <i class="bi bi-arrow-right"></i>
-            </span>
         </button>`;
     }).join('');
 
@@ -136,7 +155,7 @@ function renderServiceCategories() {
 }
 
 /**
- * Renders popular service cards.
+ * Renders popular service cards with real photo thumbnails.
  * TODO: Replace demoPopularServices with getPopularServices() API call
  */
 function renderPopularServices() {
@@ -149,11 +168,20 @@ function renderPopularServices() {
     const html = demoPopularServices.map((svc, i) => {
         const name = _(`popular.services.${svc.i18nKey}`, svc.i18nKey);
         const priceFormatted = svc.startingPrice.toLocaleString('en-IN');
+        const imgHtml = svc.image
+            ? `<div class="service-img-area" style="background:${svc.iconBg};">
+                 <img src="${svc.image}" alt="${_escapeAttr(name)}" class="popular-card-img" loading="lazy" />
+                 <span class="service-badge-pill" style="color:${svc.iconColor};">
+                     <i class="bi ${svc.icon}" aria-hidden="true"></i>
+                 </span>
+               </div>`
+            : `<div class="service-icon-area" style="background: ${svc.iconBg};" aria-hidden="true">
+                 <i class="bi ${svc.icon}" style="color: ${svc.iconColor}; font-size: 3rem;"></i>
+               </div>`;
+
         return `
         <article class="popular-service-card animate-on-scroll delay-${Math.min(i + 1, 6)}">
-            <div class="service-icon-area" style="background: ${svc.iconBg};" aria-hidden="true">
-                <i class="bi ${svc.icon}" style="color: ${svc.iconColor}; font-size: 3rem;"></i>
-            </div>
+            ${imgHtml}
             <div class="service-body">
                 <h3 class="service-name">${_escapeHtml(name)}</h3>
                 <div class="service-meta">
@@ -391,22 +419,50 @@ function initMobileNavigation() {
     const navbar   = document.getElementById('main-navbar');
     const collapse = document.getElementById('navbarCollapse');
 
-    // Scroll-shadow
+    // Scroll-shadow & sticky appearance
     if (navbar) {
         const handleScroll = () => {
             navbar.classList.toggle('scrolled', window.scrollY > 10);
         };
+        handleScroll();
         window.addEventListener('scroll', handleScroll, { passive: true });
     }
 
-    // Close nav on link click (mobile)
-    if (collapse) {
-        const navLinks = collapse.querySelectorAll('.nav-link');
+    // Mobile navigation toggle (vanilla JS for 100% offline & local file reliability)
+    const toggler = document.getElementById('navbar-toggler');
+    if (toggler && collapse) {
+        toggler.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const isOpen = collapse.classList.contains('show');
+            if (isOpen) {
+                collapse.classList.remove('show');
+                toggler.setAttribute('aria-expanded', 'false');
+                toggler.classList.add('collapsed');
+            } else {
+                collapse.classList.add('show');
+                toggler.setAttribute('aria-expanded', 'true');
+                toggler.classList.remove('collapsed');
+            }
+        });
+
+        // Close on nav link click (mobile)
+        const navLinks = collapse.querySelectorAll('.nav-link, .nav-book-btn, .btn-nav-login, .btn-nav-register');
         navLinks.forEach(link => {
             link.addEventListener('click', () => {
-                const bsCollapse = bootstrap.Collapse.getInstance(collapse);
-                if (bsCollapse) bsCollapse.hide();
+                collapse.classList.remove('show');
+                toggler.setAttribute('aria-expanded', 'false');
+                toggler.classList.add('collapsed');
             });
+        });
+
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            if (!collapse.contains(e.target) && !toggler.contains(e.target) && collapse.classList.contains('show')) {
+                collapse.classList.remove('show');
+                toggler.setAttribute('aria-expanded', 'false');
+                toggler.classList.add('collapsed');
+            }
         });
     }
 
