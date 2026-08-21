@@ -86,6 +86,14 @@ const api = (function () {
         if (!result.success) {
           throw new Error(result.message || 'API request failed');
         }
+
+        // Auto-save session on successful auth actions
+        if ((action === 'login' || action === 'register') && result.data && result.data.token) {
+          setSession(result.data.token, result.data.user);
+        } else if (action === 'logout') {
+          clearSession();
+        }
+
         return result.data;
       } catch (err) {
         console.warn(`[SevaSetuHub Live API warning for ${action}]:`, err.message);
@@ -747,9 +755,28 @@ const api = (function () {
 
     // Endpoints
     ping: () => request('ping', 'GET'),
-    login: (emailOrMobile, password) => request('login', 'POST', { emailOrMobile, password }),
-    register: (data) => request('register', 'POST', data),
-    logout: () => request('logout', 'POST'),
+    login: async (emailOrMobile, password) => {
+      const res = await request('login', 'POST', { emailOrMobile, password });
+      if (res && res.token && res.user) {
+        setSession(res.token, res.user);
+      }
+      return res;
+    },
+    register: async (data) => {
+      const res = await request('register', 'POST', data);
+      if (res && res.token && res.user) {
+        setSession(res.token, res.user);
+      }
+      return res;
+    },
+    logout: async () => {
+      try {
+        await request('logout', 'POST');
+      } finally {
+        clearSession();
+      }
+      return { success: true };
+    },
     getCurrentUser: () => request('getCurrentUser', 'GET'),
     getServices: (params) => request('getServices', 'GET', params),
     getServiceCategories: (params) => request('getServiceCategories', 'GET', params),

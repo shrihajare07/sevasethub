@@ -8,6 +8,19 @@ $(document).ready(function() {
   if (!AuthGuard.protectRoute(['SuperAdmin', 'BusinessAdmin', 'Dispatcher', 'Accountant'])) return;
   AuthGuard.renderUserHeader();
 
+  const currentUser = api.getStoredUser() || {};
+
+  // Role-based UI customizations
+  if (currentUser.role === 'Dispatcher') {
+    $('.brand-badge').text('DISPATCHER').css('background', 'linear-gradient(135deg, #0284c7, #0369a1)');
+    $('.admin-only-section').addClass('d-none');
+    $('header.app-topbar h5').text('Field Operations & Dispatch Desk');
+  } else if (currentUser.role === 'SuperAdmin') {
+    $('.brand-badge').text('SUPERADMIN').css('background', 'linear-gradient(135deg, #dc2626, #991b1b)');
+    $('.admin-only-section').removeClass('d-none');
+    $('header.app-topbar h5').text('Platform Operations & SaaS Suite');
+  }
+
   let revenueChart = null;
   let categoryChart = null;
 
