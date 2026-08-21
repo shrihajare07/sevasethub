@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin & Dispatcher SaaS Suite – SevaSetuHub</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 & Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- SevaSetuHub Design System -->
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/reset.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/layout.css">
+  <link rel="stylesheet" href="../../assets/css/responsive.css">
+</head>
+<body>
+
+<div class="app-wrapper">
+  
+  <!-- Admin Sidebar -->
+  <aside class="app-sidebar">
+    <div class="sidebar-header">
+      <a href="../../index.html" class="sidebar-brand">
+        <i class="bi bi-shield-check text-info fs-3"></i>
+        <span>SevaSetuHub</span>
+      </a>
+      <span class="brand-badge">ADMIN</span>
+    </div>
+
+    <div class="sidebar-menu">
+      <div class="menu-category">Operations</div>
+      <a href="#" class="nav-link-custom admin-nav-link active" data-target="dashboard">
+        <i class="bi bi-graph-up-arrow"></i> <span>Dashboard Analytics</span>
+      </a>
+      <a href="#" class="nav-link-custom admin-nav-link" data-target="requests">
+        <i class="bi bi-inbox-fill"></i> <span>Service Requests</span>
+      </a>
+      <a href="#" class="nav-link-custom admin-nav-link" data-target="dispatch">
+        <i class="bi bi-calendar3-range"></i> <span>Dispatch Board</span>
+      </a>
+
+      <div class="menu-category mt-3">Marketing & Sales</div>
+      <a href="#" class="nav-link-custom admin-nav-link" data-target="offers">
+        <i class="bi bi-tag-fill"></i> <span>Promotional Offers</span>
+      </a>
+      <a href="#" class="nav-link-custom admin-nav-link" data-target="coupons">
+        <i class="bi bi-percent"></i> <span>Discount Coupons</span>
+      </a>
+
+      <div class="menu-category mt-3">Finance & System</div>
+      <a href="#" class="nav-link-custom admin-nav-link" data-target="invoices">
+        <i class="bi bi-receipt-cutoff"></i> <span>Invoices & Payments</span>
+      </a>
+      <a href="#" class="nav-link-custom admin-nav-link" data-target="audit">
+        <i class="bi bi-journal-text"></i> <span>Security Audit Logs</span>
+      </a>
+      <a href="#" class="nav-link-custom admin-nav-link" data-target="settings">
+        <i class="bi bi-gear-fill"></i> <span>Backend Settings</span>
+      </a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-profile-badge mb-2">
+        <div class="user-avatar-circle user-avatar-initials">A</div>
+        <div class="overflow-hidden">
+          <div class="text-white fw-semibold small text-truncate user-name-display">Super Admin</div>
+          <div class="text-info user-role-display" style="font-size: 0.75rem;">SuperAdmin</div>
+        </div>
+      </div>
+      <a href="#" class="btn btn-sm btn-outline-danger w-100 btn-logout">
+        <i class="bi bi-box-arrow-right me-1"></i> Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Workspace -->
+  <main class="app-main">
+    <header class="app-topbar">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-light d-lg-none" id="sidebar-toggle">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+        <h5 class="mb-0 fw-bold text-dark">Platform Operations Suite</h5>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-success"><i class="bi bi-cloud-check me-1"></i> Apps Script Sync</span>
+      </div>
+    </header>
+
+    <div class="app-content">
+
+      <!-- SECTION 1: Analytics Dashboard -->
+      <section id="section-dashboard" class="admin-section">
+        <!-- Stat Cards -->
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-md-3">
+            <div class="stat-card">
+              <div>
+                <div class="text-muted small fw-semibold">New Requests</div>
+                <h3 class="fw-bold mb-0 mt-1" id="stat-admin-new-reqs">0</h3>
+              </div>
+              <div class="stat-icon-wrapper stat-icon-teal"><i class="bi bi-inbox"></i></div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-card">
+              <div>
+                <div class="text-muted small fw-semibold">Pending Estimates</div>
+                <h3 class="fw-bold mb-0 mt-1" id="stat-admin-pending-ests">0</h3>
+              </div>
+              <div class="stat-icon-wrapper stat-icon-amber"><i class="bi bi-calculator"></i></div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-card">
+              <div>
+                <div class="text-muted small fw-semibold">Today's Jobs</div>
+                <h3 class="fw-bold mb-0 mt-1" id="stat-admin-today-jobs">0</h3>
+              </div>
+              <div class="stat-icon-wrapper stat-icon-blue"><i class="bi bi-calendar-check"></i></div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-card">
+              <div>
+                <div class="text-muted small fw-semibold">Total Revenue</div>
+                <h3 class="fw-bold mb-0 mt-1" id="stat-admin-revenue">₹0</h3>
+              </div>
+              <div class="stat-icon-wrapper stat-icon-emerald"><i class="bi bi-currency-rupee"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Revenue Chart Card -->
+        <div class="card border-0 shadow-sm rounded-3 p-4 mb-4">
+          <h6 class="fw-bold text-dark mb-3"><i class="bi bi-graph-up text-primary me-2"></i>Monthly Revenue & Growth (₹)</h6>
+          <div style="height: 260px;">
+            <canvas id="chart-revenue"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2: Service Requests -->
+      <section id="section-requests" class="admin-section d-none">
+        <div class="card border-0 shadow-sm rounded-3">
+          <div class="card-header bg-white py-3">
+            <h6 class="mb-0 fw-bold">Service Requests & Dispatch Ledger</h6>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="table-admin-requests">
+              <thead class="table-light">
+                <tr>
+                  <th>Request ID</th>
+                  <th>Customer</th>
+                  <th>Service</th>
+                  <th>Preferred Slot</th>
+                  <th>Status</th>
+                  <th>Priority</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: Interactive Dispatch Board -->
+      <section id="section-dispatch" class="admin-section d-none">
+        <div class="card border-0 shadow-sm rounded-3 p-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Live Field Dispatch Board</h6>
+            <div class="text-muted small">Real-time technician job schedules</div>
+          </div>
+          <div class="dispatch-board-container">
+            <table class="dispatch-table">
+              <thead>
+                <tr>
+                  <th>Technician</th>
+                  <th>09:00 AM</th>
+                  <th>11:00 AM</th>
+                  <th>01:00 PM</th>
+                  <th>03:00 PM</th>
+                  <th>05:00 PM</th>
+                </tr>
+              </thead>
+              <tbody id="dispatch-board-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 4: Offers Management -->
+      <section id="section-offers" class="admin-section d-none">
+        <div class="card border-0 shadow-sm rounded-3">
+          <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">Promotional Marketing Offers</h6>
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreateOffer">
+              <i class="bi bi-plus-lg me-1"></i> Create Offer
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="table-admin-offers">
+              <thead class="table-light">
+                <tr>
+                  <th>Code</th>
+                  <th>Title</th>
+                  <th>Discount</th>
+                  <th>Validity</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 5: Coupons Management -->
+      <section id="section-coupons" class="admin-section d-none">
+        <div class="card border-0 shadow-sm rounded-3">
+          <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">Promotional Discount Coupons</h6>
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreateCoupon">
+              <i class="bi bi-plus-lg me-1"></i> Create Coupon
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="table-admin-coupons">
+              <thead class="table-light">
+                <tr>
+                  <th>Coupon Code</th>
+                  <th>Description</th>
+                  <th>Discount</th>
+                  <th>Min Order</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 6: Invoices & Payments -->
+      <section id="section-invoices" class="admin-section d-none">
+        <div class="card border-0 shadow-sm rounded-3">
+          <div class="card-header bg-white py-3">
+            <h6 class="mb-0 fw-bold">Customer Billing & Invoices Ledger</h6>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="table-admin-invoices">
+              <thead class="table-light">
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Customer</th>
+                  <th>Service</th>
+                  <th>Grand Total</th>
+                  <th>Status</th>
+                  <th>Created At</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 7: Audit Logs -->
+      <section id="section-audit" class="admin-section d-none">
+        <div class="card border-0 shadow-sm rounded-3">
+          <div class="card-header bg-white py-3">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-shield-lock-fill text-danger me-2"></i>Security & Operations Audit Trail</h6>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 small" id="table-admin-audit">
+              <thead class="table-light">
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Action</th>
+                  <th>Entity</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 8: Settings & Apps Script Connection -->
+      <section id="section-settings" class="admin-section d-none">
+        <div class="card border-0 shadow-sm rounded-3 p-4">
+          <h6 class="fw-bold mb-3"><i class="bi bi-cloud-arrow-up text-primary me-2"></i>Google Apps Script Web App Live Endpoint</h6>
+          <p class="text-muted small">Paste your deployed Apps Script Web App URL below to sync all live requests directly to your Google Sheets database.</p>
+          
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Google Apps Script Web App URL</label>
+            <input type="url" class="form-control" id="settings-api-url" placeholder="https://script.google.com/macros/s/AKfycbx.../exec">
+          </div>
+          
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary" id="btn-save-api-url">Save Endpoint URL</button>
+            <button class="btn btn-outline-secondary" id="btn-test-api-ping">Test Connection</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ============================================================
+     MODAL: Create Estimate Modal
+     ============================================================ -->
+<div class="modal fade" id="modalCreateEstimate" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold"><i class="bi bi-calculator text-primary me-2"></i>Generate Transparent Estimate</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="est-modal-req-id">
+        <p class="small text-muted mb-3" id="est-modal-customer-info"></p>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Labour & Service Charge (₹)</label>
+          <input type="number" class="form-control" id="est-modal-labour" value="599">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Materials / Spare Parts (₹)</label>
+          <input type="number" class="form-control" id="est-modal-material" value="0">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Special Goodwill Discount (₹)</label>
+          <input type="number" class="form-control" id="est-modal-discount" value="0">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Technical Notes</label>
+          <textarea class="form-control" id="est-modal-notes" rows="2">Includes 6-month warranty on workmanship & parts.</textarea>
+        </div>
+
+        <button class="btn btn-primary w-100 py-2 fw-bold" id="btn-save-estimate">Generate & Send Estimate</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Assign Technician Modal
+     ============================================================ -->
+<div class="modal fade" id="modalAssignTech" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold"><i class="bi bi-person-check text-primary me-2"></i>Assign Technician</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="assign-modal-req-id">
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Select Certified Technician</label>
+          <select class="form-select" id="assign-modal-tech"></select>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold">Date</label>
+            <input type="date" class="form-control" id="assign-modal-date" value="2026-08-22">
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">Slot</label>
+            <select class="form-select" id="assign-modal-time">
+              <option value="10:00 AM">10:00 AM</option>
+              <option value="01:00 PM">01:00 PM</option>
+              <option value="03:30 PM">03:30 PM</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn btn-primary w-100 py-2 fw-bold" id="btn-confirm-assign">Confirm Assignment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Create Offer Modal
+     ============================================================ -->
+<div class="modal fade" id="modalCreateOffer" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold"><i class="bi bi-tag-fill text-primary me-2"></i>Create Promotional Offer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Offer Code</label>
+          <input type="text" class="form-control text-uppercase" id="offer-code" placeholder="e.g. MONSOON20">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Title</label>
+          <input type="text" class="form-control" id="offer-title" placeholder="e.g. Monsoon Special 20% OFF">
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold">Discount Type</label>
+            <select class="form-select" id="offer-type">
+              <option value="Percentage">Percentage (%)</option>
+              <option value="FixedAmount">Fixed Amount (₹)</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">Discount Value</label>
+            <input type="number" class="form-control" id="offer-val" placeholder="20">
+          </div>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold">Start Date</label>
+            <input type="date" class="form-control" id="offer-start" value="2026-08-01">
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">End Date</label>
+            <input type="date" class="form-control" id="offer-end" value="2026-12-31">
+          </div>
+        </div>
+        <button class="btn btn-primary w-100 py-2 fw-bold" id="btn-save-offer">Create & Publish Offer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Create Coupon Modal
+     ============================================================ -->
+<div class="modal fade" id="modalCreateCoupon" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold"><i class="bi bi-percent text-primary me-2"></i>Create Discount Coupon</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Coupon Code</label>
+          <input type="text" class="form-control text-uppercase" id="coupon-code" placeholder="e.g. SAVE250">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Description</label>
+          <input type="text" class="form-control" id="coupon-desc" placeholder="Flat ₹250 discount on booking">
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold">Discount Type</label>
+            <select class="form-select" id="coupon-type">
+              <option value="FixedAmount">Fixed Amount (₹)</option>
+              <option value="Percentage">Percentage (%)</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">Value</label>
+            <input type="number" class="form-control" id="coupon-val" placeholder="250">
+          </div>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold">Min Order (₹)</label>
+            <input type="number" class="form-control" id="coupon-min-order" value="500">
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">Max Discount (₹)</label>
+            <input type="number" class="form-control" id="coupon-max-disc" value="500">
+          </div>
+        </div>
+        <button class="btn btn-primary w-100 py-2 fw-bold" id="btn-save-coupon">Publish Coupon</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="../../assets/js/api.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script src="../../assets/js/admin.js"></script>
+</body>
+</html>

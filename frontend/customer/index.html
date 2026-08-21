@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Dashboard – SevaSetuHub</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 & Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- SevaSetuHub Design System -->
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/reset.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/layout.css">
+  <link rel="stylesheet" href="../../assets/css/responsive.css">
+</head>
+<body>
+
+<div class="app-wrapper">
+  <!-- Sidebar -->
+  <aside class="app-sidebar" id="customer-sidebar">
+    <div class="sidebar-header">
+      <a href="../../index.html" class="sidebar-brand">
+        <i class="bi bi-shield-check text-info fs-3"></i>
+        <span>SevaSetuHub</span>
+      </a>
+      <span class="brand-badge">CUSTOMER</span>
+    </div>
+
+    <div class="sidebar-menu">
+      <div class="menu-category">Main Menu</div>
+      <a href="#" class="nav-link-custom portal-nav-link active" data-target="dashboard">
+        <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-link-custom portal-nav-link" data-target="requests">
+        <i class="bi bi-tools"></i> <span>My Requests</span>
+      </a>
+      <a href="#" class="nav-link-custom portal-nav-link" data-target="invoices">
+        <i class="bi bi-receipt"></i> <span>Invoices & Payments</span>
+      </a>
+      <a href="#" class="nav-link-custom portal-nav-link" data-target="amc">
+        <i class="bi bi-shield-lock"></i> <span>AMC Contracts</span>
+      </a>
+      <a href="#" class="nav-link-custom portal-nav-link" data-target="notifications">
+        <i class="bi bi-bell"></i> <span>Notifications</span>
+      </a>
+
+      <div class="menu-category mt-3">Quick Actions</div>
+      <button class="btn btn-primary w-100 mt-2 py-2 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalBookService">
+        <i class="bi bi-plus-circle me-1"></i> Book New Service
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-profile-badge mb-2">
+        <div class="user-avatar-circle user-avatar-initials">C</div>
+        <div class="overflow-hidden">
+          <div class="text-white fw-semibold small text-truncate user-name-display">Customer</div>
+          <div class="text-muted" style="font-size: 0.75rem;">Verified Customer</div>
+        </div>
+      </div>
+      <a href="#" class="btn btn-sm btn-outline-danger w-100 btn-logout">
+        <i class="bi bi-box-arrow-right me-1"></i> Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="app-main">
+    <!-- Topbar -->
+    <header class="app-topbar">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-light d-lg-none" id="sidebar-toggle">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+        <h5 class="mb-0 fw-bold text-dark">Customer Service Portal</h5>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#modalBookService">
+          <i class="bi bi-plus-lg me-1"></i> Book Service
+        </button>
+      </div>
+    </header>
+
+    <!-- App Content Body -->
+    <div class="app-content">
+      
+      <!-- Section: Dashboard Overview -->
+      <section id="section-dashboard" class="portal-section">
+        <!-- Stat Cards -->
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-md-3">
+            <div class="stat-card">
+              <div>
+                <div class="text-muted small fw-semibold">Active Requests</div>
+                <h3 class="fw-bold mb-0 mt-1" id="stat-active-requests">0</h3>
+              </div>
+              <div class="stat-icon-wrapper stat-icon-teal">
+                <i class="bi bi-tools"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-card">
+              <div>
+                <div class="text-muted small fw-semibold">Estimates for Review</div>
+                <h3 class="fw-bold mb-0 mt-1" id="stat-pending-estimates">0</h3>
+              </div>
+              <div class="stat-icon-wrapper stat-icon-amber">
+                <i class="bi bi-calculator"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-card">
+              <div>
+                <div class="text-muted small fw-semibold">Upcoming Jobs</div>
+                <h3 class="fw-bold mb-0 mt-1" id="stat-upcoming-jobs">0</h3>
+              </div>
+              <div class="stat-icon-wrapper stat-icon-blue">
+                <i class="bi bi-calendar-event"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-card">
+              <div>
+                <div class="text-muted small fw-semibold">Pending Invoices</div>
+                <h3 class="fw-bold mb-0 mt-1" id="stat-pending-payments">0</h3>
+              </div>
+              <div class="stat-icon-wrapper stat-icon-rose">
+                <i class="bi bi-credit-card"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Requests Card -->
+        <div class="card border-0 shadow-sm rounded-3">
+          <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold text-dark">Recent Service Requests</h6>
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalBookService">
+              <i class="bi bi-plus-circle me-1"></i> Book New Service
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="table-recent-requests">
+              <thead class="table-light">
+                <tr>
+                  <th>Request ID</th>
+                  <th>Service</th>
+                  <th>Preferred Date & Slot</th>
+                  <th>Status</th>
+                  <th>Discount</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="6" class="text-center py-4">
+                    <span class="spinner-border spinner-border-sm"></span> Loading requests...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: My Requests -->
+      <section id="section-requests" class="portal-section d-none">
+        <div class="card border-0 shadow-sm rounded-3">
+          <div class="card-header bg-white py-3">
+            <h6 class="mb-0 fw-bold">All Service Requests & Trackers</h6>
+          </div>
+          <div class="p-3">
+            <p class="text-muted small">Select any request to view technician dispatch status, approved estimates, checklist records and digital signatures.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Invoices -->
+      <section id="section-invoices" class="portal-section d-none">
+        <div class="card border-0 shadow-sm rounded-3">
+          <div class="card-header bg-white py-3">
+            <h6 class="mb-0 fw-bold">Billing & Invoices</h6>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="table-customer-invoices">
+              <thead class="table-light">
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Service</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Payment Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: AMC Contracts -->
+      <section id="section-amc" class="portal-section d-none">
+        <div class="card border-0 shadow-sm rounded-3 p-4">
+          <h6 class="fw-bold mb-3"><i class="bi bi-shield-check text-primary me-2"></i>Annual Maintenance Contracts (AMC)</h6>
+          <div class="alert alert-info">
+            <strong>Active AMC:</strong> Split AC 1.5 Ton (LG Dual Inverter) – 3 Routine Services Remaining. Next visit scheduled in Oct 2026.
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ============================================================
+     MODAL: Multi-step Book Service Wizard
+     ============================================================ -->
+<div class="modal fade" id="modalBookService" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold"><i class="bi bi-tools text-primary me-2"></i>Book a Trusted Service</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        
+        <!-- Stepper Indicator -->
+        <div class="d-flex justify-content-between mb-4 px-2">
+          <div class="text-center stepper-item active" id="step-indicator-1">
+            <div class="badge rounded-pill bg-primary px-3 py-2 mb-1">1</div>
+            <div class="small fw-semibold">Service</div>
+          </div>
+          <div class="text-center stepper-item" id="step-indicator-2">
+            <div class="badge rounded-pill bg-secondary px-3 py-2 mb-1">2</div>
+            <div class="small fw-semibold">Location & Time</div>
+          </div>
+          <div class="text-center stepper-item" id="step-indicator-3">
+            <div class="badge rounded-pill bg-secondary px-3 py-2 mb-1">3</div>
+            <div class="small fw-semibold">Review & Coupon</div>
+          </div>
+        </div>
+
+        <form id="form-book-service">
+          <!-- Step 1: Category & Service -->
+          <div class="wizard-step-pane" data-step="1">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Select Service Category <span class="text-danger">*</span></label>
+              <select class="form-select form-select-lg" id="wizard-category" required>
+                <option value="">Loading categories...</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Select Specific Service <span class="text-danger">*</span></label>
+              <select class="form-select form-select-lg" id="wizard-service" required>
+                <option value="">-- Choose Category First --</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Describe the Issue or Requirements</label>
+              <textarea class="form-control" id="wizard-issue" rows="3" placeholder="e.g. AC cooling is low, weird noise from fan, need filter cleaning"></textarea>
+            </div>
+            <div class="text-end">
+              <button type="button" class="btn btn-primary px-4 wizard-next-step">Next: Location & Slot <i class="bi bi-arrow-right"></i></button>
+            </div>
+          </div>
+
+          <!-- Step 2: Location & Slot -->
+          <div class="wizard-step-pane d-none" data-step="2">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Service Address <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="wizard-address" placeholder="House / Flat No, Street, Landmark" required>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label fw-semibold">City</label>
+                <input type="text" class="form-control" id="wizard-city" value="Kolhapur" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-semibold">Pincode <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="wizard-pincode" placeholder="416001" required>
+              </div>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label fw-semibold">Preferred Date</label>
+                <input type="date" class="form-control" id="wizard-date" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-semibold">Preferred Time Slot</label>
+                <select class="form-select" id="wizard-timeslot">
+                  <option value="10:00 AM - 01:00 PM">Morning (10 AM - 1 PM)</option>
+                  <option value="02:00 PM - 05:00 PM">Afternoon (2 PM - 5 PM)</option>
+                  <option value="05:00 PM - 08:00 PM">Evening (5 PM - 8 PM)</option>
+                </select>
+              </div>
+            </div>
+            <div class="d-flex justify-content-between">
+              <button type="button" class="btn btn-outline-secondary wizard-prev-step"><i class="bi bi-arrow-left"></i> Back</button>
+              <button type="button" class="btn btn-primary px-4 wizard-next-step">Next: Apply Coupon <i class="bi bi-arrow-right"></i></button>
+            </div>
+          </div>
+
+          <!-- Step 3: Coupon & Confirm -->
+          <div class="wizard-step-pane d-none" data-step="3">
+            <div class="card bg-light p-3 mb-3 border-0">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Standard Service Price:</span>
+                <span class="fw-bold" id="wizard-base-price">₹599</span>
+              </div>
+              <div class="d-flex justify-content-between mb-2 text-success">
+                <span>Promotional Discount:</span>
+                <span class="fw-bold" id="wizard-discount-val">-₹0</span>
+              </div>
+              <hr class="my-2">
+              <div class="d-flex justify-content-between fs-5 fw-bold text-dark">
+                <span>Estimated Total:</span>
+                <span class="text-primary" id="wizard-total-val">₹599</span>
+              </div>
+            </div>
+
+            <!-- Coupon Input Box -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Have a Promotional Coupon?</label>
+              <div class="input-group">
+                <input type="text" class="form-control text-uppercase" id="wizard-coupon-input" placeholder="e.g. WELCOME100, SUMMERCOOL20">
+                <button class="btn btn-dark" type="button" id="btn-apply-coupon">Apply Coupon</button>
+              </div>
+              <div id="coupon-status-msg" class="mt-1 small"></div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+              <button type="button" class="btn btn-outline-secondary wizard-prev-step"><i class="bi bi-arrow-left"></i> Back</button>
+              <button type="submit" class="btn btn-success px-4 fw-bold">Confirm & Place Request</button>
+            </div>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Track Request & Timeline
+     ============================================================ -->
+<div class="modal fade" id="modalTrackRequest" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold"><i class="bi bi-geo-alt-fill text-primary me-2"></i>Service Request Progress: <span id="modal-track-req-id">#</span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <div class="p-3 bg-light rounded">
+              <div class="text-muted small">Service Booked</div>
+              <div class="fw-bold" id="modal-track-service">Split AC Service</div>
+              <div class="text-muted small mt-2">Appointment</div>
+              <div class="fw-semibold" id="modal-track-date">2026-08-22</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-3 bg-light rounded">
+              <div class="text-muted small">Service Location</div>
+              <div class="fw-semibold" id="modal-track-address">Address</div>
+              <div class="text-muted small mt-2">Issue Description</div>
+              <div class="small" id="modal-track-issue">Issue</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Visual Stage Timeline -->
+        <h6 class="fw-bold mb-3">Live Service Lifecycle Timeline</h6>
+        <div class="process-timeline">
+          <div class="timeline-step completed" id="timeline-step-1">
+            <div class="timeline-marker"></div>
+            <h6 class="fw-bold mb-0">1. Request Received & Verified</h6>
+            <small class="text-muted">Our technical desk confirmed your job details.</small>
+          </div>
+          <div class="timeline-step" id="timeline-step-2">
+            <div class="timeline-marker"></div>
+            <h6 class="fw-bold mb-0">2. Estimate Generated</h6>
+            <small class="text-muted">Detailed transparent quotation created for approval.</small>
+          </div>
+          <div class="timeline-step" id="timeline-step-3">
+            <div class="timeline-marker"></div>
+            <h6 class="fw-bold mb-0">3. Estimate Approved & Work Order Created</h6>
+            <small class="text-muted">Job confirmed by customer.</small>
+          </div>
+          <div class="timeline-step" id="timeline-step-4">
+            <div class="timeline-marker"></div>
+            <h6 class="fw-bold mb-0">4. Certified Technician Assigned</h6>
+            <small class="text-muted">Technician en-route with tooling & checklist.</small>
+          </div>
+          <div class="timeline-step" id="timeline-step-5">
+            <div class="timeline-marker"></div>
+            <h6 class="fw-bold mb-0">5. On-Site Inspection & Service Execution</h6>
+            <small class="text-muted">Checklist execution, before/after photos & testing.</small>
+          </div>
+          <div class="timeline-step" id="timeline-step-6">
+            <div class="timeline-marker"></div>
+            <h6 class="fw-bold mb-0">6. Customer Sign-off & Certificate Issued</h6>
+            <small class="text-muted">Job certified and invoice generated.</small>
+          </div>
+        </div>
+
+        <h6 class="fw-bold mt-4 mb-2">Estimates & Approvals</h6>
+        <div id="modal-track-estimates"></div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Payment Modal
+     ============================================================ -->
+<div class="modal fade" id="modalPayment" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold"><i class="bi bi-credit-card-2-front text-primary me-2"></i>Pay Service Invoice</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4 text-center">
+        <input type="hidden" id="pay-modal-invoice-id">
+        <div class="text-muted">Total Payable Amount</div>
+        <h2 class="text-primary fw-bold my-2" id="pay-modal-amount">₹0</h2>
+        
+        <div class="card p-3 my-3 text-start bg-light border-0">
+          <label class="fw-semibold mb-2">Select Payment Method:</label>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="radio" name="payMethod" id="pay-upi" value="UPI" checked>
+            <label class="form-check-label" for="pay-upi"><i class="bi bi-qr-code text-primary me-1"></i> Instant UPI / QR / Google Pay / PhonePe</label>
+          </div>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="radio" name="payMethod" id="pay-card" value="Card">
+            <label class="form-check-label" for="pay-card"><i class="bi bi-credit-card text-success me-1"></i> Debit / Credit Card</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="payMethod" id="pay-cash" value="Cash">
+            <label class="form-check-label" for="pay-cash"><i class="bi bi-cash text-warning me-1"></i> Pay After Service (Cash to Technician)</label>
+          </div>
+        </div>
+
+        <button class="btn btn-success btn-lg w-100 fw-bold" id="btn-confirm-payment">
+          Pay & Download Receipt
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../assets/js/api.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script src="../../assets/js/customer.js"></script>
+</body>
+</html>

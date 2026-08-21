@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Technician Field Portal – SevaSetuHub</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 & Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- SevaSetuHub Design System -->
+  <link rel="stylesheet" href="../../assets/css/variables.css">
+  <link rel="stylesheet" href="../../assets/css/reset.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/layout.css">
+  <link rel="stylesheet" href="../../assets/css/responsive.css">
+
+  <style>
+    body { background-color: #f1f5f9; }
+    .tech-mobile-container { max-width: 600px; margin: 0 auto; min-height: 100vh; background: #ffffff; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+    .signature-box { border: 2px dashed #cbd5e1; border-radius: 8px; background: #f8fafc; touch-action: none; }
+  </style>
+</head>
+<body>
+
+<div class="tech-mobile-container d-flex flex-column">
+  
+  <!-- Mobile Header -->
+  <header class="p-3 bg-dark text-white d-flex justify-content-between align-items-center sticky-top">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-tools text-info fs-4"></i>
+      <div>
+        <h6 class="mb-0 fw-bold">SevaSetuHub Field Desk</h6>
+        <small class="text-info user-name-display">Mahesh Patil</small>
+      </div>
+    </div>
+    <button class="btn btn-sm btn-outline-light btn-logout">
+      <i class="bi bi-box-arrow-right"></i>
+    </button>
+  </header>
+
+  <!-- SCREEN 1: Jobs List Screen -->
+  <div id="screen-jobs-list" class="p-3 flex-grow-1">
+    
+    <!-- Filter Pills -->
+    <div class="btn-group w-100 mb-3" role="group">
+      <button type="button" class="btn btn-outline-primary tech-tab-btn active" data-filter="today">Today's Jobs</button>
+      <button type="button" class="btn btn-outline-primary tech-tab-btn" data-filter="in-progress">In Progress</button>
+      <button type="button" class="btn btn-outline-primary tech-tab-btn" data-filter="completed">Completed</button>
+    </div>
+
+    <!-- Active Jobs Cards Container -->
+    <div id="tech-jobs-list">
+      <div class="text-center py-5 text-muted">
+        <span class="spinner-border spinner-border-sm"></span> Loading assigned work orders...
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SCREEN 2: Field Job Execution Workflow Screen -->
+  <div id="screen-job-execution" class="p-3 d-none flex-grow-1">
+    
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <button class="btn btn-sm btn-outline-secondary" id="btn-back-to-jobs">
+        <i class="bi bi-arrow-left"></i> Back to Jobs
+      </button>
+      <span class="badge bg-primary" id="exec-job-wo-id">#WO</span>
+    </div>
+
+    <!-- Job Info Header Card -->
+    <div class="card bg-light border-0 p-3 mb-3">
+      <h5 class="fw-bold text-dark mb-1" id="exec-job-title">Service Title</h5>
+      <p class="small text-muted mb-2" id="exec-issue-desc">Customer issue details</p>
+      
+      <div class="border-top pt-2 mt-1">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong id="exec-customer-name">Customer Name</strong><br>
+            <small class="text-muted" id="exec-customer-address">Address</small>
+          </div>
+          <a href="#" class="btn btn-success btn-sm px-3" id="exec-customer-phone">
+            <i class="bi bi-telephone-fill me-1"></i> Call
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step Action Buttons: Start Trip / Check In -->
+    <button class="btn btn-primary btn-lg w-100 py-3 mb-3 fw-bold shadow-sm d-none" id="btn-start-trip">
+      <i class="bi bi-geo-alt-fill me-1"></i> Start Trip (Record GPS Location)
+    </button>
+    
+    <button class="btn btn-warning btn-lg w-100 py-3 mb-3 fw-bold shadow-sm d-none" id="btn-checkin">
+      <i class="bi bi-box-arrow-in-right me-1"></i> Check In At Customer Site
+    </button>
+
+    <!-- Work Execution Sections (Visible when In Progress) -->
+    <div id="job-work-sections" class="d-none">
+      
+      <!-- Section A: Before Photos -->
+      <div class="card border-0 shadow-sm p-3 mb-3">
+        <h6 class="fw-bold text-dark"><i class="bi bi-camera text-primary me-2"></i>1. Before Service Photos</h6>
+        <p class="text-muted small mb-2">Capture initial unit condition or existing damage.</p>
+        <input type="file" class="form-control" id="input-before-photo" data-preview="preview-before" accept="image/*">
+        <div id="preview-before" class="mt-2 text-center"></div>
+      </div>
+
+      <!-- Section B: Service Checklist -->
+      <div class="card border-0 shadow-sm p-3 mb-3">
+        <h6 class="fw-bold text-dark"><i class="bi bi-check2-square text-primary me-2"></i>2. Service Checklist</h6>
+        
+        <div class="checklist-item mb-2 p-2 border rounded">
+          <div class="fw-semibold small">Power & Electrical Isolation Check</div>
+          <div class="btn-group btn-group-sm mt-1 w-100">
+            <input type="radio" class="btn-check" name="chk1" id="chk1-pass" checked>
+            <label class="btn btn-outline-success" for="chk1-pass">Pass</label>
+            <input type="radio" class="btn-check" name="chk1" id="chk1-fail">
+            <label class="btn btn-outline-danger" for="chk1-fail">Fail</label>
+            <input type="radio" class="btn-check" name="chk1" id="chk1-na">
+            <label class="btn btn-outline-secondary" for="chk1-na">N/A</label>
+          </div>
+        </div>
+
+        <div class="checklist-item mb-2 p-2 border rounded">
+          <div class="fw-semibold small">Cooling Coil & Filter Deep Chemical Jet Clean</div>
+          <div class="btn-group btn-group-sm mt-1 w-100">
+            <input type="radio" class="btn-check" name="chk2" id="chk2-pass" checked>
+            <label class="btn btn-outline-success" for="chk2-pass">Pass</label>
+            <input type="radio" class="btn-check" name="chk2" id="chk2-fail">
+            <label class="btn btn-outline-danger" for="chk2-fail">Fail</label>
+            <input type="radio" class="btn-check" name="chk2" id="chk2-na">
+            <label class="btn btn-outline-secondary" for="chk2-na">N/A</label>
+          </div>
+        </div>
+
+        <div class="checklist-item mb-2 p-2 border rounded">
+          <div class="fw-semibold small">Refrigerant Pressure & Ampere Testing</div>
+          <div class="btn-group btn-group-sm mt-1 w-100">
+            <input type="radio" class="btn-check" name="chk3" id="chk3-pass" checked>
+            <label class="btn btn-outline-success" for="chk3-pass">Pass</label>
+            <input type="radio" class="btn-check" name="chk3" id="chk3-fail">
+            <label class="btn btn-outline-danger" for="chk3-fail">Fail</label>
+            <input type="radio" class="btn-check" name="chk3" id="chk3-na">
+            <label class="btn btn-outline-secondary" for="chk3-na">N/A</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section C: Work Notes -->
+      <div class="card border-0 shadow-sm p-3 mb-3">
+        <h6 class="fw-bold text-dark"><i class="bi bi-pencil-square text-primary me-2"></i>3. Work Notes & Findings</h6>
+        <div class="mb-2">
+          <label class="form-label small fw-semibold">Work Performed</label>
+          <textarea class="form-control" id="tech-notes-performed" rows="2" placeholder="e.g. Jet cleaned outdoor unit, cleared drain blockage, tested cooling temp 18°C"></textarea>
+        </div>
+      </div>
+
+      <!-- Section D: After Photos -->
+      <div class="card border-0 shadow-sm p-3 mb-3">
+        <h6 class="fw-bold text-dark"><i class="bi bi-camera-fill text-success me-2"></i>4. After Service Completion Photos</h6>
+        <p class="text-muted small mb-2">Capture final clean unit and working status.</p>
+        <input type="file" class="form-control" id="input-after-photo" data-preview="preview-after" accept="image/*">
+        <div id="preview-after" class="mt-2 text-center"></div>
+      </div>
+
+      <!-- Section E: HTML5 Canvas Customer Signature -->
+      <div class="card border-0 shadow-sm p-3 mb-4">
+        <h6 class="fw-bold text-dark"><i class="bi bi-pen text-primary me-2"></i>5. Customer Sign-off</h6>
+        <p class="text-muted small mb-2">Please ask customer to sign below with finger or stylus:</p>
+        
+        <input type="text" class="form-control mb-2" id="tech-signatory-name" placeholder="Customer Name">
+        
+        <div class="signature-box text-center p-1">
+          <canvas id="signature-canvas" width="450" height="150" style="width: 100%; height: 150px; cursor: crosshair;"></canvas>
+        </div>
+        <div class="text-end mt-1">
+          <button type="button" class="btn btn-sm btn-link text-danger p-0" id="btn-clear-sig">
+            <i class="bi bi-eraser"></i> Clear Signature
+          </button>
+        </div>
+      </div>
+
+      <!-- Complete Button -->
+      <button class="btn btn-success btn-lg w-100 py-3 mb-4 fw-bold shadow" id="btn-complete-job">
+        <i class="bi bi-check-circle-fill me-1"></i> Complete Job & Issue Certificate
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../assets/js/api.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script src="../../assets/js/technician.js"></script>
+</body>
+</html>

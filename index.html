@@ -127,16 +127,13 @@
                         <a class="nav-link active" href="#hero" role="menuitem" data-i18n="nav.home">Home</a>
                     </li>
                     <li class="nav-item" role="none">
-                        <a class="nav-link" href="#services" role="menuitem" data-i18n="nav.services">Services</a>
+                        <a class="nav-link" href="frontend/services.html" role="menuitem" data-i18n="nav.services">Services</a>
                     </li>
                     <li class="nav-item" role="none">
                         <a class="nav-link" href="#how-it-works" role="menuitem" data-i18n="nav.how_it_works">How It Works</a>
                     </li>
                     <li class="nav-item" role="none">
-                        <a class="nav-link" href="#offers" role="menuitem" data-i18n="nav.offers">Offers</a>
-                    </li>
-                    <li class="nav-item" role="none">
-                        <a class="nav-link" href="#for-businesses" role="menuitem" data-i18n="nav.for_businesses">For Businesses</a>
+                        <a class="nav-link" href="frontend/offers.html" role="menuitem" data-i18n="nav.offers">Offers</a>
                     </li>
                     <li class="nav-item" role="none">
                         <a class="nav-link" href="#why-us" role="menuitem" data-i18n="nav.about">About</a>
@@ -150,14 +147,14 @@
                 <div class="nav-right-controls">
                     <!-- Auth + CTA -->
                     <div class="nav-auth-group">
-                        <a href="#" class="btn-nav-login" data-i18n-aria="nav.aria_login" aria-label="Login to your account">
+                        <a href="frontend/login.html" class="btn-nav-login" data-i18n-aria="nav.aria_login" aria-label="Login to your account">
                             <i class="bi bi-person" aria-hidden="true"></i>
                             <span data-i18n="nav.login">Login</span>
                         </a>
-                        <a href="#" class="btn-nav-register" data-i18n-aria="nav.aria_register" data-i18n="nav.register" aria-label="Create a new account">
+                        <a href="frontend/register.html" class="btn-nav-register" data-i18n-aria="nav.aria_register" data-i18n="nav.register" aria-label="Create a new account">
                             Register
                         </a>
-                        <a href="#search-section" class="nav-book-btn" data-i18n-aria="nav.aria_book" aria-label="Book a service now">
+                        <a href="frontend/customer/index.html" class="nav-book-btn" data-i18n-aria="nav.aria_book" aria-label="Book a service now">
                             <i class="bi bi-calendar-check" aria-hidden="true"></i>
                             <span data-i18n="nav.book_service">Book a Service</span>
                         </a>
@@ -447,7 +444,7 @@
 <!-- ══════════════════════════════════════════════════════════
      SPECIAL OFFERS
      ══════════════════════════════════════════════════════════ -->
-<section id="offers" aria-labelledby="offers-heading">
+<section id="offers" aria-labelledby="offers-heading" class="d-none">
     <div class="container">
         <div class="section-header-center animate-on-scroll">
             <span class="section-label">
@@ -537,7 +534,7 @@
 <!-- ══════════════════════════════════════════════════════════
      BEFORE / AFTER SECTION
      ══════════════════════════════════════════════════════════ -->
-<section id="before-after" aria-labelledby="ba-heading">
+<section id="before-after" aria-labelledby="ba-heading" class="d-none">
     <div class="container">
         <div class="row align-items-center g-5">
 
@@ -738,7 +735,7 @@
 <!-- ══════════════════════════════════════════════════════════
      FOR BUSINESSES
      ══════════════════════════════════════════════════════════ -->
-<section id="for-businesses" aria-labelledby="biz-heading">
+<section id="for-businesses" aria-labelledby="biz-heading" class="d-none">
     <div class="container">
         <div class="row align-items-center g-5">
 
@@ -833,7 +830,7 @@
 <!-- ══════════════════════════════════════════════════════════
      TECHNICIAN SECTION
      ══════════════════════════════════════════════════════════ -->
-<section id="for-technicians" aria-labelledby="tech-heading">
+<section id="for-technicians" aria-labelledby="tech-heading" class="d-none">
     <div class="container">
         <div class="row align-items-center g-5">
 
@@ -952,7 +949,7 @@
 <!-- ══════════════════════════════════════════════════════════
      AMC SECTION
      ══════════════════════════════════════════════════════════ -->
-<section id="amc" aria-labelledby="amc-heading">
+<section id="amc" aria-labelledby="amc-heading" class="d-none">
     <div class="container">
         <div class="row align-items-center g-5">
 
@@ -1063,7 +1060,7 @@
 <!-- ══════════════════════════════════════════════════════════
      SERVICE HISTORY
      ══════════════════════════════════════════════════════════ -->
-<section id="service-history" aria-labelledby="history-heading">
+<section id="service-history" aria-labelledby="history-heading" class="d-none">
     <div class="container">
         <div class="row align-items-center g-5">
 
@@ -1539,15 +1536,15 @@
                     <ul class="footer-links">
                         <li><a href="#search-section" data-i18n="footer.cust_book">Book a Service</a></li>
                         <li><a href="#"              data-i18n="footer.cust_requests">My Requests</a></li>
-                        <li><a href="#offers"        data-i18n="footer.cust_offers">Offers</a></li>
-                        <li><a href="#service-history" data-i18n="footer.cust_history">Service History</a></li>
-                        <li><a href="#amc"           data-i18n="footer.cust_amc">AMC Plans</a></li>
+                        <li class="d-none"><a href="#offers"        data-i18n="footer.cust_offers">Offers</a></li>
+                        <li class="d-none"><a href="#service-history" data-i18n="footer.cust_history">Service History</a></li>
+                        <li class="d-none"><a href="#amc"           data-i18n="footer.cust_amc">AMC Plans</a></li>
                     </ul>
                 </nav>
             </div>
 
             <!-- Businesses -->
-            <div class="col-lg-2 col-md-6 col-6 footer-col">
+            <div class="col-lg-2 col-md-6 col-6 footer-col d-none">
                 <h6 data-i18n="footer.col_businesses">Businesses</h6>
                 <nav aria-label="Business links">
                     <ul class="footer-links">

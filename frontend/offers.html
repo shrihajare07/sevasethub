@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Special Offers & Coupons – SevaSetuHub</title>
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="../assets/css/variables.css">
+  <link rel="stylesheet" href="../assets/css/reset.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/responsive.css">
+
+  <style>
+    .coupon-badge {
+      border: 2px dashed #0d9488;
+      background: #f0fdfa;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-weight: 700;
+      color: #0f766e;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3 sticky-top">
+  <div class="container">
+    <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="../index.html">
+      <i class="bi bi-shield-check text-info fs-3"></i>
+      <span>SevaSetuHub</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-4">
+        <li class="nav-item"><a class="nav-link" href="../index.html">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="services.html">Services</a></li>
+        <li class="nav-item"><a class="nav-link active" href="offers.html">Offers & Deals</a></li>
+      </ul>
+      <div class="d-flex gap-2">
+        <a href="login.html" class="btn btn-outline-light btn-sm px-3">Login</a>
+        <a href="register.html" class="btn btn-primary btn-sm px-3">Register</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Header -->
+<header class="py-5 bg-white border-bottom text-center">
+  <div class="container">
+    <span class="badge bg-danger px-3 py-2 mb-2">Exclusive Savings</span>
+    <h1 class="fw-bold text-dark">Active Promotional Offers & Discount Coupons</h1>
+    <p class="text-muted lead mx-auto" style="max-width: 650px;">
+      Save big on your next AC servicing, deep cleaning, plumbing and electrical bookings with SevaSetuHub coupons.
+    </p>
+  </div>
+</header>
+
+<main class="py-5">
+  <div class="container">
+    <div class="row g-4" id="offers-container">
+      <div class="col-12 text-center py-5 text-muted">
+        <span class="spinner-border text-primary"></span>
+        <p class="mt-2">Loading active promotions...</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="bg-dark text-white py-4 mt-5 text-center">
+  <div class="container">
+    <p class="mb-0 text-muted small">© 2026 SevaSetuHub. All Rights Reserved. Connecting You to Trusted Services.</p>
+  </div>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/api.js"></script>
+
+<script>
+  $(document).ready(async function() {
+    try {
+      const offers = await api.getOffers();
+      const coupons = await api.getCoupons();
+      const $container = $('#offers-container');
+      $container.empty();
+
+      // Render Offers
+      offers.forEach(o => {
+        const card = `
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="badge bg-warning text-dark px-3 py-2 fw-bold">PROMO OFFER</span>
+                <span class="text-muted small">Valid till ${o.EndDate || '31-Dec-2026'}</span>
+              </div>
+              <h4 class="fw-bold text-dark mt-2">${o.Title}</h4>
+              <p class="text-muted">${o.Description}</p>
+              <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top">
+                <div class="coupon-badge" data-code="${o.OfferCode}">
+                  <span>${o.OfferCode}</span>
+                  <i class="bi bi-clipboard"></i>
+                </div>
+                <a href="login.html" class="btn btn-primary btn-sm px-3 fw-semibold">Book with Offer</a>
+              </div>
+            </div>
+          </div>
+        `;
+        $container.append(card);
+      });
+
+      // Render Coupons
+      coupons.forEach(c => {
+        const card = `
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="badge bg-success px-3 py-2 fw-bold">DISCOUNT COUPON</span>
+                <span class="text-muted small">Min Order: ₹${c.MinimumOrderValue || 0}</span>
+              </div>
+              <h4 class="fw-bold text-dark mt-2">${c.DiscountType === 'Percentage' ? c.DiscountValue + '% OFF' : 'Flat ₹' + c.DiscountValue + ' OFF'}</h4>
+              <p class="text-muted">${c.Description}</p>
+              <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top">
+                <div class="coupon-badge" data-code="${c.CouponCode}">
+                  <span>${c.CouponCode}</span>
+                  <i class="bi bi-clipboard"></i>
+                </div>
+                <a href="login.html" class="btn btn-primary btn-sm px-3 fw-semibold">Apply Coupon</a>
+              </div>
+            </div>
+          </div>
+        `;
+        $container.append(card);
+      });
+
+      // Copy coupon click
+      $('.coupon-badge').on('click', function() {
+        const code = $(this).data('code');
+        navigator.clipboard.writeText(code);
+        alert(`Coupon '${code}' copied to clipboard! Paste it during booking.`);
+      });
+
+    } catch (e) {
+      console.error(e);
+    }
+  });
+</script>
+
+</body>
+</html>
