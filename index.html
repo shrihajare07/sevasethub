@@ -360,35 +360,43 @@
      ══════════════════════════════════════════════════════════ -->
 <div id="trust-bar" aria-label="Trust indicators">
     <div class="container">
-        <div class="trust-scroll" role="list">
-            <div class="trust-item" role="listitem">
-                <i class="bi bi-patch-check-fill trust-icon" aria-hidden="true"></i>
-                <span data-i18n="trust.verified">Verified Professionals</span>
-            </div>
-            <div class="trust-item" role="listitem">
-                <i class="bi bi-currency-rupee trust-icon" aria-hidden="true"></i>
-                <span data-i18n="trust.pricing">Transparent Pricing</span>
-            </div>
-            <div class="trust-item" role="listitem">
-                <i class="bi bi-geo-alt-fill trust-icon" aria-hidden="true"></i>
-                <span data-i18n="trust.tracking">Real-Time Service Tracking</span>
-            </div>
-            <div class="trust-item" role="listitem">
-                <i class="bi bi-file-earmark-check-fill trust-icon" aria-hidden="true"></i>
-                <span data-i18n="trust.reports">Digital Service Reports</span>
-            </div>
-            <div class="trust-item" role="listitem">
-                <i class="bi bi-camera-fill trust-icon" aria-hidden="true"></i>
-                <span data-i18n="trust.photos">Before &amp; After Photos</span>
-            </div>
-            <div class="trust-item" role="listitem">
-                <i class="bi bi-wallet2 trust-icon" aria-hidden="true"></i>
-                <span data-i18n="trust.payments">Easy Payments</span>
-            </div>
-            <div class="trust-item" role="listitem">
-                <i class="bi bi-telephone-fill trust-icon" aria-hidden="true"></i>
-                <span data-i18n="trust.support">Dedicated Support</span>
-            </div>
+        <!-- overflow wrapper keeps marquee from breaking layout -->
+        <div style="overflow:hidden;">
+        <div class="trust-scroll" role="list" aria-label="Platform trust indicators">
+            <!-- First set -->
+            <div class="trust-item" role="listitem"><i class="bi bi-patch-check-fill trust-icon" aria-hidden="true"></i><span data-i18n="trust.verified">Verified Professionals</span></div>
+            <span class="trust-separator" aria-hidden="true"></span>
+            <div class="trust-item" role="listitem"><i class="bi bi-currency-rupee trust-icon" aria-hidden="true"></i><span data-i18n="trust.pricing">Transparent Pricing</span></div>
+            <span class="trust-separator" aria-hidden="true"></span>
+            <div class="trust-item" role="listitem"><i class="bi bi-geo-alt-fill trust-icon" aria-hidden="true"></i><span data-i18n="trust.tracking">Real-Time Tracking</span></div>
+            <span class="trust-separator" aria-hidden="true"></span>
+            <div class="trust-item" role="listitem"><i class="bi bi-file-earmark-check-fill trust-icon" aria-hidden="true"></i><span data-i18n="trust.reports">Digital Service Reports</span></div>
+            <span class="trust-separator" aria-hidden="true"></span>
+            <div class="trust-item" role="listitem"><i class="bi bi-camera-fill trust-icon" aria-hidden="true"></i><span data-i18n="trust.photos">Before &amp; After Photos</span></div>
+            <span class="trust-separator" aria-hidden="true"></span>
+            <div class="trust-item" role="listitem"><i class="bi bi-wallet2 trust-icon" aria-hidden="true"></i><span data-i18n="trust.payments">Easy Payments</span></div>
+            <span class="trust-separator" aria-hidden="true"></span>
+            <div class="trust-item" role="listitem"><i class="bi bi-telephone-fill trust-icon" aria-hidden="true"></i><span data-i18n="trust.support">Dedicated Support</span></div>
+            <span class="trust-separator" aria-hidden="true"></span>
+            <div class="trust-item" role="listitem"><i class="bi bi-shield-check trust-icon" aria-hidden="true"></i><span>100% Satisfaction Guarantee</span></div>
+            <span class="trust-separator" aria-hidden="true"></span>
+            <!-- Duplicate set for seamless loop (aria-hidden so screen readers skip) -->
+            <div class="trust-item" aria-hidden="true"><i class="bi bi-patch-check-fill trust-icon"></i><span>Verified Professionals</span></div>
+            <span class="trust-separator" aria-hidden="true"></span>
+            <div class="trust-item" aria-hidden="true"><i class="bi bi-currency-rupee trust-icon"></i><span>Transparent Pricing</span></div>
+            <span class="trust-separator" aria-hidden="true"></span>
+            <div class="trust-item" aria-hidden="true"><i class="bi bi-geo-alt-fill trust-icon"></i><span>Real-Time Tracking</span></div>
+            <span class="trust-separator" aria-hidden="true"></span>
+            <div class="trust-item" aria-hidden="true"><i class="bi bi-file-earmark-check-fill trust-icon"></i><span>Digital Service Reports</span></div>
+            <span class="trust-separator" aria-hidden="true"></span>
+            <div class="trust-item" aria-hidden="true"><i class="bi bi-camera-fill trust-icon"></i><span>Before &amp; After Photos</span></div>
+            <span class="trust-separator" aria-hidden="true"></span>
+            <div class="trust-item" aria-hidden="true"><i class="bi bi-wallet2 trust-icon"></i><span>Easy Payments</span></div>
+            <span class="trust-separator" aria-hidden="true"></span>
+            <div class="trust-item" aria-hidden="true"><i class="bi bi-telephone-fill trust-icon"></i><span>Dedicated Support</span></div>
+            <span class="trust-separator" aria-hidden="true"></span>
+            <div class="trust-item" aria-hidden="true"><i class="bi bi-shield-check trust-icon"></i><span>100% Satisfaction Guarantee</span></div>
+        </div>
         </div>
     </div>
 </div>
@@ -403,7 +411,7 @@
                 <i class="bi bi-grid-3x3-gap" aria-hidden="true"></i>
                 <span data-i18n="services.label">What We Offer</span>
             </span>
-            <h2 id="services-heading" class="section-heading" data-i18n="services.heading">
+            <h2 id="services-heading" class="section-heading section-heading-accent" data-i18n="services.heading">
                 Services for Every Need
             </h2>
             <p class="section-subheading" data-i18n="services.subheading">
@@ -428,7 +436,7 @@
                 <i class="bi bi-fire" aria-hidden="true"></i>
                 <span data-i18n="popular.label">Most Booked</span>
             </span>
-            <h2 id="popular-heading" class="section-heading" data-i18n="popular.heading">Popular Services</h2>
+            <h2 id="popular-heading" class="section-heading section-heading-accent" data-i18n="popular.heading">Popular Services</h2>
             <p class="section-subheading" data-i18n="popular.subheading">
                 The services most loved by our customers, delivered by verified professionals.
             </p>
@@ -474,7 +482,7 @@
                 <i class="bi bi-diagram-3" aria-hidden="true"></i>
                 <span data-i18n="how.label">Simple Process</span>
             </span>
-            <h2 id="how-heading" class="section-heading" data-i18n="how.heading">How SevaSetuHub Works</h2>
+            <h2 id="how-heading" class="section-heading section-heading-accent" data-i18n="how.heading">How SevaSetuHub Works</h2>
             <p class="section-subheading" data-i18n="how.subheading">
                 From booking to completion in six simple steps. Everything managed from one platform.
             </p>
@@ -649,7 +657,7 @@
                 <i class="bi bi-award" aria-hidden="true"></i>
                 <span data-i18n="why.label">Why Choose Us</span>
             </span>
-            <h2 id="why-heading" class="section-heading" data-i18n="why.heading">Why SevaSetuHub?</h2>
+            <h2 id="why-heading" class="section-heading section-heading-accent" data-i18n="why.heading">Why SevaSetuHub?</h2>
             <p class="section-subheading" data-i18n="why.subheading">
                 Everything you need for a smooth, trustworthy service experience — in one platform.
             </p>

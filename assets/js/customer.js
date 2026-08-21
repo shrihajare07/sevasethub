@@ -35,9 +35,12 @@ $(document).ready(function() {
     if (targetSection === 'notifications') loadCustomerNotifications();
   });
 
-  // Mobile sidebar toggle
+  // Mobile sidebar toggle & close
   $('#sidebar-toggle').on('click', function() {
     $('.app-sidebar').toggleClass('show');
+  });
+  $('#sidebar-close-btn').on('click', function() {
+    $('.app-sidebar').removeClass('show');
   });
 
   // Logout handler

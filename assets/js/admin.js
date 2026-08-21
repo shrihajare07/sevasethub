@@ -50,6 +50,9 @@ $(document).ready(function() {
   $('#sidebar-toggle').on('click', function() {
     $('.app-sidebar').toggleClass('show');
   });
+  $('#sidebar-close-btn').on('click', function() {
+    $('.app-sidebar').removeClass('show');
+  });
 
   // Logout
   $('.btn-logout').on('click', function(e) {

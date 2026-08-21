@@ -8,7 +8,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 
   <!-- Bootstrap 5 & Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
@@ -22,26 +22,78 @@
   <link rel="stylesheet" href="../../assets/css/responsive.css">
 
   <style>
-    body { background-color: #f1f5f9; }
-    .tech-mobile-container { max-width: 600px; margin: 0 auto; min-height: 100vh; background: #ffffff; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
-    .signature-box { border: 2px dashed #cbd5e1; border-radius: 8px; background: #f8fafc; touch-action: none; }
+    body {
+      background-color: var(--background-alt, #f1f5f9);
+      min-height: 100vh;
+    }
+    .tech-mobile-container {
+      max-width: 600px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: var(--surface, #ffffff);
+      box-shadow: var(--shadow-xl);
+      display: flex;
+      flex-direction: column;
+    }
+    .signature-box {
+      border: 2px dashed var(--border-strong, #cbd5e1);
+      border-radius: var(--radius-md);
+      background: var(--neutral-50, #f8fafc);
+      touch-action: none;
+    }
+    .tech-header {
+      background: linear-gradient(135deg, #0b1329 0%, #0f172a 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      position: sticky;
+      top: 0;
+      z-index: 1030;
+      backdrop-filter: blur(12px);
+    }
+    .tech-tab-group {
+      background: var(--neutral-100);
+      padding: 4px;
+      border-radius: var(--radius-full);
+      display: flex;
+      gap: 3px;
+    }
+    .tech-tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 0.5rem 0.6rem;
+      font-size: var(--text-xs);
+      font-weight: var(--weight-semibold);
+      color: var(--text-secondary);
+      border-radius: var(--radius-full);
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+      text-align: center;
+    }
+    .tech-tab-btn.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: var(--shadow-xs);
+      font-weight: var(--weight-bold);
+    }
   </style>
 </head>
 <body>
 
-<div class="tech-mobile-container d-flex flex-column">
+<div class="tech-mobile-container">
   
   <!-- Mobile Header -->
-  <header class="p-3 bg-dark text-white d-flex justify-content-between align-items-center sticky-top">
+  <header class="p-3 tech-header text-white d-flex justify-content-between align-items-center">
     <div class="d-flex align-items-center gap-2">
-      <i class="bi bi-tools text-info fs-4"></i>
+      <div style="width:36px; height:36px; background:var(--gradient-brand); border-radius:9px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.1rem; box-shadow:var(--shadow-brand);">
+        <i class="bi bi-tools"></i>
+      </div>
       <div>
-        <h6 class="mb-0 fw-bold">SevaSetuHub Field Desk</h6>
-        <small class="text-info user-name-display">Mahesh Patil</small>
+        <h6 class="mb-0 fw-bold" style="font-family:var(--font-heading); letter-spacing:-0.01em;">Field Desk</h6>
+        <small class="text-info user-name-display fw-semibold">Mahesh Patil</small>
       </div>
     </div>
-    <button class="btn btn-sm btn-outline-light btn-logout">
-      <i class="bi bi-box-arrow-right"></i>
+    <button class="btn btn-sm btn-outline-light rounded-pill px-3 btn-logout" title="Sign out">
+      <i class="bi bi-box-arrow-right me-1"></i> Exit
     </button>
   </header>
 
@@ -49,16 +101,17 @@
   <div id="screen-jobs-list" class="p-3 flex-grow-1">
     
     <!-- Filter Pills -->
-    <div class="btn-group w-100 mb-3" role="group">
-      <button type="button" class="btn btn-outline-primary tech-tab-btn active" data-filter="today">Today's Jobs</button>
-      <button type="button" class="btn btn-outline-primary tech-tab-btn" data-filter="in-progress">In Progress</button>
-      <button type="button" class="btn btn-outline-primary tech-tab-btn" data-filter="completed">Completed</button>
+    <div class="tech-tab-group mb-3">
+      <button type="button" class="tech-tab-btn active" data-filter="today">Today's Jobs</button>
+      <button type="button" class="tech-tab-btn" data-filter="in-progress">In Progress</button>
+      <button type="button" class="tech-tab-btn" data-filter="completed">Completed</button>
     </div>
 
     <!-- Active Jobs Cards Container -->
     <div id="tech-jobs-list">
       <div class="text-center py-5 text-muted">
-        <span class="spinner-border spinner-border-sm"></span> Loading assigned work orders...
+        <div class="spinner-border spinner-border-sm text-primary"></div>
+        <p class="mt-2 small fw-medium">Loading assigned work orders...</p>
       </div>
     </div>
 
@@ -68,15 +121,15 @@
   <div id="screen-job-execution" class="p-3 d-none flex-grow-1">
     
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <button class="btn btn-sm btn-outline-secondary" id="btn-back-to-jobs">
-        <i class="bi bi-arrow-left"></i> Back to Jobs
+      <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="btn-back-to-jobs">
+        <i class="bi bi-arrow-left me-1"></i> Back
       </button>
-      <span class="badge bg-primary" id="exec-job-wo-id">#WO</span>
+      <span class="badge-brand badge-primary" id="exec-job-wo-id">#WO</span>
     </div>
 
     <!-- Job Info Header Card -->
-    <div class="card bg-light border-0 p-3 mb-3">
-      <h5 class="fw-bold text-dark mb-1" id="exec-job-title">Service Title</h5>
+    <div class="card bg-light border-0 p-3 mb-3 rounded-4 shadow-sm">
+      <h5 class="fw-bold text-dark mb-1" id="exec-job-title" style="letter-spacing: -0.01em;">Service Title</h5>
       <p class="small text-muted mb-2" id="exec-issue-desc">Customer issue details</p>
       
       <div class="border-top pt-2 mt-1">
@@ -85,7 +138,7 @@
             <strong id="exec-customer-name">Customer Name</strong><br>
             <small class="text-muted" id="exec-customer-address">Address</small>
           </div>
-          <a href="#" class="btn btn-success btn-sm px-3" id="exec-customer-phone">
+          <a href="#" class="btn btn-success btn-sm rounded-pill px-3" id="exec-customer-phone">
             <i class="bi bi-telephone-fill me-1"></i> Call
           </a>
         </div>
@@ -93,11 +146,11 @@
     </div>
 
     <!-- Step Action Buttons: Start Trip / Check In -->
-    <button class="btn btn-primary btn-lg w-100 py-3 mb-3 fw-bold shadow-sm d-none" id="btn-start-trip">
+    <button class="btn btn-primary btn-lg w-100 py-3 mb-3 fw-bold shadow d-none rounded-3" id="btn-start-trip">
       <i class="bi bi-geo-alt-fill me-1"></i> Start Trip (Record GPS Location)
     </button>
     
-    <button class="btn btn-warning btn-lg w-100 py-3 mb-3 fw-bold shadow-sm d-none" id="btn-checkin">
+    <button class="btn btn-warning btn-lg w-100 py-3 mb-3 fw-bold shadow d-none text-dark rounded-3" id="btn-checkin">
       <i class="bi bi-box-arrow-in-right me-1"></i> Check In At Customer Site
     </button>
 
@@ -105,7 +158,7 @@
     <div id="job-work-sections" class="d-none">
       
       <!-- Section A: Before Photos -->
-      <div class="card border-0 shadow-sm p-3 mb-3">
+      <div class="card border-0 shadow-sm p-3 mb-3 rounded-4">
         <h6 class="fw-bold text-dark"><i class="bi bi-camera text-primary me-2"></i>1. Before Service Photos</h6>
         <p class="text-muted small mb-2">Capture initial unit condition or existing damage.</p>
         <input type="file" class="form-control" id="input-before-photo" data-preview="preview-before" accept="image/*">
@@ -113,11 +166,11 @@
       </div>
 
       <!-- Section B: Service Checklist -->
-      <div class="card border-0 shadow-sm p-3 mb-3">
+      <div class="card border-0 shadow-sm p-3 mb-3 rounded-4">
         <h6 class="fw-bold text-dark"><i class="bi bi-check2-square text-primary me-2"></i>2. Service Checklist</h6>
         
-        <div class="checklist-item mb-2 p-2 border rounded">
-          <div class="fw-semibold small">Power & Electrical Isolation Check</div>
+        <div class="checklist-item mb-2 p-2 border rounded-3 bg-light">
+          <div class="fw-semibold small">Power &amp; Electrical Isolation Check</div>
           <div class="btn-group btn-group-sm mt-1 w-100">
             <input type="radio" class="btn-check" name="chk1" id="chk1-pass" checked>
             <label class="btn btn-outline-success" for="chk1-pass">Pass</label>
@@ -128,8 +181,8 @@
           </div>
         </div>
 
-        <div class="checklist-item mb-2 p-2 border rounded">
-          <div class="fw-semibold small">Cooling Coil & Filter Deep Chemical Jet Clean</div>
+        <div class="checklist-item mb-2 p-2 border rounded-3 bg-light">
+          <div class="fw-semibold small">Cooling Coil &amp; Filter Deep Chemical Jet Clean</div>
           <div class="btn-group btn-group-sm mt-1 w-100">
             <input type="radio" class="btn-check" name="chk2" id="chk2-pass" checked>
             <label class="btn btn-outline-success" for="chk2-pass">Pass</label>
@@ -140,8 +193,8 @@
           </div>
         </div>
 
-        <div class="checklist-item mb-2 p-2 border rounded">
-          <div class="fw-semibold small">Refrigerant Pressure & Ampere Testing</div>
+        <div class="checklist-item mb-2 p-2 border rounded-3 bg-light">
+          <div class="fw-semibold small">Refrigerant Pressure &amp; Ampere Testing</div>
           <div class="btn-group btn-group-sm mt-1 w-100">
             <input type="radio" class="btn-check" name="chk3" id="chk3-pass" checked>
             <label class="btn btn-outline-success" for="chk3-pass">Pass</label>
@@ -154,24 +207,24 @@
       </div>
 
       <!-- Section C: Work Notes -->
-      <div class="card border-0 shadow-sm p-3 mb-3">
-        <h6 class="fw-bold text-dark"><i class="bi bi-pencil-square text-primary me-2"></i>3. Work Notes & Findings</h6>
+      <div class="card border-0 shadow-sm p-3 mb-3 rounded-4">
+        <h6 class="fw-bold text-dark"><i class="bi bi-pencil-square text-primary me-2"></i>3. Work Notes &amp; Findings</h6>
         <div class="mb-2">
-          <label class="form-label small fw-semibold">Work Performed</label>
+          <label class="form-label small fw-semibold" for="tech-notes-performed">Work Performed</label>
           <textarea class="form-control" id="tech-notes-performed" rows="2" placeholder="e.g. Jet cleaned outdoor unit, cleared drain blockage, tested cooling temp 18°C"></textarea>
         </div>
       </div>
 
       <!-- Section D: After Photos -->
-      <div class="card border-0 shadow-sm p-3 mb-3">
+      <div class="card border-0 shadow-sm p-3 mb-3 rounded-4">
         <h6 class="fw-bold text-dark"><i class="bi bi-camera-fill text-success me-2"></i>4. After Service Completion Photos</h6>
         <p class="text-muted small mb-2">Capture final clean unit and working status.</p>
         <input type="file" class="form-control" id="input-after-photo" data-preview="preview-after" accept="image/*">
         <div id="preview-after" class="mt-2 text-center"></div>
       </div>
 
-      <!-- Section E: HTML5 Canvas Customer Signature -->
-      <div class="card border-0 shadow-sm p-3 mb-4">
+      <!-- Section E: Customer Signature -->
+      <div class="card border-0 shadow-sm p-3 mb-4 rounded-4">
         <h6 class="fw-bold text-dark"><i class="bi bi-pen text-primary me-2"></i>5. Customer Sign-off</h6>
         <p class="text-muted small mb-2">Please ask customer to sign below with finger or stylus:</p>
         
@@ -182,14 +235,14 @@
         </div>
         <div class="text-end mt-1">
           <button type="button" class="btn btn-sm btn-link text-danger p-0" id="btn-clear-sig">
-            <i class="bi bi-eraser"></i> Clear Signature
+            <i class="bi bi-eraser me-1"></i> Clear Signature
           </button>
         </div>
       </div>
 
       <!-- Complete Button -->
-      <button class="btn btn-success btn-lg w-100 py-3 mb-4 fw-bold shadow" id="btn-complete-job">
-        <i class="bi bi-check-circle-fill me-1"></i> Complete Job & Issue Certificate
+      <button class="btn btn-success btn-lg w-100 py-3 mb-4 fw-bold shadow rounded-3" id="btn-complete-job">
+        <i class="bi bi-check-circle-fill me-1"></i> Complete Job &amp; Issue Certificate
       </button>
 
     </div>

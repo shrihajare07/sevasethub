@@ -12,7 +12,7 @@
     }
 
     .hero-headline {
-        font-size: 3.75rem;
+        font-size: 3.85rem;
     }
 
     .services-grid {
@@ -21,6 +21,10 @@
 
     .popular-grid {
         grid-template-columns: repeat(4, 1fr);
+    }
+
+    .steps-grid {
+        gap: var(--space-5);
     }
 }
 
@@ -38,20 +42,20 @@
    ══════════════════════════════════════════════════════════ */
 @media (max-width: 1199px) {
     .setu-navbar {
-        min-height: 66px;
+        min-height: 64px;
     }
 
     .setu-navbar .navbar-collapse {
-        background: rgba(255, 255, 255, 0.98);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+        background: rgba(255, 255, 255, 0.99);
+        backdrop-filter: saturate(180%) blur(24px);
+        -webkit-backdrop-filter: saturate(180%) blur(24px);
         border: 1px solid var(--border);
         border-radius: var(--radius-lg);
         padding: var(--space-4) var(--space-5);
         margin-top: 10px;
         margin-bottom: 12px;
-        box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
-        max-height: 80vh;
+        box-shadow: 0 20px 48px rgba(15, 23, 42, 0.14);
+        max-height: 82vh;
         overflow-y: auto;
     }
 
@@ -61,23 +65,23 @@
 
     .setu-navbar .navbar-collapse.show {
         display: block !important;
-        animation: setuNavDropdown 0.22s ease-out forwards;
+        animation: setuNavDropdown 0.24s var(--easing-out) forwards;
     }
 
     @keyframes setuNavDropdown {
         from {
             opacity: 0;
-            transform: translateY(-8px);
+            transform: translateY(-10px) scale(0.98);
         }
         to {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
         }
     }
 
     .setu-navbar .navbar-nav {
         flex-direction: column;
-        gap: 4px;
+        gap: 3px;
         padding-bottom: var(--space-3);
     }
 
@@ -117,17 +121,19 @@
     .nav-auth-group .btn-nav-register {
         width: 100%;
         justify-content: center;
-        padding: 0.6rem 0.75rem;
+        padding: 0.62rem 0.75rem;
         font-size: 0.875rem;
         text-align: center;
+        border-radius: var(--radius-md);
     }
 
     .nav-auth-group .nav-book-btn {
         grid-column: 1 / -1;
         width: 100%;
         justify-content: center;
-        padding: 0.65rem 1rem;
+        padding: 0.7rem 1rem;
         font-size: 0.9rem;
+        border-radius: var(--radius-md);
     }
 
     .nav-right-controls .lang-switcher {
@@ -165,8 +171,14 @@
         justify-content: center;
     }
 
+    /* Center trust items under hero */
+    #hero .d-flex.flex-wrap {
+        justify-content: center;
+    }
+
     .hero-visual {
         margin-top: var(--space-10);
+        max-width: 480px;
     }
 
     .hero-badge-1,
@@ -177,7 +189,7 @@
 
     .steps-grid {
         grid-template-columns: repeat(3, 1fr);
-        gap: var(--space-6);
+        gap: var(--space-4);
     }
 
     .steps-connector {
@@ -195,6 +207,16 @@
     .offers-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    /* Section headings slightly smaller on tablet */
+    .section-heading {
+        font-size: var(--text-3xl);
+    }
+
+    /* CTA box padding */
+    .cta-box {
+        padding: var(--space-12) var(--space-8);
+    }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -210,8 +232,8 @@
     }
 
     .hero-headline {
-        font-size: 2rem;
-        letter-spacing: -0.01em;
+        font-size: 2.1rem;
+        letter-spacing: -0.02em;
     }
 
     .hero-subtext {
@@ -239,27 +261,42 @@
     }
 
     .hero-banner-wrap {
-        height: 180px;
+        height: 190px;
     }
 
     .hero-mini-workflow {
-        font-size: 0.7rem;
+        font-size: 0.68rem;
         padding: var(--space-2);
+        gap: 4px;
     }
 
     .mini-wf-step span {
-        font-size: 0.7rem;
+        font-size: 0.68rem;
+    }
+
+    .mini-wf-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 0.65rem;
+    }
+
+    .hero-stats-strip {
+        gap: var(--space-1);
+    }
+
+    .hero-stat-cell .stat-num {
+        font-size: 1.05rem;
     }
 
     /* ── Search Widget ───────────────────────────────────── */
     .search-widget {
         padding: var(--space-5) var(--space-5);
-        border-radius: var(--radius-lg);
+        border-radius: var(--radius-xl);
     }
 
     /* ── Trust Bar ───────────────────────────────────────── */
     .trust-scroll {
-        gap: var(--space-6);
+        gap: var(--space-1);
     }
 
     /* ── Services Grid ───────────────────────────────────── */
@@ -276,6 +313,10 @@
         padding: var(--space-3);
     }
 
+    .service-category-card .card-title {
+        font-size: 0.95rem;
+    }
+
     /* ── Popular Grid ────────────────────────────────────── */
     .popular-grid {
         grid-template-columns: 1fr;
@@ -290,11 +331,15 @@
     /* ── Steps ───────────────────────────────────────────── */
     .steps-grid {
         grid-template-columns: 1fr 1fr;
-        gap: var(--space-6);
+        gap: var(--space-4);
     }
 
     .steps-connector {
         display: none;
+    }
+
+    .how-step {
+        padding: var(--space-3) var(--space-2);
     }
 
     /* ── Sections ────────────────────────────────────────── */
@@ -327,11 +372,17 @@
 
     .section-heading {
         font-size: var(--text-3xl);
+        letter-spacing: -0.02em;
+    }
+
+    .section-subheading {
+        font-size: var(--text-base);
     }
 
     /* ── CTA Box ─────────────────────────────────────────── */
     .cta-box {
-        padding: var(--space-10) var(--space-6);
+        padding: var(--space-10) var(--space-5);
+        border-radius: var(--radius-xl);
     }
 
     .cta-box .cta-buttons {
@@ -342,6 +393,10 @@
     .cta-box .cta-buttons .btn {
         width: 100%;
         max-width: 280px;
+    }
+
+    .cta-box .cta-headline {
+        font-size: 1.75rem;
     }
 
     /* ── Statistics ──────────────────────────────────────── */
@@ -362,6 +417,15 @@
 
     .footer-bottom-links {
         gap: var(--space-4);
+    }
+
+    /* ── Before/After ─────────────────────────────────────── */
+    .ba-feature-list {
+        gap: var(--space-2);
+    }
+
+    .ba-feature {
+        padding: var(--space-3);
     }
 
     /* ── FAB ─────────────────────────────────────────────── */
@@ -403,7 +467,7 @@
     }
 
     .hero-headline {
-        font-size: 1.875rem;
+        font-size: 1.9rem;
     }
 
     .section-heading {
@@ -414,7 +478,7 @@
         grid-template-columns: 1fr;
     }
 
-    .workflow-card {
+    .how-step {
         padding: var(--space-4);
     }
 
@@ -424,6 +488,29 @@
 
     .biz-tag {
         font-size: var(--text-xs);
+    }
+
+    /* Compact search widget */
+    .search-widget {
+        padding: var(--space-4);
+        border-radius: var(--radius-lg);
+    }
+
+    /* Hero visual full-width */
+    .hero-visual {
+        max-width: 100%;
+    }
+
+    /* Feature items more compact */
+    .feature-item {
+        padding: var(--space-3) var(--space-2);
+        gap: var(--space-3);
+    }
+
+    .feature-item .feature-icon-wrap {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
     }
 }
 
@@ -444,6 +531,12 @@
 
     .section-padding {
         padding: 2rem 0;
+    }
+
+    .hero-badge,
+    .hero-live-pill,
+    .steps-connector {
+        display: none !important;
     }
 }
 
@@ -469,7 +562,27 @@
     }
 
     .hero-badge-1,
-    .hero-badge-2 {
+    .hero-badge-2,
+    .hero-badge-3 {
+        animation: none;
+    }
+
+    .trust-scroll {
+        animation: none;
+    }
+
+    #hero::before,
+    #hero::after {
+        animation: none;
+    }
+
+    .hero-eyebrow::after,
+    .hero-headline .highlight::after,
+    .section-label::before {
+        animation: none;
+    }
+
+    .steps-connector::after {
         animation: none;
     }
 }

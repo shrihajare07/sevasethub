@@ -18,6 +18,8 @@ html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    /* Offset anchors for fixed navbar */
+    scroll-padding-top: calc(var(--navbar-height) + 16px);
 }
 
 body {
@@ -28,6 +30,7 @@ body {
     background-color: var(--background);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
     overflow-x: hidden;
 }
 
@@ -99,34 +102,37 @@ table {
 
 /* ── Focus Visible ───────────────────────────────────────── */
 :focus-visible {
-    outline: 2px solid var(--primary);
+    outline: 2.5px solid var(--primary);
     outline-offset: 3px;
     border-radius: var(--radius-xs);
+    box-shadow: 0 0 0 5px rgba(8, 145, 178, 0.12);
 }
 
 /* ── Selection ───────────────────────────────────────────── */
 ::selection {
-    background: var(--primary-light);
+    background: rgba(8, 145, 178, 0.18);
     color: var(--primary-dark);
 }
 
 /* ── Scrollbar (Webkit) ──────────────────────────────────── */
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
 }
 
 ::-webkit-scrollbar-track {
     background: var(--neutral-100);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--neutral-400);
     border-radius: var(--radius-full);
 }
 
+::-webkit-scrollbar-thumb {
+    background: var(--neutral-300);
+    border-radius: var(--radius-full);
+    transition: background var(--transition-fast);
+}
+
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--neutral-500);
+    background: var(--neutral-400);
 }
 
 /* ── Base Utilities ──────────────────────────────────────── */
@@ -142,13 +148,13 @@ table {
     border: 0;
 }
 
-.text-primary-brand { color: var(--primary) !important; }
+.text-primary-brand   { color: var(--primary) !important; }
 .text-secondary-brand { color: var(--secondary) !important; }
-.text-muted-custom { color: var(--text-muted) !important; }
+.text-muted-custom    { color: var(--text-muted) !important; }
 
-.bg-brand { background-color: var(--primary) !important; }
+.bg-brand   { background-color: var(--primary) !important; }
 .bg-surface { background-color: var(--surface) !important; }
-.bg-alt { background-color: var(--background-alt) !important; }
+.bg-alt     { background-color: var(--background-alt) !important; }
 
 /* ── Section Spacing ─────────────────────────────────────── */
 .section-padding {
@@ -170,9 +176,25 @@ table {
     text-transform: uppercase;
     color: var(--primary);
     background: var(--primary-muted);
-    padding: var(--space-1) var(--space-3);
+    border: 1px solid rgba(8, 145, 178, 0.2);
+    padding: 5px var(--space-3);
     border-radius: var(--radius-full);
     margin-bottom: var(--space-4);
+    position: relative;
+    overflow: hidden;
+}
+
+.section-label::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(8,145,178,0.08) 50%, transparent 100%);
+    animation: labelShimmer 3s ease-in-out infinite;
+}
+
+@keyframes labelShimmer {
+    0%, 100% { opacity: 0; transform: translateX(-100%); }
+    50% { opacity: 1; transform: translateX(100%); }
 }
 
 .section-heading {
@@ -181,6 +203,7 @@ table {
     color: var(--text-primary);
     margin-bottom: var(--space-4);
     line-height: var(--leading-tight);
+    letter-spacing: -0.02em;
 }
 
 .section-subheading {
@@ -192,7 +215,14 @@ table {
 
 /* ── Gradient Text ───────────────────────────────────────── */
 .gradient-text {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    background: var(--gradient-brand);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.gradient-text-vivid {
+    background: var(--gradient-brand-vivid);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -217,4 +247,14 @@ table {
         padding-left: var(--space-4);
         padding-right: var(--space-4);
     }
+}
+
+/* ── Page Load Fade ──────────────────────────────────────── */
+@keyframes pageLoad {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+body {
+    animation: pageLoad 0.4s var(--easing-out) both;
 }

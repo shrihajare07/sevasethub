@@ -9,6 +9,7 @@
     --primary-dark:     #0e7490;   /* Teal 700 – hover/active */
     --primary-light:    #cffafe;   /* Cyan 100 – tinted bg */
     --primary-muted:    rgba(8, 145, 178, 0.10);
+    --primary-muted-strong: rgba(8, 145, 178, 0.16);
 
     --secondary:        #1e40af;   /* Blue 800 – secondary actions */
     --secondary-dark:   #1e3a8a;   /* Blue 900 */
@@ -16,6 +17,12 @@
 
     --accent:           #06b6d4;   /* Cyan 500 – highlights */
     --accent-dark:      #0891b2;   /* Cyan 600 */
+
+    /* ─── Gradient Accents ───────────────────────────────── */
+    --gradient-brand:   linear-gradient(135deg, #0891b2 0%, #1e40af 100%);
+    --gradient-brand-vivid: linear-gradient(135deg, #06b6d4 0%, #0891b2 50%, #1d4ed8 100%);
+    --gradient-warm:    linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+    --gradient-hero:    linear-gradient(145deg, #f0f9ff 0%, #f8fafc 45%, #eff6ff 100%);
 
     /* ─── Semantic Colors ───────────────────────────────── */
     --success:          #059669;   /* Emerald 600 */
@@ -54,10 +61,18 @@
     --surface-raised:   #ffffff;
     --overlay:          rgba(15, 23, 42, 0.6);
 
+    /* ─── Glass-morphism ─────────────────────────────────── */
+    --glass-bg:         rgba(255, 255, 255, 0.72);
+    --glass-bg-strong:  rgba(255, 255, 255, 0.92);
+    --glass-border:     rgba(255, 255, 255, 0.55);
+    --glass-border-dark: rgba(255, 255, 255, 0.18);
+    --glass-shadow:     0 8px 32px -4px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(255,255,255,0.6) inset;
+
     /* ─── Borders ───────────────────────────────────────── */
     --border:           #e2e8f0;
     --border-strong:    #cbd5e1;
     --border-brand:     rgba(8, 145, 178, 0.35);
+    --border-brand-strong: rgba(8, 145, 178, 0.55);
 
     /* ─── Border Radius ─────────────────────────────────── */
     --radius-xs:        4px;
@@ -65,25 +80,34 @@
     --radius-md:        12px;
     --radius-lg:        16px;
     --radius-xl:        24px;
+    --radius-2xl:       32px;
+    --radius-3xl:       40px;
     --radius-full:      9999px;
 
     /* ─── Shadows ───────────────────────────────────────── */
-    --shadow-xs:  0 1px 2px 0 rgba(15, 23, 42, 0.05);
-    --shadow-sm:  0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.06);
-    --shadow-md:  0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
-    --shadow-lg:  0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
-    --shadow-xl:  0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
-    --shadow-brand: 0 4px 14px 0 rgba(8, 145, 178, 0.3);
+    --shadow-xs:    0 1px 2px 0 rgba(15, 23, 42, 0.05);
+    --shadow-sm:    0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.06);
+    --shadow-md:    0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
+    --shadow-lg:    0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+    --shadow-xl:    0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+    --shadow-2xl:   0 32px 48px -8px rgba(15, 23, 42, 0.12), 0 12px 20px -8px rgba(15, 23, 42, 0.06);
+    --shadow-brand: 0 4px 14px 0 rgba(8, 145, 178, 0.30);
+    --shadow-brand-lg: 0 8px 24px 0 rgba(8, 145, 178, 0.38);
+    --shadow-glow:  0 0 0 4px rgba(8, 145, 178, 0.15), 0 4px 14px rgba(8, 145, 178, 0.25);
+    --shadow-card-hover: 0 16px 32px -8px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(8, 145, 178, 0.12);
 
-    /* ─── Transitions ───────────────────────────────────── */
-    --transition-fast:  150ms ease;
-    --transition-base:  250ms ease;
-    --transition-slow:  400ms ease;
+    /* ─── Transitions & Easings ─────────────────────────── */
+    --transition-fast:   150ms ease;
+    --transition-base:   250ms ease;
+    --transition-slow:   400ms ease;
+    --easing-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
+    --easing-smooth:     cubic-bezier(0.4, 0, 0.2, 1);
+    --easing-out:        cubic-bezier(0, 0, 0.2, 1);
 
     /* ─── Typography ────────────────────────────────────── */
-    --font-sans:   'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-heading:'Poppins', 'Inter', sans-serif;
-    --font-mono:   'JetBrains Mono', 'Fira Code', monospace;
+    --font-sans:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-heading: 'Poppins', 'Inter', sans-serif;
+    --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
 
     --text-xs:    0.75rem;    /* 12px */
     --text-sm:    0.875rem;   /* 14px */
@@ -95,16 +119,17 @@
     --text-4xl:   2.25rem;    /* 36px */
     --text-5xl:   3rem;       /* 48px */
 
-    --leading-tight:  1.25;
-    --leading-snug:   1.375;
-    --leading-normal: 1.5;
-    --leading-relaxed:1.625;
+    --leading-tight:   1.25;
+    --leading-snug:    1.375;
+    --leading-normal:  1.5;
+    --leading-relaxed: 1.625;
+    --leading-loose:   1.75;
 
-    --weight-normal:  400;
-    --weight-medium:  500;
-    --weight-semibold:600;
-    --weight-bold:    700;
-    --weight-extrabold:800;
+    --weight-normal:   400;
+    --weight-medium:   500;
+    --weight-semibold: 600;
+    --weight-bold:     700;
+    --weight-extrabold: 800;
 
     /* ─── Spacing ───────────────────────────────────────── */
     --space-1:  0.25rem;
@@ -119,6 +144,8 @@
     --space-16: 4rem;
     --space-20: 5rem;
     --space-24: 6rem;
+    --space-28: 7rem;
+    --space-32: 8rem;
 
     /* ─── Layout ────────────────────────────────────────── */
     --container-max: 1200px;

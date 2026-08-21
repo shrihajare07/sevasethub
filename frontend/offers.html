@@ -4,94 +4,186 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Special Offers & Coupons – SevaSetuHub</title>
+  <meta name="description" content="Unlock discount coupons and special seasonal deals on AC maintenance, cleaning, electrical and plumbing on SevaSetuHub.">
   
   <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-  <!-- CSS -->
+  <!-- Design System -->
   <link rel="stylesheet" href="../assets/css/variables.css">
   <link rel="stylesheet" href="../assets/css/reset.css">
   <link rel="stylesheet" href="../assets/css/components.css">
   <link rel="stylesheet" href="../assets/css/responsive.css">
 
   <style>
-    .coupon-badge {
-      border: 2px dashed #0d9488;
-      background: #f0fdfa;
+    .offers-header {
+      background: var(--gradient-hero);
+      padding: calc(var(--navbar-height) + 2.5rem) 0 3.5rem;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .offers-header::before {
+      content: '';
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(217, 119, 6, 0.08) 0%, transparent 65%);
+      top: -200px;
+      right: -100px;
+      pointer-events: none;
+    }
+
+    .coupon-badge-interactive {
+      border: 1.5px dashed var(--primary);
+      background: var(--primary-muted);
       padding: 0.5rem 1rem;
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       font-weight: 700;
-      color: #0f766e;
+      font-family: var(--font-mono, monospace);
+      color: var(--primary-dark);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
+      letter-spacing: 0.05em;
+      transition: all var(--transition-fast);
+      user-select: none;
+    }
+
+    .coupon-badge-interactive:hover {
+      background: var(--primary);
+      color: #ffffff;
+      transform: scale(1.03);
+      box-shadow: var(--shadow-brand);
+    }
+
+    .promo-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 1.75rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.3s var(--easing-spring);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .promo-card::before {
+      content: '';
+      position: absolute;
+      top: -30px;
+      right: -30px;
+      width: 100px;
+      height: 100px;
+      background: radial-gradient(circle, rgba(8, 145, 178, 0.08) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .promo-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-card-hover);
+      border-color: var(--border-brand);
     }
   </style>
 </head>
-<body class="bg-light">
+<body>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3 sticky-top">
-  <div class="container">
-    <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="../index.html">
-      <i class="bi bi-shield-check text-info fs-3"></i>
-      <span>SevaSetuHub</span>
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-4">
-        <li class="nav-item"><a class="nav-link" href="../index.html">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="services.html">Services</a></li>
-        <li class="nav-item"><a class="nav-link active" href="offers.html">Offers & Deals</a></li>
-      </ul>
-      <div class="d-flex gap-2">
-        <a href="login.html" class="btn btn-outline-light btn-sm px-3">Login</a>
-        <a href="register.html" class="btn btn-primary btn-sm px-3">Register</a>
+<!-- Modern Glassmorphism Navbar -->
+<header class="site-header">
+  <nav class="setu-navbar">
+    <div class="navbar-inner-container px-3 px-lg-4 d-flex align-items-center justify-content-between">
+      <a class="navbar-brand" href="../index.html">
+        <img src="../assets/img/logo.png" alt="SevaSetuHub" class="brand-logo-img" onerror="this.style.display='none'">
+        <span>
+          <span class="brand-name-seva">Seva</span><span class="brand-name-setu">Setu</span><span class="brand-name-hub">Hub</span>
+        </span>
+      </a>
+
+      <div class="d-none d-lg-flex align-items-center gap-1 navbar-nav flex-row">
+        <a class="nav-link" href="../index.html">Home</a>
+        <a class="nav-link" href="services.html">Services</a>
+        <a class="nav-link active" href="offers.html">Offers &amp; Deals</a>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <a href="login.html" class="btn btn-outline-primary btn-sm rounded-pill px-3">Sign In</a>
+        <a href="register.html" class="btn btn-primary btn-sm rounded-pill px-3">Register Free</a>
       </div>
     </div>
-  </div>
-</nav>
-
-<!-- Header -->
-<header class="py-5 bg-white border-bottom text-center">
-  <div class="container">
-    <span class="badge bg-danger px-3 py-2 mb-2">Exclusive Savings</span>
-    <h1 class="fw-bold text-dark">Active Promotional Offers & Discount Coupons</h1>
-    <p class="text-muted lead mx-auto" style="max-width: 650px;">
-      Save big on your next AC servicing, deep cleaning, plumbing and electrical bookings with SevaSetuHub coupons.
-    </p>
-  </div>
+  </nav>
 </header>
 
-<main class="py-5">
+<!-- Header Banner -->
+<section class="offers-header text-center">
+  <div class="container">
+    <span class="section-label">
+      <i class="bi bi-tag-fill"></i> Exclusive Deals &amp; Discounts
+    </span>
+    <h1 class="section-heading section-heading-accent mt-2">Active Promotional Offers</h1>
+    <p class="section-subheading mx-auto mt-3">
+      Save big on your next AC servicing, deep home cleaning, plumbing and electrical bookings with SevaSetuHub verified coupons.
+    </p>
+  </div>
+</section>
+
+<!-- Offers & Coupons Container -->
+<main class="section-padding" style="background: var(--background);">
   <div class="container">
     <div class="row g-4" id="offers-container">
       <div class="col-12 text-center py-5 text-muted">
-        <span class="spinner-border text-primary"></span>
-        <p class="mt-2">Loading active promotions...</p>
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-3 fw-medium">Loading active promotions &amp; coupons...</p>
       </div>
     </div>
   </div>
 </main>
 
-<footer class="bg-dark text-white py-4 mt-5 text-center">
+<!-- Footer -->
+<footer id="footer">
   <div class="container">
-    <p class="mb-0 text-muted small">© 2026 SevaSetuHub. All Rights Reserved. Connecting You to Trusted Services.</p>
+    <div class="footer-bottom pb-4">
+      <p>© 2026 SevaSetuHub. All Rights Reserved. Connecting You to Trusted Services.</p>
+      <div class="footer-bottom-links">
+        <a href="../index.html">Home</a>
+        <a href="services.html">Services</a>
+        <a href="offers.html">Offers</a>
+        <a href="login.html">Login</a>
+      </div>
+    </div>
   </div>
 </footer>
+
+<div id="toast-container"></div>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../assets/js/api.js"></script>
 
 <script>
+  function showCopyToast(code) {
+    const toast = $(`
+      <div class="toast-item toast-success">
+        <i class="bi bi-check-circle-fill toast-icon"></i>
+        <div class="toast-content">Coupon <strong>${code}</strong> copied to clipboard!</div>
+      </div>
+    `);
+    $('#toast-container').append(toast);
+    setTimeout(() => {
+      toast.addClass('toast-exit');
+      setTimeout(() => toast.remove(), 300);
+    }, 2500);
+  }
+
   $(document).ready(async function() {
     try {
       const offers = await api.getOffers();
@@ -99,63 +191,77 @@
       const $container = $('#offers-container');
       $container.empty();
 
+      if ((!offers || offers.length === 0) && (!coupons || coupons.length === 0)) {
+        $container.html('<div class="col-12 text-center py-5 text-muted"><i class="bi bi-gift fs-2 d-block mb-2"></i>No active promotional offers at this time. Check back soon!</div>');
+        return;
+      }
+
       // Render Offers
-      offers.forEach(o => {
-        const card = `
-          <div class="col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
-              <div class="d-flex justify-content-between align-items-start mb-2">
-                <span class="badge bg-warning text-dark px-3 py-2 fw-bold">PROMO OFFER</span>
-                <span class="text-muted small">Valid till ${o.EndDate || '31-Dec-2026'}</span>
-              </div>
-              <h4 class="fw-bold text-dark mt-2">${o.Title}</h4>
-              <p class="text-muted">${o.Description}</p>
-              <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top">
-                <div class="coupon-badge" data-code="${o.OfferCode}">
-                  <span>${o.OfferCode}</span>
-                  <i class="bi bi-clipboard"></i>
+      if (offers && offers.length > 0) {
+        offers.forEach(o => {
+          const card = `
+            <div class="col-md-6">
+              <div class="promo-card">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <span class="badge-brand badge-warning"><i class="bi bi-fire"></i> SPECIAL OFFER</span>
+                  <span class="text-muted small"><i class="bi bi-calendar3 me-1"></i>Valid till ${o.EndDate || '31-Dec-2026'}</span>
                 </div>
-                <a href="login.html" class="btn btn-primary btn-sm px-3 fw-semibold">Book with Offer</a>
+                <h4 class="fw-bold text-dark mt-2 mb-2" style="letter-spacing: -0.01em;">${o.Title}</h4>
+                <p class="text-muted small flex-grow-1 line-clamp-3">${o.Description || 'Special limited time promotional discount on selected service categories.'}</p>
+                <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top">
+                  <div class="coupon-badge-interactive" data-code="${o.OfferCode}" title="Click to copy coupon code">
+                    <span>${o.OfferCode}</span>
+                    <i class="bi bi-copy"></i>
+                  </div>
+                  <a href="login.html" class="btn btn-primary btn-sm px-3 fw-semibold">Book with Offer</a>
+                </div>
               </div>
             </div>
-          </div>
-        `;
-        $container.append(card);
-      });
+          `;
+          $container.append(card);
+        });
+      }
 
       // Render Coupons
-      coupons.forEach(c => {
-        const card = `
-          <div class="col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
-              <div class="d-flex justify-content-between align-items-start mb-2">
-                <span class="badge bg-success px-3 py-2 fw-bold">DISCOUNT COUPON</span>
-                <span class="text-muted small">Min Order: ₹${c.MinimumOrderValue || 0}</span>
-              </div>
-              <h4 class="fw-bold text-dark mt-2">${c.DiscountType === 'Percentage' ? c.DiscountValue + '% OFF' : 'Flat ₹' + c.DiscountValue + ' OFF'}</h4>
-              <p class="text-muted">${c.Description}</p>
-              <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top">
-                <div class="coupon-badge" data-code="${c.CouponCode}">
-                  <span>${c.CouponCode}</span>
-                  <i class="bi bi-clipboard"></i>
+      if (coupons && coupons.length > 0) {
+        coupons.forEach(c => {
+          const discountLabel = c.DiscountType === 'Percentage' ? c.DiscountValue + '% OFF' : 'Flat ₹' + c.DiscountValue + ' OFF';
+          const card = `
+            <div class="col-md-6">
+              <div class="promo-card">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <span class="badge-brand badge-success"><i class="bi bi-percent"></i> DISCOUNT COUPON</span>
+                  <span class="text-muted small"><i class="bi bi-cart-check me-1"></i>Min Order: ₹${c.MinimumOrderValue || 0}</span>
                 </div>
-                <a href="login.html" class="btn btn-primary btn-sm px-3 fw-semibold">Apply Coupon</a>
+                <h4 class="fw-bold text-dark mt-2 mb-2" style="letter-spacing: -0.01em;">${discountLabel}</h4>
+                <p class="text-muted small flex-grow-1 line-clamp-3">${c.Description || 'Apply this instant coupon code at checkout to claim your verified service discount.'}</p>
+                <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top">
+                  <div class="coupon-badge-interactive" data-code="${c.CouponCode}" title="Click to copy coupon code">
+                    <span>${c.CouponCode}</span>
+                    <i class="bi bi-copy"></i>
+                  </div>
+                  <a href="login.html" class="btn btn-primary btn-sm px-3 fw-semibold">Apply Coupon</a>
+                </div>
               </div>
             </div>
-          </div>
-        `;
-        $container.append(card);
-      });
+          `;
+          $container.append(card);
+        });
+      }
 
       // Copy coupon click
-      $('.coupon-badge').on('click', function() {
+      $container.on('click', '.coupon-badge-interactive', function() {
         const code = $(this).data('code');
-        navigator.clipboard.writeText(code);
-        alert(`Coupon '${code}' copied to clipboard! Paste it during booking.`);
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(code).then(() => showCopyToast(code));
+        } else {
+          showCopyToast(code);
+        }
       });
 
     } catch (e) {
       console.error(e);
+      $('#offers-container').html('<div class="col-12 text-center py-5 text-danger"><i class="bi bi-exclamation-circle fs-2 d-block mb-2"></i>Unable to load offers and deals at this moment.</div>');
     }
   });
 </script>

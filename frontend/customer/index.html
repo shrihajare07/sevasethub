@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Customer Dashboard – SevaSetuHub</title>
+  <title>Customer Portal – SevaSetuHub</title>
+  <meta name="description" content="Manage your service bookings, invoices and AMC contracts on SevaSetuHub.">
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 
   <!-- Bootstrap 5 & Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
@@ -20,6 +21,93 @@
   <link rel="stylesheet" href="../../assets/css/components.css">
   <link rel="stylesheet" href="../../assets/css/layout.css">
   <link rel="stylesheet" href="../../assets/css/responsive.css">
+
+  <style>
+    /* ── Stat number gradient ─────────────────── */
+    .stat-value {
+      font-size: 1.85rem;
+      font-weight: 800;
+      font-family: var(--font-heading, 'Poppins', sans-serif);
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-top: 0.25rem;
+      background: var(--gradient-brand);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+    }
+    /* ── Topbar page title ────────────────────── */
+    .topbar-page-title {
+      font-family: var(--font-heading, 'Poppins', sans-serif);
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      margin: 0;
+    }
+    /* ── Section card header ──────────────────── */
+    .portal-card-header {
+      padding: 1rem 1.5rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .portal-card-header-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+      margin: 0;
+    }
+    /* ── Step wizard circles ──────────────────── */
+    .wizard-step-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+    .wizard-step-circle.active { background: var(--gradient-brand); color: #fff; box-shadow: var(--shadow-brand); }
+    .wizard-step-circle.done   { background: var(--success); color: #fff; }
+    .wizard-step-circle.idle   { background: var(--neutral-200); color: var(--text-muted); }
+    /* ── Wizard connector line ────────────────── */
+    .wizard-connector {
+      flex: 1;
+      height: 2px;
+      background: var(--border);
+      border-radius: var(--radius-full);
+      margin: 0 0.5rem;
+    }
+    /* ── Info detail box ──────────────────────── */
+    .info-detail-box {
+      background: var(--neutral-50);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+    }
+    .info-detail-label {
+      font-size: var(--text-xs);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.2rem;
+    }
+  </style>
 </head>
 <body>
 
@@ -28,10 +116,21 @@
   <aside class="app-sidebar" id="customer-sidebar">
     <div class="sidebar-header">
       <a href="../../index.html" class="sidebar-brand">
-        <i class="bi bi-shield-check text-info fs-3"></i>
-        <span>SevaSetuHub</span>
+        <span class="sidebar-brand-icon">
+          <i class="bi bi-shield-check"></i>
+        </span>
+        <div class="sidebar-brand-info">
+          <div class="sidebar-brand-title">
+            <span class="brand-seva">Seva</span><span class="brand-setu">Setu</span><span class="brand-hub">Hub</span>
+          </div>
+          <div class="sidebar-brand-subrow">
+            <span class="brand-badge badge-customer">Customer Portal</span>
+          </div>
+        </div>
       </a>
-      <span class="brand-badge">CUSTOMER</span>
+      <button class="sidebar-close-btn d-lg-none" id="sidebar-close-btn" title="Close Sidebar">
+        <i class="bi bi-x-lg"></i>
+      </button>
     </div>
 
     <div class="sidebar-menu">
@@ -53,8 +152,8 @@
       </a>
 
       <div class="menu-category mt-3">Quick Actions</div>
-      <button class="btn btn-primary w-100 mt-2 py-2 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalBookService">
-        <i class="bi bi-plus-circle me-1"></i> Book New Service
+      <button class="btn btn-primary w-100 mt-2 py-2 fw-semibold rounded-3" data-bs-toggle="modal" data-bs-target="#modalBookService" style="background:var(--gradient-brand);border:none;box-shadow:var(--shadow-brand);">
+        <i class="bi bi-plus-circle-fill me-1"></i> Book New Service
       </button>
     </div>
 
@@ -77,14 +176,14 @@
     <!-- Topbar -->
     <header class="app-topbar">
       <div class="d-flex align-items-center gap-3">
-        <button class="btn btn-light d-lg-none" id="sidebar-toggle">
+        <button class="btn btn-light rounded-3 d-lg-none" id="sidebar-toggle" title="Toggle Menu">
           <i class="bi bi-list fs-5"></i>
         </button>
-        <h5 class="mb-0 fw-bold text-dark">Customer Service Portal</h5>
+        <h5 class="topbar-page-title">Customer Portal</h5>
       </div>
-      <div class="d-flex align-items-center gap-3">
-        <button class="btn btn-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#modalBookService">
-          <i class="bi bi-plus-lg me-1"></i> Book Service
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-primary btn-sm px-3 rounded-pill fw-semibold" data-bs-toggle="modal" data-bs-target="#modalBookService" style="background:var(--gradient-brand);border:none;box-shadow:var(--shadow-brand);">
+          <i class="bi bi-plus-circle-fill me-1"></i> Book Service
         </button>
       </div>
     </header>
@@ -99,55 +198,47 @@
           <div class="col-6 col-md-3">
             <div class="stat-card">
               <div>
-                <div class="text-muted small fw-semibold">Active Requests</div>
-                <h3 class="fw-bold mb-0 mt-1" id="stat-active-requests">0</h3>
+                <div class="stat-label">Active Requests</div>
+                <div class="stat-value" id="stat-active-requests">0</div>
               </div>
-              <div class="stat-icon-wrapper stat-icon-teal">
-                <i class="bi bi-tools"></i>
-              </div>
+              <div class="stat-icon-wrapper stat-icon-teal"><i class="bi bi-tools"></i></div>
             </div>
           </div>
           <div class="col-6 col-md-3">
             <div class="stat-card">
               <div>
-                <div class="text-muted small fw-semibold">Estimates for Review</div>
-                <h3 class="fw-bold mb-0 mt-1" id="stat-pending-estimates">0</h3>
+                <div class="stat-label">Pending Estimates</div>
+                <div class="stat-value" id="stat-pending-estimates">0</div>
               </div>
-              <div class="stat-icon-wrapper stat-icon-amber">
-                <i class="bi bi-calculator"></i>
-              </div>
+              <div class="stat-icon-wrapper stat-icon-amber"><i class="bi bi-calculator"></i></div>
             </div>
           </div>
           <div class="col-6 col-md-3">
             <div class="stat-card">
               <div>
-                <div class="text-muted small fw-semibold">Upcoming Jobs</div>
-                <h3 class="fw-bold mb-0 mt-1" id="stat-upcoming-jobs">0</h3>
+                <div class="stat-label">Upcoming Jobs</div>
+                <div class="stat-value" id="stat-upcoming-jobs">0</div>
               </div>
-              <div class="stat-icon-wrapper stat-icon-blue">
-                <i class="bi bi-calendar-event"></i>
-              </div>
+              <div class="stat-icon-wrapper stat-icon-blue"><i class="bi bi-calendar-event"></i></div>
             </div>
           </div>
           <div class="col-6 col-md-3">
             <div class="stat-card">
               <div>
-                <div class="text-muted small fw-semibold">Pending Invoices</div>
-                <h3 class="fw-bold mb-0 mt-1" id="stat-pending-payments">0</h3>
+                <div class="stat-label">Pending Invoices</div>
+                <div class="stat-value" id="stat-pending-payments">0</div>
               </div>
-              <div class="stat-icon-wrapper stat-icon-rose">
-                <i class="bi bi-credit-card"></i>
-              </div>
+              <div class="stat-icon-wrapper stat-icon-rose"><i class="bi bi-credit-card"></i></div>
             </div>
           </div>
         </div>
 
         <!-- Recent Requests Card -->
-        <div class="card border-0 shadow-sm rounded-3">
-          <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-bold text-dark">Recent Service Requests</h6>
-            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalBookService">
-              <i class="bi bi-plus-circle me-1"></i> Book New Service
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
+          <div class="portal-card-header">
+            <h6 class="portal-card-header-title"><i class="bi bi-list-task text-primary me-2"></i>Recent Service Requests</h6>
+            <button class="btn btn-primary btn-sm rounded-pill px-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalBookService" style="background:var(--gradient-brand);border:none;">
+              <i class="bi bi-plus-circle-fill me-1"></i> New Booking
             </button>
           </div>
           <div class="table-responsive">
@@ -176,21 +267,21 @@
 
       <!-- Section: My Requests -->
       <section id="section-requests" class="portal-section d-none">
-        <div class="card border-0 shadow-sm rounded-3">
-          <div class="card-header bg-white py-3">
-            <h6 class="mb-0 fw-bold">All Service Requests & Trackers</h6>
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
+          <div class="portal-card-header">
+            <h6 class="portal-card-header-title"><i class="bi bi-tools text-primary me-2"></i>All Service Requests &amp; Trackers</h6>
           </div>
-          <div class="p-3">
-            <p class="text-muted small">Select any request to view technician dispatch status, approved estimates, checklist records and digital signatures.</p>
+          <div class="p-4">
+            <p class="text-muted" style="font-size:var(--text-sm);">Select any request row to view real-time technician dispatch status, approved estimates, service checklist records and digital signature certificates.</p>
           </div>
         </div>
       </section>
 
       <!-- Section: Invoices -->
       <section id="section-invoices" class="portal-section d-none">
-        <div class="card border-0 shadow-sm rounded-3">
-          <div class="card-header bg-white py-3">
-            <h6 class="mb-0 fw-bold">Billing & Invoices</h6>
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
+          <div class="portal-card-header">
+            <h6 class="portal-card-header-title"><i class="bi bi-receipt text-primary me-2"></i>Billing &amp; Invoices</h6>
           </div>
           <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" id="table-customer-invoices">
@@ -212,10 +303,23 @@
 
       <!-- Section: AMC Contracts -->
       <section id="section-amc" class="portal-section d-none">
-        <div class="card border-0 shadow-sm rounded-3 p-4">
-          <h6 class="fw-bold mb-3"><i class="bi bi-shield-check text-primary me-2"></i>Annual Maintenance Contracts (AMC)</h6>
-          <div class="alert alert-info">
-            <strong>Active AMC:</strong> Split AC 1.5 Ton (LG Dual Inverter) – 3 Routine Services Remaining. Next visit scheduled in Oct 2026.
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
+          <div class="portal-card-header">
+            <h6 class="portal-card-header-title"><i class="bi bi-shield-check text-primary me-2"></i>Annual Maintenance Contracts (AMC)</h6>
+          </div>
+          <div class="p-4">
+            <div style="background:linear-gradient(135deg,var(--primary-muted) 0%,rgba(8,145,178,0.05) 100%);border:1px solid var(--border-brand);border-radius:var(--radius-lg);padding:1.25rem;">
+              <div class="d-flex align-items-center gap-3">
+                <div style="width:44px;height:44px;background:var(--gradient-brand);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.25rem;flex-shrink:0;box-shadow:var(--shadow-brand);">
+                  <i class="bi bi-shield-check"></i>
+                </div>
+                <div>
+                  <div style="font-weight:700;font-size:0.95rem;color:var(--text-primary);">Split AC 1.5 Ton – LG Dual Inverter</div>
+                  <div style="font-size:0.8rem;color:var(--primary-dark);font-weight:600;">3 Routine Services Remaining &nbsp;·&nbsp; Next Visit: Oct 2026</div>
+                </div>
+                <span style="margin-left:auto;background:var(--success-light);color:var(--success);font-size:0.7rem;font-weight:700;padding:4px 10px;border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;">Active</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -237,18 +341,20 @@
       <div class="modal-body p-4">
         
         <!-- Stepper Indicator -->
-        <div class="d-flex justify-content-between mb-4 px-2">
-          <div class="text-center stepper-item active" id="step-indicator-1">
-            <div class="badge rounded-pill bg-primary px-3 py-2 mb-1">1</div>
-            <div class="small fw-semibold">Service</div>
+        <div class="d-flex align-items-center mb-4 px-1" id="wizard-stepper-row">
+          <div class="text-center stepper-item" id="step-indicator-1" style="flex-shrink:0;">
+            <div class="wizard-step-circle active" id="step-circle-1">1</div>
+            <div class="small fw-semibold mt-1" style="font-size:0.7rem;color:var(--primary);">Service</div>
           </div>
-          <div class="text-center stepper-item" id="step-indicator-2">
-            <div class="badge rounded-pill bg-secondary px-3 py-2 mb-1">2</div>
-            <div class="small fw-semibold">Location & Time</div>
+          <div class="wizard-connector"></div>
+          <div class="text-center stepper-item" id="step-indicator-2" style="flex-shrink:0;">
+            <div class="wizard-step-circle idle" id="step-circle-2">2</div>
+            <div class="small fw-semibold mt-1" style="font-size:0.7rem;color:var(--text-muted);">Location &amp; Slot</div>
           </div>
-          <div class="text-center stepper-item" id="step-indicator-3">
-            <div class="badge rounded-pill bg-secondary px-3 py-2 mb-1">3</div>
-            <div class="small fw-semibold">Review & Coupon</div>
+          <div class="wizard-connector"></div>
+          <div class="text-center stepper-item" id="step-indicator-3" style="flex-shrink:0;">
+            <div class="wizard-step-circle idle" id="step-circle-3">3</div>
+            <div class="small fw-semibold mt-1" style="font-size:0.7rem;color:var(--text-muted);">Coupon &amp; Confirm</div>
           </div>
         </div>
 
@@ -366,19 +472,19 @@
         
         <div class="row g-3 mb-4">
           <div class="col-md-6">
-            <div class="p-3 bg-light rounded">
-              <div class="text-muted small">Service Booked</div>
-              <div class="fw-bold" id="modal-track-service">Split AC Service</div>
-              <div class="text-muted small mt-2">Appointment</div>
+            <div class="info-detail-box">
+              <div class="info-detail-label">Service Booked</div>
+              <div class="fw-semibold" id="modal-track-service">Split AC Service</div>
+              <div class="info-detail-label mt-2">Appointment</div>
               <div class="fw-semibold" id="modal-track-date">2026-08-22</div>
             </div>
           </div>
           <div class="col-md-6">
-            <div class="p-3 bg-light rounded">
-              <div class="text-muted small">Service Location</div>
+            <div class="info-detail-box">
+              <div class="info-detail-label">Service Location</div>
               <div class="fw-semibold" id="modal-track-address">Address</div>
-              <div class="text-muted small mt-2">Issue Description</div>
-              <div class="small" id="modal-track-issue">Issue</div>
+              <div class="info-detail-label mt-2">Issue Description</div>
+              <div style="font-size:var(--text-sm);" id="modal-track-issue">Issue</div>
             </div>
           </div>
         </div>
@@ -438,14 +544,17 @@
       </div>
       <div class="modal-body p-4 text-center">
         <input type="hidden" id="pay-modal-invoice-id">
-        <div class="text-muted">Total Payable Amount</div>
-        <h2 class="text-primary fw-bold my-2" id="pay-modal-amount">₹0</h2>
-        
-        <div class="card p-3 my-3 text-start bg-light border-0">
-          <label class="fw-semibold mb-2">Select Payment Method:</label>
+        <!-- Amount display -->
+        <div style="background:var(--primary-muted);border:1px solid var(--border-brand);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1.25rem;">
+          <div style="font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">Total Payable Amount</div>
+          <div style="font-size:2.2rem;font-weight:800;font-family:var(--font-heading,'Poppins',sans-serif);background:var(--gradient-brand);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.04em;" id="pay-modal-amount">₹0</div>
+        </div>
+
+        <div style="background:var(--neutral-50);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;text-align:left;">
+          <label class="fw-semibold mb-3 d-block" style="font-size:var(--text-sm);">Select Payment Method:</label>
           <div class="form-check mb-2">
             <input class="form-check-input" type="radio" name="payMethod" id="pay-upi" value="UPI" checked>
-            <label class="form-check-label" for="pay-upi"><i class="bi bi-qr-code text-primary me-1"></i> Instant UPI / QR / Google Pay / PhonePe</label>
+            <label class="form-check-label" for="pay-upi"><i class="bi bi-qr-code text-primary me-1"></i> UPI / QR / Google Pay / PhonePe</label>
           </div>
           <div class="form-check mb-2">
             <input class="form-check-input" type="radio" name="payMethod" id="pay-card" value="Card">
@@ -453,12 +562,12 @@
           </div>
           <div class="form-check">
             <input class="form-check-input" type="radio" name="payMethod" id="pay-cash" value="Cash">
-            <label class="form-check-label" for="pay-cash"><i class="bi bi-cash text-warning me-1"></i> Pay After Service (Cash to Technician)</label>
+            <label class="form-check-label" for="pay-cash"><i class="bi bi-cash text-warning me-1"></i> Pay After Service (Cash)</label>
           </div>
         </div>
 
-        <button class="btn btn-success btn-lg w-100 fw-bold" id="btn-confirm-payment">
-          Pay & Download Receipt
+        <button class="btn btn-lg w-100 fw-bold" id="btn-confirm-payment" style="background:var(--success);color:#fff;border:none;border-radius:var(--radius-md);padding:.9rem;">
+          <i class="bi bi-shield-check me-2"></i>Pay &amp; Download Receipt
         </button>
       </div>
     </div>

@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin & Dispatcher SaaS Suite – SevaSetuHub</title>
+  <title>Admin SaaS Suite – SevaSetuHub</title>
+  <meta name="description" content="Manage service requests, dispatch technicians, track revenue and run marketing from the SevaSetuHub admin suite.">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 
   <!-- Bootstrap 5 & Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
@@ -20,6 +21,22 @@
   <link rel="stylesheet" href="../../assets/css/components.css">
   <link rel="stylesheet" href="../../assets/css/layout.css">
   <link rel="stylesheet" href="../../assets/css/responsive.css">
+
+  <style>
+    .stat-value {
+      font-size: 1.85rem; font-weight: 800;
+      font-family: var(--font-heading, 'Poppins', sans-serif);
+      letter-spacing: -0.04em; line-height: 1; margin-top: 0.25rem;
+      background: var(--gradient-brand);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .stat-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+    .topbar-page-title { font-family: var(--font-heading,'Poppins',sans-serif); font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary); margin: 0; }
+    .portal-card-header { padding: 1rem 1.5rem; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .portal-card-header-title { font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em; color: var(--text-primary); margin: 0; }
+    .chart-card { border-radius: var(--radius-xl); border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm); padding: 1.5rem; margin-bottom: 1.5rem; }
+    .chart-card-title { font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em; color: var(--text-primary); }
+  </style>
 </head>
 <body>
 
@@ -29,10 +46,21 @@
   <aside class="app-sidebar">
     <div class="sidebar-header">
       <a href="../../index.html" class="sidebar-brand">
-        <i class="bi bi-shield-check text-info fs-3"></i>
-        <span>SevaSetuHub</span>
+        <span class="sidebar-brand-icon">
+          <i class="bi bi-shield-check"></i>
+        </span>
+        <div class="sidebar-brand-info">
+          <div class="sidebar-brand-title">
+            <span class="brand-seva">Seva</span><span class="brand-setu">Setu</span><span class="brand-hub">Hub</span>
+          </div>
+          <div class="sidebar-brand-subrow">
+            <span class="brand-badge badge-admin">Admin Operations</span>
+          </div>
+        </div>
       </a>
-      <span class="brand-badge">ADMIN</span>
+      <button class="sidebar-close-btn d-lg-none" id="sidebar-close-btn" title="Close Sidebar">
+        <i class="bi bi-x-lg"></i>
+      </button>
     </div>
 
     <div class="sidebar-menu">
@@ -85,13 +113,15 @@
   <main class="app-main">
     <header class="app-topbar">
       <div class="d-flex align-items-center gap-3">
-        <button class="btn btn-light d-lg-none" id="sidebar-toggle">
+        <button class="btn btn-light rounded-3 d-lg-none" id="sidebar-toggle" title="Toggle Menu">
           <i class="bi bi-list fs-5"></i>
         </button>
-        <h5 class="mb-0 fw-bold text-dark">Platform Operations Suite</h5>
+        <h5 class="topbar-page-title">Operations Suite</h5>
       </div>
       <div class="d-flex align-items-center gap-2">
-        <span class="badge bg-success"><i class="bi bi-cloud-check me-1"></i> Apps Script Sync</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;background:var(--success-light);color:var(--success);font-size:0.72rem;font-weight:700;padding:5px 12px;border-radius:var(--radius-full);letter-spacing:0.05em;">
+          <i class="bi bi-cloud-check-fill"></i> Apps Script Sync
+        </span>
       </div>
     </header>
 
@@ -103,45 +133,36 @@
         <div class="row g-3 mb-4">
           <div class="col-6 col-md-3">
             <div class="stat-card">
-              <div>
-                <div class="text-muted small fw-semibold">New Requests</div>
-                <h3 class="fw-bold mb-0 mt-1" id="stat-admin-new-reqs">0</h3>
-              </div>
+              <div><div class="stat-label">New Requests</div><div class="stat-value" id="stat-admin-new-reqs">0</div></div>
               <div class="stat-icon-wrapper stat-icon-teal"><i class="bi bi-inbox"></i></div>
             </div>
           </div>
           <div class="col-6 col-md-3">
             <div class="stat-card">
-              <div>
-                <div class="text-muted small fw-semibold">Pending Estimates</div>
-                <h3 class="fw-bold mb-0 mt-1" id="stat-admin-pending-ests">0</h3>
-              </div>
+              <div><div class="stat-label">Pending Estimates</div><div class="stat-value" id="stat-admin-pending-ests">0</div></div>
               <div class="stat-icon-wrapper stat-icon-amber"><i class="bi bi-calculator"></i></div>
             </div>
           </div>
           <div class="col-6 col-md-3">
             <div class="stat-card">
-              <div>
-                <div class="text-muted small fw-semibold">Today's Jobs</div>
-                <h3 class="fw-bold mb-0 mt-1" id="stat-admin-today-jobs">0</h3>
-              </div>
+              <div><div class="stat-label">Today's Jobs</div><div class="stat-value" id="stat-admin-today-jobs">0</div></div>
               <div class="stat-icon-wrapper stat-icon-blue"><i class="bi bi-calendar-check"></i></div>
             </div>
           </div>
           <div class="col-6 col-md-3">
             <div class="stat-card">
-              <div>
-                <div class="text-muted small fw-semibold">Total Revenue</div>
-                <h3 class="fw-bold mb-0 mt-1" id="stat-admin-revenue">₹0</h3>
-              </div>
+              <div><div class="stat-label">Total Revenue</div><div class="stat-value" id="stat-admin-revenue">₹0</div></div>
               <div class="stat-icon-wrapper stat-icon-emerald"><i class="bi bi-currency-rupee"></i></div>
             </div>
           </div>
         </div>
 
         <!-- Revenue Chart Card -->
-        <div class="card border-0 shadow-sm rounded-3 p-4 mb-4">
-          <h6 class="fw-bold text-dark mb-3"><i class="bi bi-graph-up text-primary me-2"></i>Monthly Revenue & Growth (₹)</h6>
+        <div class="chart-card">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="chart-card-title"><i class="bi bi-graph-up text-primary me-2"></i>Monthly Revenue &amp; Growth (₹)</div>
+            <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">Last 6 Months</span>
+          </div>
           <div style="height: 260px;">
             <canvas id="chart-revenue"></canvas>
           </div>
@@ -150,9 +171,9 @@
 
       <!-- SECTION 2: Service Requests -->
       <section id="section-requests" class="admin-section d-none">
-        <div class="card border-0 shadow-sm rounded-3">
-          <div class="card-header bg-white py-3">
-            <h6 class="mb-0 fw-bold">Service Requests & Dispatch Ledger</h6>
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
+          <div class="portal-card-header">
+            <h6 class="portal-card-header-title"><i class="bi bi-inbox-fill text-primary me-2"></i>Service Requests &amp; Dispatch Ledger</h6>
           </div>
           <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" id="table-admin-requests">
@@ -175,11 +196,12 @@
 
       <!-- SECTION 3: Interactive Dispatch Board -->
       <section id="section-dispatch" class="admin-section d-none">
-        <div class="card border-0 shadow-sm rounded-3 p-4">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="mb-0 fw-bold"><i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Live Field Dispatch Board</h6>
-            <div class="text-muted small">Real-time technician job schedules</div>
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
+          <div class="portal-card-header">
+            <h6 class="portal-card-header-title"><i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Live Field Dispatch Board</h6>
+            <span style="font-size:0.72rem;font-weight:600;color:var(--text-muted);">Real-time technician schedules</span>
           </div>
+          <div class="p-3">
           <div class="dispatch-board-container">
             <table class="dispatch-table">
               <thead>
@@ -195,16 +217,17 @@
               <tbody id="dispatch-board-body"></tbody>
             </table>
           </div>
+          </div>
         </div>
       </section>
 
       <!-- SECTION 4: Offers Management -->
       <section id="section-offers" class="admin-section d-none">
-        <div class="card border-0 shadow-sm rounded-3">
-          <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-bold">Promotional Marketing Offers</h6>
-            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreateOffer">
-              <i class="bi bi-plus-lg me-1"></i> Create Offer
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
+          <div class="portal-card-header">
+            <h6 class="portal-card-header-title"><i class="bi bi-tag-fill text-primary me-2"></i>Promotional Marketing Offers</h6>
+            <button class="btn btn-primary btn-sm rounded-pill px-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalCreateOffer" style="background:var(--gradient-brand);border:none;">
+              <i class="bi bi-plus-circle-fill me-1"></i> Create Offer
             </button>
           </div>
           <div class="table-responsive">
@@ -227,11 +250,11 @@
 
       <!-- SECTION 5: Coupons Management -->
       <section id="section-coupons" class="admin-section d-none">
-        <div class="card border-0 shadow-sm rounded-3">
-          <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-bold">Promotional Discount Coupons</h6>
-            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreateCoupon">
-              <i class="bi bi-plus-lg me-1"></i> Create Coupon
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
+          <div class="portal-card-header">
+            <h6 class="portal-card-header-title"><i class="bi bi-percent text-primary me-2"></i>Promotional Discount Coupons</h6>
+            <button class="btn btn-primary btn-sm rounded-pill px-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalCreateCoupon" style="background:var(--gradient-brand);border:none;">
+              <i class="bi bi-plus-circle-fill me-1"></i> Create Coupon
             </button>
           </div>
           <div class="table-responsive">
@@ -254,9 +277,9 @@
 
       <!-- SECTION 6: Invoices & Payments -->
       <section id="section-invoices" class="admin-section d-none">
-        <div class="card border-0 shadow-sm rounded-3">
-          <div class="card-header bg-white py-3">
-            <h6 class="mb-0 fw-bold">Customer Billing & Invoices Ledger</h6>
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
+          <div class="portal-card-header">
+            <h6 class="portal-card-header-title"><i class="bi bi-receipt-cutoff text-primary me-2"></i>Customer Billing &amp; Invoices Ledger</h6>
           </div>
           <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" id="table-admin-invoices">
@@ -278,11 +301,11 @@
 
       <!-- SECTION 7: Audit Logs -->
       <section id="section-audit" class="admin-section d-none">
-        <div class="card border-0 shadow-sm rounded-3">
-          <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-bold"><i class="bi bi-shield-lock-fill text-danger me-2"></i>Security & Operations Audit Trail</h6>
-            <button class="btn btn-sm btn-outline-primary" id="btn-refresh-audit">
-              <i class="bi bi-arrow-clockwise me-1"></i> Refresh Logs
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
+          <div class="portal-card-header">
+            <h6 class="portal-card-header-title"><i class="bi bi-shield-lock-fill text-danger me-2"></i>Security &amp; Operations Audit Trail</h6>
+            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="btn-refresh-audit">
+              <i class="bi bi-arrow-clockwise me-1"></i> Refresh
             </button>
           </div>
           <div class="table-responsive">
@@ -304,18 +327,20 @@
 
       <!-- SECTION 8: Settings & Apps Script Connection -->
       <section id="section-settings" class="admin-section d-none">
-        <div class="card border-0 shadow-sm rounded-3 p-4">
-          <h6 class="fw-bold mb-3"><i class="bi bi-cloud-arrow-up text-primary me-2"></i>Google Apps Script Web App Live Endpoint</h6>
-          <p class="text-muted small">Paste your deployed Apps Script Web App URL below to sync all live requests directly to your Google Sheets database.</p>
-          
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Google Apps Script Web App URL</label>
-            <input type="url" class="form-control" id="settings-api-url" placeholder="https://script.google.com/macros/s/AKfycbx.../exec">
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
+          <div class="portal-card-header">
+            <h6 class="portal-card-header-title"><i class="bi bi-cloud-arrow-up text-primary me-2"></i>Google Apps Script Endpoint</h6>
           </div>
-          
-          <div class="d-flex gap-2">
-            <button class="btn btn-primary" id="btn-save-api-url">Save Endpoint URL</button>
-            <button class="btn btn-outline-secondary" id="btn-test-api-ping">Test Connection</button>
+          <div class="p-4">
+            <p class="text-muted mb-4" style="font-size:var(--text-sm);">Paste your deployed Apps Script Web App URL below to sync all live service requests directly to your Google Sheets database.</p>
+            <div class="mb-3">
+              <label class="form-label fw-semibold" style="font-size:var(--text-sm);" for="settings-api-url">Google Apps Script Web App URL</label>
+              <input type="url" class="form-control" id="settings-api-url" placeholder="https://script.google.com/macros/s/AKfycbx.../exec">
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-primary fw-semibold px-4" id="btn-save-api-url" style="background:var(--gradient-brand);border:none;">Save Endpoint</button>
+              <button class="btn btn-outline-secondary" id="btn-test-api-ping">Test Connection</button>
+            </div>
           </div>
         </div>
       </section>
