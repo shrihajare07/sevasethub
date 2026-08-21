@@ -55,8 +55,8 @@
     <h5 class="fw-bold text-dark mt-3">Account Sign In</h5>
   </div>
 
-  <!-- Quick Demo Role Switcher -->
-  <div class="p-3 bg-light rounded-3 mb-4">
+  <!-- Quick Demo Role Switcher (Controlled by localStorage setting key: 'show_demo_logins') -->
+  <div id="quick-demo-section" class="p-3 bg-light rounded-3 mb-4 d-none">
     <div class="d-flex justify-content-between align-items-center mb-2">
       <small class="fw-bold text-muted text-uppercase" style="font-size: 0.7rem;">Quick 1-Click Role Login</small>
       <span class="badge bg-success">Production Ready</span>
@@ -115,6 +115,40 @@
 
 <script>
   $(document).ready(function() {
+    // -------------------------------------------------------------
+    // Toggle Quick 1-Click Role Login based on localStorage key: 'show_demo_logins'
+    // Default: 'false' (HIDDEN by default) unless explicitly set to 'true' or '1'
+    // -------------------------------------------------------------
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('demo')) {
+      const demoParam = urlParams.get('demo');
+      localStorage.setItem('show_demo_logins', demoParam === 'true' || demoParam === '1' ? 'true' : 'false');
+    }
+
+    const showDemoSetting = localStorage.getItem('show_demo_logins');
+    // Hidden by default: only shows if explicitly set to 'true' or '1'
+    const isDemoEnabled = showDemoSetting === 'true' || showDemoSetting === '1';
+
+    if (isDemoEnabled) {
+      $('#quick-demo-section').removeClass('d-none');
+    } else {
+      $('#quick-demo-section').addClass('d-none');
+    }
+
+    // Secret trigger: Clicking the brand logo 3 times toggles this setting
+    let logoClicks = 0;
+    $('.auth-card a').on('click', function(e) {
+      logoClicks++;
+      if (logoClicks >= 3) {
+        logoClicks = 0;
+        const current = localStorage.getItem('show_demo_logins') === 'true' || localStorage.getItem('show_demo_logins') === '1';
+        const nextState = !current;
+        localStorage.setItem('show_demo_logins', nextState ? 'true' : 'false');
+        $('#quick-demo-section').toggleClass('d-none', !nextState);
+        alert(`Quick Demo Logins are now ${nextState ? 'VISIBLE' : 'HIDDEN'}.`);
+      }
+    });
+
     // Quick Demo Role Click Handler
     $('.demo-role-btn').on('click', function() {
       $('#login-email').val($(this).data('email'));

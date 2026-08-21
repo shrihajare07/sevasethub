@@ -107,6 +107,34 @@ const api = (function () {
   }
 
   /**
+   * Append a real-time audit log entry to localStorage
+   */
+  function appendAuditLog(action, entity, description) {
+    try {
+      const user = getStoredUser();
+      const logs = JSON.parse(localStorage.getItem('ssh_audit_logs') || '[]');
+      const now = new Date();
+      const ts = now.getFullYear() + '-' +
+        String(now.getMonth() + 1).padStart(2, '0') + '-' +
+        String(now.getDate()).padStart(2, '0') + ' ' +
+        String(now.getHours()).padStart(2, '0') + ':' +
+        String(now.getMinutes()).padStart(2, '0') + ':' +
+        String(now.getSeconds()).padStart(2, '0');
+      logs.push({
+        LogId: 'LOG-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+        Action: action,
+        Entity: entity,
+        Description: description,
+        Timestamp: ts,
+        UserId: user ? (user.fullName || user.email || user.userId) : 'System'
+      });
+      // Keep last 200 entries only
+      if (logs.length > 200) logs.splice(0, logs.length - 200);
+      localStorage.setItem('ssh_audit_logs', JSON.stringify(logs));
+    } catch (e) { /* silent */ }
+  }
+
+  /**
    * High-Fidelity In-Browser Local Mock Engine for Instant GitHub Pages Execution
    */
   function executeLocalFallback(action, method, payload) {
@@ -141,6 +169,7 @@ const api = (function () {
         };
 
         setSession(token, userObj);
+        appendAuditLog('USER_LOGIN', 'Users', `${userObj.fullName} (${userObj.role}) signed in successfully.`);
         return { token: token, user: userObj };
       }
 
@@ -188,10 +217,12 @@ const api = (function () {
         };
 
         setSession(token, userObj);
+        appendAuditLog('USER_REGISTERED', 'Users', `New customer account registered: ${email}.`);
         return { token: token, user: userObj };
       }
 
       case 'logout':
+        appendAuditLog('USER_LOGOUT', 'Users', `User signed out.`);
         clearSession();
         return { success: true };
 
@@ -276,6 +307,7 @@ const api = (function () {
 
         reqs.unshift(newReq);
         localStorage.setItem('ssh_requests', JSON.stringify(reqs));
+        appendAuditLog('REQUEST_CREATED', 'ServiceRequests', `New service request #${reqId} submitted for ${newReq.ServiceName} in ${newReq.City}.`);
         return newReq;
       }
 
@@ -350,6 +382,7 @@ const api = (function () {
           localStorage.setItem('ssh_requests', JSON.stringify(reqs));
         }
 
+        appendAuditLog('ESTIMATE_CREATED', 'Estimates', `Estimate #${newEst.EstimateNumber} created for ₹${grandTotal} on request ${payload.requestId}.`);
         return newEst;
       }
 
@@ -387,6 +420,7 @@ const api = (function () {
         };
         wos.unshift(newWo);
         localStorage.setItem('ssh_work_orders', JSON.stringify(wos));
+        appendAuditLog('ESTIMATE_APPROVED', 'Estimates', `Estimate ${targetEst.EstimateNumber} approved. Work Order #${woId} auto-generated.`);
 
         return { success: true, estimate: targetEst, workOrder: newWo };
       }
@@ -416,6 +450,7 @@ const api = (function () {
           targetWo.Status = 'Assigned';
           if (payload.scheduledDate) targetWo.ScheduledDate = payload.scheduledDate;
           localStorage.setItem('ssh_work_orders', JSON.stringify(wos));
+          appendAuditLog('TECH_ASSIGNED', 'WorkOrders', `Technician ${targetWo.TechnicianName} assigned to Work Order #${payload.workOrderId}.`);
         }
         return { success: true, workOrder: targetWo };
       }
@@ -426,6 +461,7 @@ const api = (function () {
         if (targetWo) {
           targetWo.Status = payload.status;
           localStorage.setItem('ssh_work_orders', JSON.stringify(wos));
+          appendAuditLog('JOB_STATUS_UPDATED', 'WorkOrders', `Work Order #${payload.workOrderId} status changed to '${payload.status}'.`);
         }
         return { success: true, status: payload.status };
       }
@@ -440,6 +476,7 @@ const api = (function () {
         if (targetWo) {
           targetWo.Status = 'Completed';
           localStorage.setItem('ssh_work_orders', JSON.stringify(wos));
+          appendAuditLog('JOB_COMPLETED', 'WorkOrders', `Work Order #${payload.workOrderId} marked as Completed. Invoice auto-generated.`);
         }
 
         if (targetWo && targetWo.RequestId) {
@@ -562,12 +599,19 @@ const api = (function () {
           { CustomerId: 'CUS-003', FullName: 'Amit Joshi', Mobile: '9890789012', Email: 'amit.j@outlook.com', City: 'Sangli' }
         ];
 
-      case 'getAuditLogs':
-        return [
-          { LogId: 'LOG-001', Action: 'ESTIMATE_APPROVED', Entity: 'Estimates', Description: 'Customer approved estimate #EST-2026-1044', Timestamp: '2026-08-21 14:30:00' },
-          { LogId: 'LOG-002', Action: 'TECH_ASSIGNED', Entity: 'WorkOrders', Description: 'Assigned Mahesh Patil to Work Order #WO-40291', Timestamp: '2026-08-21 15:10:00' },
-          { LogId: 'LOG-003', Action: 'COUPON_CREATED', Entity: 'Coupons', Description: 'Created monsoon discount coupon MONSOON25', Timestamp: '2026-08-21 16:00:00' }
-        ];
+      case 'getAuditLogs': {
+        const localLogs = JSON.parse(localStorage.getItem('ssh_audit_logs') || '[]');
+        if (localLogs.length === 0) {
+          const defaultLogs = [
+            { LogId: 'LOG-001', Action: 'ESTIMATE_APPROVED', Entity: 'Estimates', Description: 'Customer approved estimate #EST-2026-1044', Timestamp: '2026-08-21 14:30:00', UserId: 'USR-CUST' },
+            { LogId: 'LOG-002', Action: 'TECH_ASSIGNED', Entity: 'WorkOrders', Description: 'Assigned Mahesh Patil to Work Order #WO-40291', Timestamp: '2026-08-21 15:10:00', UserId: 'USR-ADMIN' },
+            { LogId: 'LOG-003', Action: 'COUPON_CREATED', Entity: 'Coupons', Description: 'Created discount coupon WELCOME100', Timestamp: '2026-08-21 16:00:00', UserId: 'USR-ADMIN' }
+          ];
+          localStorage.setItem('ssh_audit_logs', JSON.stringify(defaultLogs));
+          return defaultLogs;
+        }
+        return localLogs.slice().reverse();
+      }
 
       case 'getNotifications':
         return [
@@ -590,6 +634,7 @@ const api = (function () {
         };
         ofrs.unshift(newOfr);
         localStorage.setItem('ssh_offers', JSON.stringify(ofrs));
+        appendAuditLog('OFFER_CREATED', 'Offers', `New promotional offer '${newOfr.Title}' (${newOfr.OfferCode}) created with ${newOfr.DiscountValue}% discount.`);
         return newOfr;
       }
 
@@ -607,6 +652,7 @@ const api = (function () {
         };
         cpns.unshift(newCpn);
         localStorage.setItem('ssh_coupons', JSON.stringify(cpns));
+        appendAuditLog('COUPON_CREATED', 'Coupons', `New coupon '${newCpn.CouponCode}' created — ${newCpn.DiscountType} discount of ₹${newCpn.DiscountValue}.`);
         return newCpn;
       }
 

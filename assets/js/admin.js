@@ -421,24 +421,56 @@ $(document).ready(function() {
   }
 
   /**
-   * Load Audit Logs
+   * Load Audit Logs (Real-time)
    */
   async function loadAuditLogs() {
-    const logs = await api.getAuditLogs();
     const $tbody = $('#table-admin-audit tbody');
-    $tbody.empty();
+    $tbody.html('<tr><td colspan="5" class="text-center py-4"><span class="spinner-border spinner-border-sm text-primary"></span> Fetching real-time audit trail...</td></tr>');
 
-    logs.forEach(l => {
-      $tbody.append(`
-        <tr>
-          <td>${l.Timestamp}</td>
-          <td><span class="badge bg-secondary">${l.Action}</span></td>
-          <td>${l.Entity}</td>
-          <td>${l.Description}</td>
-        </tr>
-      `);
-    });
+    try {
+      const logs = await api.getAuditLogs();
+      $tbody.empty();
+
+      if (!logs || !Array.isArray(logs) || logs.length === 0) {
+        $tbody.html('<tr><td colspan="5" class="text-center py-4 text-muted"><i class="bi bi-shield-check text-success fs-4 d-block mb-1"></i>No audit events recorded yet.</td></tr>');
+        return;
+      }
+
+      logs.forEach(l => {
+        const actionBadge = getAuditActionBadge(l.Action || 'ACTION');
+        $tbody.append(`
+          <tr>
+            <td class="text-nowrap"><small class="text-muted"><i class="bi bi-clock me-1"></i>${l.Timestamp || 'N/A'}</small></td>
+            <td>${actionBadge}</td>
+            <td><span class="badge bg-light text-dark border">${l.Entity || 'System'}</span></td>
+            <td>${l.Description || 'System operation executed.'}</td>
+            <td><small class="text-muted">${l.UserId || 'Admin'}</small></td>
+          </tr>
+        `);
+      });
+    } catch (err) {
+      $tbody.html(`<tr><td colspan="5" class="text-center py-4 text-danger"><i class="bi bi-exclamation-triangle me-1"></i> Failed to load audit logs: ${err.message}</td></tr>`);
+    }
   }
+
+  function getAuditActionBadge(action) {
+    if (action.includes('APPROVED') || action.includes('SUCCESS') || action.includes('COMPLETED')) {
+      return `<span class="badge bg-success">${action}</span>`;
+    } else if (action.includes('CREATED') || action.includes('REGISTERED')) {
+      return `<span class="badge bg-primary">${action}</span>`;
+    } else if (action.includes('DELETED') || action.includes('REJECTED') || action.includes('CANCEL')) {
+      return `<span class="badge bg-danger">${action}</span>`;
+    } else if (action.includes('LOGIN') || action.includes('ASSIGNED')) {
+      return `<span class="badge bg-info text-dark">${action}</span>`;
+    }
+    return `<span class="badge bg-secondary">${action}</span>`;
+  }
+
+  // Bind Refresh button for Audit Logs
+  $('#btn-refresh-audit').on('click', function(e) {
+    e.preventDefault();
+    loadAuditLogs();
+  });
 
   /**
    * Settings: Apps Script Web App URL Sync & Ping Test
