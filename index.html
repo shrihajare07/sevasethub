@@ -89,6 +89,30 @@
      NAVBAR
      ══════════════════════════════════════════════════════════ -->
 <header class="site-header">
+    <!-- Under Construction / Mock Data Notice Bar -->
+    <div class="site-notice-banner" role="status" aria-live="polite">
+        <div class="container-fluid px-3 px-xl-4">
+            <div class="notice-banner-content">
+                <div class="notice-badge-group">
+                    <span class="notice-badge-construction">
+                        <i class="bi bi-cone-striped" aria-hidden="true"></i>
+                        <span data-i18n="notice.banner_badge">Under Construction</span>
+                    </span>
+                    <span class="notice-badge-pill" data-i18n="notice.coming_soon">Coming Soon</span>
+                </div>
+                <p class="notice-banner-text mb-0">
+                    <span data-i18n="notice.banner_text">This site is under construction. All info shown consists of mock data. We will relaunch soon with our full-featured application!</span>
+                </p>
+                <div class="notice-badge-group d-none d-md-flex">
+                    <span class="notice-mock-tag">
+                        <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+                        <span data-i18n="notice.demo_mode">Mock Data</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <nav
         id="main-navbar"
         class="setu-navbar navbar navbar-expand-xl"
@@ -181,6 +205,21 @@
                 <div class="hero-eyebrow animate-on-scroll">
                     <i class="bi bi-patch-check-fill" aria-hidden="true"></i>
                     <span data-i18n="hero.eyebrow">Trusted by 1,000+ customers</span>
+                </div>
+
+                <div class="hero-construction-alert animate-on-scroll delay-1" role="note">
+                    <div class="hero-alert-icon">
+                        <i class="bi bi-cone-striped" aria-hidden="true"></i>
+                    </div>
+                    <div class="hero-alert-content">
+                        <div class="hero-alert-header">
+                            <span class="hero-alert-title" data-i18n="notice.hero_badge">Notice</span>
+                            <span class="hero-alert-badge" data-i18n="notice.coming_soon">Coming Soon</span>
+                        </div>
+                        <p class="hero-alert-text" data-i18n="notice.hero_msg">
+                            This site is under construction. All information, pricing, and bookings shown are mock data for demonstration. We will relaunch soon with a full-featured application!
+                        </p>
+                    </div>
                 </div>
 
                 <h1 id="hero-headline" class="hero-headline animate-on-scroll delay-1">

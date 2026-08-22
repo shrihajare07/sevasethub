@@ -149,7 +149,8 @@
 
     /* ─── Layout ────────────────────────────────────────── */
     --container-max: 1200px;
-    --navbar-height: 72px;
+    --navbar-height: 110px;
+    --navbar-nav-height: 72px;
 
     /* ─── Z-Index ───────────────────────────────────────── */
     --z-below:    -1;

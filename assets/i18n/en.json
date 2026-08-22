@@ -3,6 +3,14 @@
     "title": "SevaSetuHub – Trusted Services Near You",
     "description": "Book trusted AC, cleaning, plumbing, electrical, pest control and maintenance services with SevaSetuHub. Verified professionals. Transparent pricing. Digital service reports."
   },
+  "notice": {
+    "banner_badge": "Under Construction",
+    "banner_text": "This site is under construction. All info shown consists of mock data. We will relaunch soon with our full-featured application!",
+    "coming_soon": "Coming Soon",
+    "demo_mode": "Mock Data",
+    "hero_badge": "Notice",
+    "hero_msg": "This site is under construction. All information, pricing, and bookings shown are mock data for demonstration. We will relaunch soon with a full-featured application!"
+  },
   "nav": {
     "home": "Home",
     "services": "Services",
