@@ -51,7 +51,7 @@ $(document).ready(function() {
     const today = new Date().toISOString().slice(0, 10);
 
     if (filter === 'today') {
-      filtered = jobs.filter(j => j.ScheduledDate === today || j.Status === 'In Progress' || j.Status === 'Assigned');
+      filtered = jobs.filter(j => j.ScheduledDate === today || j.Status === 'In Progress' || j.Status === 'Assigned' || j.Status === 'En Route' || j.Status === 'Checked In');
     } else if (filter === 'in-progress') {
       filtered = jobs.filter(j => j.Status === 'In Progress' || j.Status === 'En Route' || j.Status === 'Checked In');
     } else if (filter === 'completed') {
