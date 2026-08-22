@@ -40,6 +40,7 @@ $(document).ready(function() {
 
     if (target === 'requests') loadAdminRequests();
     if (target === 'dispatch') loadDispatchBoardData();
+    if (target === 'technicians') loadAdminTechnicians();
     if (target === 'offers') loadAdminOffers();
     if (target === 'coupons') loadAdminCoupons();
     if (target === 'invoices') loadAdminInvoices();
@@ -302,6 +303,145 @@ $(document).ready(function() {
       console.error(e);
     }
   }
+
+  /**
+   * Certified Technicians Roster Management
+   */
+  async function loadAdminTechnicians() {
+    const $tbody = $('#technicians-table-body');
+    $tbody.html('<tr><td colspan="7" class="text-center py-4"><span class="spinner-border spinner-border-sm text-primary"></span> Fetching technicians roster...</td></tr>');
+
+    try {
+      const techs = await api.getTechnicians();
+      $tbody.empty();
+
+      if (!techs || techs.length === 0) {
+        $tbody.html('<tr><td colspan="7" class="text-center py-4 text-muted"><i class="bi bi-person-x text-muted fs-4 d-block mb-1"></i>No field technicians found. Click "+ Add New Technician" to register one.</td></tr>');
+        return;
+      }
+
+      techs.forEach(t => {
+        const initials = (t.FullName || 'T').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+        const statusBadge = t.Status === 'Available'
+          ? '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Available</span>'
+          : t.Status === 'Busy'
+          ? '<span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Busy</span>'
+          : '<span class="badge bg-secondary"><i class="bi bi-dash-circle me-1"></i>On-Leave</span>';
+
+        const row = `
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="user-avatar-circle" style="width:36px;height:36px;background:var(--gradient-brand);color:#fff;font-size:0.85rem;font-weight:700;display:flex;align-items:center;justify-content:center;border-radius:50%;">
+                  ${initials}
+                </div>
+                <div>
+                  <strong class="d-block text-dark">${t.FullName}</strong>
+                  <span class="badge bg-light text-primary border" style="font-size:0.7rem;">${t.TechnicianId}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="badge bg-info-subtle text-info-emphasis border px-2 py-1">${t.Specialization || 'General Technical'}</span>
+            </td>
+            <td>
+              <div><i class="bi bi-telephone text-muted me-1 small"></i><strong>${t.Mobile}</strong></div>
+              <small class="text-muted"><i class="bi bi-envelope me-1"></i>${t.Email}</small>
+            </td>
+            <td>
+              <span class="text-muted"><i class="bi bi-geo-alt me-1 text-danger"></i>${t.City || 'Kolhapur'}</span>
+            </td>
+            <td>
+              <span class="fw-bold text-dark"><i class="bi bi-star-fill text-warning me-1"></i>${t.Rating ? Number(t.Rating).toFixed(1) : '5.0'}</span>
+            </td>
+            <td>
+              ${statusBadge}
+            </td>
+            <td>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-light border dropdown-toggle" data-bs-toggle="dropdown">Action</button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item btn-toggle-tech-status" href="#" data-id="${t.TechnicianId}" data-status="Available"><i class="bi bi-check2 text-success"></i> Set Available</a></li>
+                  <li><a class="dropdown-item btn-toggle-tech-status" href="#" data-id="${t.TechnicianId}" data-status="Busy"><i class="bi bi-clock text-warning"></i> Set Busy</a></li>
+                  <li><a class="dropdown-item btn-toggle-tech-status" href="#" data-id="${t.TechnicianId}" data-status="On-Leave"><i class="bi bi-pause text-secondary"></i> Set On-Leave</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item text-danger btn-delete-tech" href="#" data-id="${t.TechnicianId}" data-name="${t.FullName}"><i class="bi bi-trash"></i> Remove</a></li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+        `;
+        $tbody.append(row);
+      });
+
+      // Bind status toggle handlers
+      $('.btn-toggle-tech-status').on('click', async function(e) {
+        e.preventDefault();
+        const techId = $(this).data('id');
+        const newStatus = $(this).data('status');
+        try {
+          await api.updateTechnician({ technicianId: techId, status: newStatus });
+          loadAdminTechnicians();
+        } catch (err) {
+          alert('Failed to update status: ' + err.message);
+        }
+      });
+
+      // Bind delete handler
+      $('.btn-delete-tech').on('click', async function(e) {
+        e.preventDefault();
+        const techId = $(this).data('id');
+        const techName = $(this).data('name');
+        if (confirm(`Are you sure you want to remove technician "${techName}" (${techId}) from the active roster?`)) {
+          try {
+            await api.deleteTechnician({ technicianId: techId });
+            loadAdminTechnicians();
+          } catch (err) {
+            alert('Failed to remove technician: ' + err.message);
+          }
+        }
+      });
+
+    } catch (err) {
+      $tbody.html(`<tr><td colspan="7" class="text-center py-4 text-danger"><i class="bi bi-exclamation-triangle me-1"></i> Error loading technicians: ${err.message}</td></tr>`);
+    }
+  }
+
+  // Handle Add Technician Form Submit
+  $('#form-add-technician').on('submit', async function(e) {
+    e.preventDefault();
+    const submitBtn = $('#btn-save-technician');
+    submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Registering...');
+
+    try {
+      const payload = {
+        fullName: $('#tech-fullname').val().trim(),
+        mobile: $('#tech-mobile').val().trim(),
+        email: $('#tech-email').val().trim(),
+        password: $('#tech-password').val().trim() || 'TechPassword@2026',
+        specialization: $('#tech-specialization').val(),
+        city: $('#tech-city').val().trim() || 'Kolhapur',
+        status: $('#tech-status').val() || 'Available'
+      };
+
+      const newTech = await api.createTechnician(payload);
+      alert(`Success! Technician ${newTech.FullName} (${newTech.TechnicianId}) has been registered and activated.`);
+
+      // Hide modal & reset form
+      const modalEl = document.getElementById('modalAddTechnician');
+      const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+      modal.hide();
+      $('#form-add-technician')[0].reset();
+      $('#tech-password').val('TechPassword@2026');
+
+      // Reload technicians table
+      loadAdminTechnicians();
+    } catch (err) {
+      alert('Error adding technician: ' + err.message);
+    } finally {
+      submitBtn.prop('disabled', false).html('<i class="bi bi-check2-circle me-1"></i> Register &amp; Activate Technician');
+    }
+  });
 
   /**
    * Offers CRUD Management

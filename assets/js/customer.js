@@ -122,6 +122,10 @@ $(document).ready(function() {
       allCategories.forEach(c => {
         $catSelect.append(`<option value="${c.CategoryId}">${c.Name}</option>`);
       });
+
+      // Default date to today & prevent past dates
+      const todayStr = new Date().toISOString().slice(0, 10);
+      $('#wizard-date').val(todayStr).attr('min', todayStr);
     } catch (e) {
       console.error(e);
     }

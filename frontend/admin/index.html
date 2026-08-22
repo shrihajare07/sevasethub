@@ -74,6 +74,9 @@
       <a href="#" class="nav-link-custom admin-nav-link" data-target="dispatch">
         <i class="bi bi-calendar3-range"></i> <span>Dispatch Board</span>
       </a>
+      <a href="#" class="nav-link-custom admin-nav-link" data-target="technicians">
+        <i class="bi bi-people-fill"></i> <span>Technicians Roster</span>
+      </a>
 
       <div class="menu-category mt-3 admin-only-section">Marketing & Sales</div>
       <a href="#" class="nav-link-custom admin-nav-link admin-only-section" data-target="offers">
@@ -217,6 +220,43 @@
               <tbody id="dispatch-board-body"></tbody>
             </table>
           </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3B: Technicians Management -->
+      <section id="section-technicians" class="admin-section d-none">
+        <div class="card border-0 shadow-sm mb-4" style="border-radius:var(--radius-xl);overflow:hidden;">
+          <div class="portal-card-header">
+            <div>
+              <h6 class="portal-card-header-title mb-0"><i class="bi bi-people-fill text-primary me-2"></i>Certified Field Technicians Roster</h6>
+              <small class="text-muted">Manage staff profiles, active skill specializations, territories, and credentials</small>
+            </div>
+            <button class="btn btn-primary btn-sm rounded-pill px-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalAddTechnician" style="background:var(--gradient-brand);border:none;">
+              <i class="bi bi-person-plus-fill me-1"></i> Add New Technician
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="table-admin-technicians">
+              <thead class="table-light">
+                <tr>
+                  <th>Tech ID &amp; Name</th>
+                  <th>Specialization</th>
+                  <th>Contact Info</th>
+                  <th>Territory / City</th>
+                  <th>Rating</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="technicians-table-body">
+                <tr>
+                  <td colspan="7" class="text-center py-4 text-muted">
+                    <span class="spinner-border spinner-border-sm"></span> Loading technician roster...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
@@ -515,6 +555,72 @@
           </div>
         </div>
         <button class="btn btn-primary w-100 py-2 fw-bold" id="btn-save-coupon">Publish Coupon</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Add Technician Modal
+     ============================================================ -->
+<div class="modal fade" id="modalAddTechnician" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow" style="border-radius:var(--radius-xl);">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill text-primary me-2"></i>Add New Field Technician</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="form-add-technician">
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="tech-fullname">Full Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="tech-fullname" placeholder="e.g. Sanjay Patil" required>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-semibold" for="tech-mobile">Mobile Number <span class="text-danger">*</span></label>
+              <input type="tel" class="form-control" id="tech-mobile" placeholder="10-digit mobile" required maxlength="10">
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold" for="tech-city">City / Territory</label>
+              <input type="text" class="form-control" id="tech-city" value="Kolhapur" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="tech-email">Login Email Address <span class="text-danger">*</span></label>
+            <input type="email" class="form-control" id="tech-email" placeholder="e.g. sanjay.tech@sevasetuhub.in" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="tech-password">Portal Login Password <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="tech-password" value="TechPassword@2026" required>
+            <small class="text-muted" style="font-size:0.75rem;">Default credentials for mobile field portal login</small>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-semibold" for="tech-specialization">Specialization</label>
+              <select class="form-select" id="tech-specialization">
+                <option value="AC & HVAC Service">AC &amp; HVAC Service</option>
+                <option value="Deep Cleaning & Pest">Deep Cleaning &amp; Pest</option>
+                <option value="Plumbing Services">Plumbing Services</option>
+                <option value="Electrical Repairs">Electrical Repairs</option>
+                <option value="Fabrication & Welding">Fabrication &amp; Welding</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold" for="tech-status">Initial Status</label>
+              <select class="form-select" id="tech-status">
+                <option value="Available">Available (Active)</option>
+                <option value="Busy">Busy (On Duty)</option>
+                <option value="On-Leave">On-Leave</option>
+              </select>
+            </div>
+          </div>
+          <div class="mt-4">
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" id="btn-save-technician">
+              <i class="bi bi-check2-circle me-1"></i> Register &amp; Activate Technician
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

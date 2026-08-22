@@ -584,13 +584,83 @@ const api = (function () {
         };
       }
 
-      case 'getTechnicians':
-        return [
-          { TechnicianId: 'TCH-001', FullName: 'Mahesh Patil', Mobile: '9822001122', Specialization: 'AC & HVAC', Rating: 4.9, Status: 'Available' },
-          { TechnicianId: 'TCH-002', FullName: 'Sachin Kulkarni', Mobile: '9822003344', Specialization: 'Electrical & Solar', Rating: 4.8, Status: 'Busy' },
-          { TechnicianId: 'TCH-003', FullName: 'Ramesh Jadhav', Mobile: '9822005566', Specialization: 'Plumbing & Drainage', Rating: 4.9, Status: 'Available' },
-          { TechnicianId: 'TCH-004', FullName: 'Anil Shinde', Mobile: '9822007788', Specialization: 'Deep Cleaning & Pest', Rating: 4.7, Status: 'Available' }
-        ];
+      case 'getTechnicians': {
+        const techs = JSON.parse(localStorage.getItem('ssh_technicians') || '[]');
+        if (techs.length === 0) {
+          const defaultTechs = [
+            { TechnicianId: 'TCH-001', UserId: 'USR-TECH', FullName: 'Mahesh Patil', Mobile: '9822001122', Email: 'tech@sevasetuhub.in', Specialization: 'AC & HVAC Service', City: 'Kolhapur', Rating: 4.9, Status: 'Available', CreatedAt: '2026-08-20' },
+            { TechnicianId: 'TCH-002', UserId: 'USR-TECH-002', FullName: 'Sachin Kulkarni', Mobile: '9822003344', Email: 'sachin.k@sevasetuhub.in', Specialization: 'Electrical Repairs', City: 'Kolhapur', Rating: 4.8, Status: 'Busy', CreatedAt: '2026-08-20' },
+            { TechnicianId: 'TCH-003', UserId: 'USR-TECH-003', FullName: 'Ramesh Jadhav', Mobile: '9822005566', Email: 'ramesh.j@sevasetuhub.in', Specialization: 'Plumbing Services', City: 'Sangli', Rating: 4.9, Status: 'Available', CreatedAt: '2026-08-21' },
+            { TechnicianId: 'TCH-004', UserId: 'USR-TECH-004', FullName: 'Anil Shinde', Mobile: '9822007788', Email: 'anil.s@sevasetuhub.in', Specialization: 'Deep Cleaning & Pest', City: 'Kolhapur', Rating: 4.7, Status: 'Available', CreatedAt: '2026-08-21' }
+          ];
+          localStorage.setItem('ssh_technicians', JSON.stringify(defaultTechs));
+          return defaultTechs;
+        }
+        return techs;
+      }
+
+      case 'createTechnician': {
+        const techs = JSON.parse(localStorage.getItem('ssh_technicians') || '[]');
+        const users = JSON.parse(localStorage.getItem('ssh_users') || '[]');
+        const techId = 'TCH-' + Math.floor(100 + Math.random() * 900);
+        const userId = 'USR-' + techId;
+
+        const newTech = {
+          TechnicianId: techId,
+          UserId: userId,
+          FullName: payload.fullName,
+          Mobile: payload.mobile,
+          Email: payload.email,
+          Specialization: payload.specialization || 'General Technical Services',
+          City: payload.city || 'Kolhapur',
+          Rating: Number(payload.rating) || 5.0,
+          Status: payload.status || 'Available',
+          CreatedAt: new Date().toISOString().slice(0, 10)
+        };
+
+        techs.unshift(newTech);
+        localStorage.setItem('ssh_technicians', JSON.stringify(techs));
+
+        // Create login account in ssh_users
+        const nameParts = (payload.fullName || '').trim().split(' ');
+        const firstName = nameParts[0] || 'Technician';
+        const lastName = nameParts.slice(1).join(' ') || 'Staff';
+
+        users.push({
+          UserId: userId,
+          Email: payload.email,
+          Mobile: payload.mobile,
+          FirstName: firstName,
+          LastName: lastName,
+          Role: 'Technician',
+          TechnicianId: techId,
+          Password: payload.password || 'TechPassword@2026',
+          Status: 'Active'
+        });
+        localStorage.setItem('ssh_users', JSON.stringify(users));
+
+        appendAuditLog('TECHNICIAN_ADDED', 'Technicians', `New technician ${newTech.FullName} (${newTech.TechnicianId}) added for ${newTech.Specialization}.`);
+        return newTech;
+      }
+
+      case 'updateTechnician': {
+        const techs = JSON.parse(localStorage.getItem('ssh_technicians') || '[]');
+        const idx = techs.findIndex(t => t.TechnicianId === payload.technicianId);
+        if (idx === -1) throw new Error('Technician not found.');
+        techs[idx] = { ...techs[idx], ...payload };
+        localStorage.setItem('ssh_technicians', JSON.stringify(techs));
+        appendAuditLog('TECHNICIAN_UPDATED', 'Technicians', `Technician ${techs[idx].FullName} profile/status updated.`);
+        return techs[idx];
+      }
+
+      case 'deleteTechnician': {
+        let techs = JSON.parse(localStorage.getItem('ssh_technicians') || '[]');
+        const tech = techs.find(t => t.TechnicianId === payload.technicianId);
+        techs = techs.filter(t => t.TechnicianId !== payload.technicianId);
+        localStorage.setItem('ssh_technicians', JSON.stringify(techs));
+        appendAuditLog('TECHNICIAN_DELETED', 'Technicians', `Technician ${tech ? tech.FullName : payload.technicianId} removed from roster.`);
+        return { success: true };
+      }
 
       case 'getCustomers':
         return [
@@ -848,6 +918,9 @@ const api = (function () {
     submitFeedback: (payload) => request('submitFeedback', 'POST', payload),
     getDashboard: () => request('getDashboard', 'GET'),
     getTechnicians: () => request('getTechnicians', 'GET'),
+    createTechnician: (payload) => request('createTechnician', 'POST', payload),
+    updateTechnician: (payload) => request('updateTechnician', 'POST', payload),
+    deleteTechnician: (payload) => request('deleteTechnician', 'POST', payload),
     getCustomers: () => request('getCustomers', 'GET'),
     getNotifications: () => request('getNotifications', 'GET'),
     getAuditLogs: () => request('getAuditLogs', 'GET'),

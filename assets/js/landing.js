@@ -318,9 +318,7 @@ function _escapeAttr(str) {
  * @param {string} categoryName
  */
 function handleCategoryClick(categoryId, categoryName) {
-    // TODO: Navigate to service listing page for this category
-    // Future: window.location.href = `/services?category=${categoryId}`;
-    showComingSoon(categoryName + ' ' + _('toast.coming_soon_suffix', 'booking will be available soon. Stay tuned!'));
+    window.location.href = 'frontend/services.html';
 }
 
 /**
@@ -329,9 +327,12 @@ function handleCategoryClick(categoryId, categoryName) {
  * @param {string} serviceName
  */
 function handleBookService(serviceId, serviceName) {
-    // TODO: Navigate to booking form with pre-selected service
-    // Future: window.location.href = `/book?service=${serviceId}`;
-    showComingSoon(serviceName + ' ' + _('toast.coming_soon_suffix', 'booking will be available soon.'));
+    const user = localStorage.getItem('ssh_user_session');
+    if (user) {
+        window.location.href = 'frontend/customer/index.html';
+    } else {
+        window.location.href = 'frontend/login.html';
+    }
 }
 
 /**
