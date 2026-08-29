@@ -94,6 +94,11 @@ const api = (function () {
           clearSession();
         }
 
+        // If live API returns empty categories/services array, fall back to local rich seed data
+        if ((action === 'getServiceCategories' || action === 'getServices') && (!result.data || !Array.isArray(result.data) || result.data.length === 0)) {
+          return executeLocalFallback(action, method, payload);
+        }
+
         return result.data;
       } catch (err) {
         console.warn(`[SevaSetuHub Live API warning for ${action}]:`, err.message);
@@ -230,6 +235,7 @@ const api = (function () {
         return getStoredUser();
 
       case 'getServices': {
+        ensureLocalSeedData();
         const services = JSON.parse(localStorage.getItem('ssh_services') || '[]');
         if (payload.categoryId) {
           return services.filter(s => s.CategoryId === payload.categoryId);
@@ -237,8 +243,10 @@ const api = (function () {
         return services;
       }
 
-      case 'getServiceCategories':
+      case 'getServiceCategories': {
+        ensureLocalSeedData();
         return JSON.parse(localStorage.getItem('ssh_categories') || '[]');
+      }
 
       case 'getOffers':
         return JSON.parse(localStorage.getItem('ssh_offers') || '[]');

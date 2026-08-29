@@ -4,12 +4,61 @@
  * ============================================================================
  */
 
+const DEFAULT_CATEGORIES = [
+  { CategoryId: 'CAT-AC', Name: 'AC Service & Repair', Slug: 'ac-service', Icon: 'bi-snow2', Description: 'Precision cooling, foam jet wash, gas refill, repair & AMC' },
+  { CategoryId: 'CAT-CLN', Name: 'Deep Cleaning', Slug: 'cleaning', Icon: 'bi-stars', Description: 'Full home deep sanitization, kitchen chimney & bathroom scrubbing' },
+  { CategoryId: 'CAT-PLM', Name: 'Plumbing Services', Slug: 'plumbing', Icon: 'bi-droplet-half', Description: 'Pipe leakage, fixture replacements, sanitary fittings & drain unblocking' },
+  { CategoryId: 'CAT-ELE', Name: 'Electrical Repairs', Slug: 'electrical', Icon: 'bi-lightning-charge-fill', Description: 'Switchboard repair, MCB wiring, appliance fault fixes & lighting' },
+  { CategoryId: 'CAT-PST', Name: 'Pest Control', Slug: 'pest-control', Icon: 'bi-shield-check', Description: '100% odourless herbal termite, cockroach & bedbug management' },
+  { CategoryId: 'CAT-FAB', Name: 'Fabrication & Welding', Slug: 'fabrication', Icon: 'bi-tools', Description: 'Custom gates, safety grills, structural welding & metal fabrication' },
+  { CategoryId: 'CAT-MNT', Name: 'General Maintenance', Slug: 'maintenance', Icon: 'bi-gear-fill', Description: 'Complete home maintenance, carpentry & mounting fixes' }
+];
+
+const DEFAULT_SERVICES = [
+  // AC & HVAC
+  { ServiceId: 'SRV-AC-01', CategoryId: 'CAT-AC', ServiceName: 'Split AC Power Jet Deep Service', Description: 'Complete indoor foam wash, outdoor condenser jet cleaning, filter wash & airflow check', BasePrice: 599, EstimatedHours: 1.5, Icon: 'bi-snow2' },
+  { ServiceId: 'SRV-AC-02', CategoryId: 'CAT-AC', ServiceName: 'Window AC Complete Servicing', Description: 'Deep chemical wash of condenser and cooling coils, tray cleaning & pressure check', BasePrice: 499, EstimatedHours: 1.0, Icon: 'bi-snow' },
+  { ServiceId: 'SRV-AC-03', CategoryId: 'CAT-AC', ServiceName: 'AC Refrigerant Gas Refilling & Top-up', Description: 'Vacuum leak pressure test, copper joint brazing and original refrigerant charge', BasePrice: 1499, EstimatedHours: 2.0, Icon: 'bi-snow2' },
+  { ServiceId: 'SRV-AC-04', CategoryId: 'CAT-AC', ServiceName: 'AC Installation & Uninstallation', Description: 'Heavy-duty wall bracket mounting, core wall drilling, copper pipe flare & wiring', BasePrice: 899, EstimatedHours: 2.5, Icon: 'bi-gear-wide-connected' },
+  { ServiceId: 'SRV-AC-05', CategoryId: 'CAT-AC', ServiceName: 'PCB Circuit Repair & Diagnostics', Description: 'Inverter PCB troubleshooting, sensor replacement & display module fix', BasePrice: 799, EstimatedHours: 1.5, Icon: 'bi-cpu' },
+  // Cleaning
+  { ServiceId: 'SRV-CLN-01', CategoryId: 'CAT-CLN', ServiceName: '2 BHK Full Home Deep Cleaning', Description: 'Machine floor scrubbing, kitchen tile degreasing, bathroom descaling & window cleaning', BasePrice: 1999, EstimatedHours: 4.0, Icon: 'bi-house-check' },
+  { ServiceId: 'SRV-CLN-02', CategoryId: 'CAT-CLN', ServiceName: '3 BHK Premium Villa Cleaning', Description: 'Complete deep cleaning of all bedrooms, living area, balconies & high dusting', BasePrice: 2899, EstimatedHours: 5.5, Icon: 'bi-stars' },
+  { ServiceId: 'SRV-CLN-03', CategoryId: 'CAT-CLN', ServiceName: 'Kitchen Deep Scrub & Degreasing', Description: 'Heavy oil removal from tiles, sink sanitization, exhaust & chimney cleaning', BasePrice: 899, EstimatedHours: 2.5, Icon: 'bi-magic' },
+  { ServiceId: 'SRV-CLN-04', CategoryId: 'CAT-CLN', ServiceName: 'Bathroom & Tile Descaling', Description: 'Acid-free tile grout stain removal, WC disinfection, mirror & tap buffing', BasePrice: 499, EstimatedHours: 1.5, Icon: 'bi-droplet' },
+  { ServiceId: 'SRV-CLN-05', CategoryId: 'CAT-CLN', ServiceName: 'Sofa & Carpet Shampooing', Description: 'Deep vacuuming, organic foam extraction shampoo & moisture suction', BasePrice: 699, EstimatedHours: 2.0, Icon: 'bi-brush' },
+  // Plumbing
+  { ServiceId: 'SRV-PLM-01', CategoryId: 'CAT-PLM', ServiceName: 'Water Leakage & Pipe Repair', Description: 'Acoustic leakage diagnosis, joint solder, angle valve & tap replace', BasePrice: 299, EstimatedHours: 1.0, Icon: 'bi-droplet-half' },
+  { ServiceId: 'SRV-PLM-02', CategoryId: 'CAT-PLM', ServiceName: 'Tap, Shower & Faucet Replacement', Description: 'Kitchen mixer, diverter, overhead shower installation & sealing', BasePrice: 199, EstimatedHours: 0.5, Icon: 'bi-water' },
+  { ServiceId: 'SRV-PLM-03', CategoryId: 'CAT-PLM', ServiceName: 'Drain Clog & Blockage Clearance', Description: 'Heavy rotary snake rod machine clearing of choked bathroom and kitchen drains', BasePrice: 399, EstimatedHours: 1.0, Icon: 'bi-dash-circle' },
+  { ServiceId: 'SRV-PLM-04', CategoryId: 'CAT-PLM', ServiceName: 'Overhead Water Tank Deep Cleaning', Description: 'High pressure mechanized cleaning, sludge suction & UV disinfectant treatment', BasePrice: 599, EstimatedHours: 2.0, Icon: 'bi-database' },
+  { ServiceId: 'SRV-PLM-05', CategoryId: 'CAT-PLM', ServiceName: 'Motor Pump & Valve Fitting', Description: 'Centrifugal pump installation, non-return valve check & piping bypass', BasePrice: 499, EstimatedHours: 1.5, Icon: 'bi-plug' },
+  // Electrical
+  { ServiceId: 'SRV-ELE-01', CategoryId: 'CAT-ELE', ServiceName: 'Switchboard, MCB & Fuse Repairs', Description: 'Safety voltage check, MCB tripping repair, loose terminal tightening', BasePrice: 249, EstimatedHours: 1.0, Icon: 'bi-lightning' },
+  { ServiceId: 'SRV-ELE-02', CategoryId: 'CAT-ELE', ServiceName: 'Ceiling Fan Installation & Servicing', Description: 'Downrod assembly, canopy fixing, regulator tuning & noise elimination', BasePrice: 199, EstimatedHours: 0.5, Icon: 'bi-arrow-repeat' },
+  { ServiceId: 'SRV-ELE-03', CategoryId: 'CAT-ELE', ServiceName: 'Inverter & Battery Wiring Setup', Description: 'Pure sine wave inverter connection, battery terminal grease & load balancing', BasePrice: 599, EstimatedHours: 2.0, Icon: 'bi-battery-charging' },
+  { ServiceId: 'SRV-ELE-04', CategoryId: 'CAT-ELE', ServiceName: 'Full House Short Circuit Inspection', Description: 'Megger earth resistance check, phase detection & wiring fault localization', BasePrice: 499, EstimatedHours: 1.5, Icon: 'bi-exclamation-triangle' },
+  { ServiceId: 'SRV-ELE-05', CategoryId: 'CAT-ELE', ServiceName: 'Geyser & Water Heater Repair', Description: 'Thermostat heating element replacement, pressure release valve check', BasePrice: 399, EstimatedHours: 1.0, Icon: 'bi-thermometer-half' },
+  // Pest Control
+  { ServiceId: 'SRV-PST-01', CategoryId: 'CAT-PST', ServiceName: 'Complete Cockroach Gel Treatment', Description: 'Govt. approved non-toxic Bayer gel application in cabinets, drains and appliances', BasePrice: 799, EstimatedHours: 1.0, Icon: 'bi-shield-shaded' },
+  { ServiceId: 'SRV-PST-02', CategoryId: 'CAT-PST', ServiceName: 'Termite Protection & Wood Shield', Description: 'Drill-fill-seal subterranean termite treatment with 1-year service warranty', BasePrice: 1899, EstimatedHours: 3.0, Icon: 'bi-shield-check' },
+  { ServiceId: 'SRV-PST-03', CategoryId: 'CAT-PST', ServiceName: 'Bed Bug Eradication 2-Visit Plan', Description: 'Super-heated steam spray + chemical residual treatment of mattresses and beds', BasePrice: 1299, EstimatedHours: 2.5, Icon: 'bi-bug' },
+  { ServiceId: 'SRV-PST-04', CategoryId: 'CAT-PST', ServiceName: 'Mosquito & Fly Thermal Fogging', Description: 'Outdoor and duct fogging for complete elimination of dengue & malaria vectors', BasePrice: 699, EstimatedHours: 1.0, Icon: 'bi-cloud-haze' },
+  // Fabrication
+  { ServiceId: 'SRV-FAB-01', CategoryId: 'CAT-FAB', ServiceName: 'Safety Door & Gate Welding Repair', Description: 'On-site electric arc welding, latch alignment, hinge reinforcement & primer', BasePrice: 599, EstimatedHours: 2.0, Icon: 'bi-tools' },
+  { ServiceId: 'SRV-FAB-02', CategoryId: 'CAT-FAB', ServiceName: 'Window Grill & Shed Fabrication', Description: 'Custom MS square pipe grill cutting, welding, polishing & rust-proof coat', BasePrice: 1499, EstimatedHours: 3.5, Icon: 'bi-grid-3x3' },
+  { ServiceId: 'SRV-FAB-03', CategoryId: 'CAT-FAB', ServiceName: 'Balcony Railing Fitting', Description: 'Stainless steel / MS safety railing installation with expansion anchor bolts', BasePrice: 899, EstimatedHours: 2.5, Icon: 'bi-shield-fill' },
+  // Maintenance
+  { ServiceId: 'SRV-MNT-01', CategoryId: 'CAT-MNT', ServiceName: 'Annual Home Maintenance Inspection', Description: 'Comprehensive 40-point health audit of electrical, plumbing and AC systems', BasePrice: 999, EstimatedHours: 3.0, Icon: 'bi-clipboard-check' },
+  { ServiceId: 'SRV-MNT-02', CategoryId: 'CAT-MNT', ServiceName: 'Furniture Minor Repairs & Carpentry', Description: 'Drawer slide fixing, cabinet door hinge adjustment, table leg repair', BasePrice: 399, EstimatedHours: 1.0, Icon: 'bi-hammer' },
+  { ServiceId: 'SRV-MNT-03', CategoryId: 'CAT-MNT', ServiceName: 'Wall Drilling & TV / Mirror Mounting', Description: 'Precision spirit-level wall mounting of LED TV, heavy mirrors, paintings & shelves', BasePrice: 249, EstimatedHours: 0.5, Icon: 'bi-display' }
+];
+
 $(document).ready(async function() {
-  let allCategories = [];
-  let allServices = [];
+  let allCategories = DEFAULT_CATEGORIES;
+  let allServices = DEFAULT_SERVICES;
   let selectedService = null;
   let activeCoupon = null;
-  let currentStep = 1;
 
   // Check if customer is already logged in
   const currentUser = api.getStoredUser();
@@ -41,69 +90,96 @@ $(document).ready(async function() {
   const todayStr = new Date().toISOString().slice(0, 10);
   $('#input-date').val(tomorrowStr).attr('min', todayStr);
 
-  // Time slot buttons
+  // Time slot buttons interaction
   $('.time-slot-btn').on('click', function() {
     $('.time-slot-btn').removeClass('active');
     $(this).addClass('active');
     $('#input-timeslot').val($(this).data('slot'));
   });
 
-  // Initialize catalog and query params
-  await initCatalog();
+  // Render initial categories immediately
+  renderCategoryPills(allCategories);
+  populateCategorySelect(allCategories);
 
-  /**
-   * Load Categories & Services
-   */
-  async function initCatalog() {
-    try {
-      allCategories = await api.getServiceCategories();
-      allServices = await api.getServices();
-
+  // Fetch updated catalog from backend
+  try {
+    const fetchedCats = await api.getServiceCategories();
+    const fetchedSrvs = await api.getServices();
+    if (fetchedCats && Array.isArray(fetchedCats) && fetchedCats.length > 0) {
+      allCategories = fetchedCats;
       renderCategoryPills(allCategories);
       populateCategorySelect(allCategories);
+    }
+    if (fetchedSrvs && Array.isArray(fetchedSrvs) && fetchedSrvs.length > 0) {
+      allServices = fetchedSrvs;
+    }
+  } catch (e) {
+    console.warn('Using embedded service catalog fallback:', e.message);
+  }
 
-      // Check URL parameters (e.g. ?category=CAT-AC&service=SRV-AC-01&coupon=WELCOME100&location=Kolhapur)
-      const urlParams = new URLSearchParams(window.location.search);
-      const paramCat = urlParams.get('category');
-      const paramSrv = urlParams.get('service');
-      const paramCoupon = urlParams.get('coupon');
-      const paramLoc = urlParams.get('location');
+  // Handle URL Query Parameters (e.g., ?category=CAT-AC or ?category=ac or ?service=...&coupon=...)
+  applyUrlParameters();
 
-      if (paramLoc) {
-        $('#select-city').val(paramLoc);
-      }
+  function applyUrlParameters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const rawCat = urlParams.get('category');
+    const rawSrv = urlParams.get('service');
+    const rawCoupon = urlParams.get('coupon');
+    const rawLoc = urlParams.get('location');
 
-      if (paramCat) {
-        selectCategory(paramCat);
-        if (paramSrv) {
-          setTimeout(() => {
-            $('#select-service').val(paramSrv).trigger('change');
-          }, 100);
-        }
-      } else if (paramSrv) {
-        // Find service by name or id
-        const matchSrv = allServices.find(s => s.ServiceId === paramSrv || (s.ServiceName && s.ServiceName.toLowerCase().includes(paramSrv.toLowerCase())));
-        if (matchSrv) {
-          selectCategory(matchSrv.CategoryId);
-          setTimeout(() => {
+    if (rawLoc) {
+      $('#select-city').val(rawLoc);
+    }
+
+    const catAliasMap = {
+      'ac': 'CAT-AC',
+      'acservice': 'CAT-AC',
+      'ac-service': 'CAT-AC',
+      'cleaning': 'CAT-CLN',
+      'deep-cleaning': 'CAT-CLN',
+      'plumbing': 'CAT-PLM',
+      'electrical': 'CAT-ELE',
+      'pest': 'CAT-PST',
+      'pest-control': 'CAT-PST',
+      'fabrication': 'CAT-FAB',
+      'maintenance': 'CAT-MNT'
+    };
+
+    let targetCatId = null;
+    if (rawCat) {
+      const lower = rawCat.toLowerCase();
+      targetCatId = catAliasMap[lower] || rawCat;
+    }
+
+    if (targetCatId && allCategories.some(c => c.CategoryId === targetCatId)) {
+      selectCategory(targetCatId);
+      if (rawSrv) {
+        setTimeout(() => {
+          const matchSrv = allServices.find(s => s.ServiceId === rawSrv || (s.ServiceName && s.ServiceName.toLowerCase().includes(rawSrv.toLowerCase())));
+          if (matchSrv) {
             $('#select-service').val(matchSrv.ServiceId).trigger('change');
-          }, 100);
-        } else if (allCategories.length > 0) {
-          selectCategory(allCategories[0].CategoryId);
-        }
+          }
+        }, 80);
+      }
+    } else if (rawSrv) {
+      const matchSrv = allServices.find(s => s.ServiceId === rawSrv || (s.ServiceName && s.ServiceName.toLowerCase().includes(rawSrv.toLowerCase())));
+      if (matchSrv) {
+        selectCategory(matchSrv.CategoryId);
+        setTimeout(() => {
+          $('#select-service').val(matchSrv.ServiceId).trigger('change');
+        }, 80);
       } else if (allCategories.length > 0) {
         selectCategory(allCategories[0].CategoryId);
       }
+    } else if (allCategories.length > 0) {
+      selectCategory(allCategories[0].CategoryId);
+    }
 
-      if (paramCoupon) {
-        $('#input-coupon').val(paramCoupon);
-        setTimeout(() => {
-          $('#btn-apply-booking-coupon').trigger('click');
-        }, 300);
-      }
-
-    } catch (e) {
-      console.error('Failed to load catalog:', e);
+    if (rawCoupon) {
+      $('#input-coupon').val(rawCoupon);
+      setTimeout(() => {
+        $('#btn-apply-booking-coupon').trigger('click');
+      }, 300);
     }
   }
 
@@ -122,7 +198,7 @@ $(document).ready(async function() {
     };
 
     categories.forEach(c => {
-      const icon = categoryIcons[c.CategoryId] || 'bi-wrench';
+      const icon = c.Icon || categoryIcons[c.CategoryId] || 'bi-tools';
       const pill = `
         <div class="col-6 col-md-4 col-lg-3">
           <div class="category-card-pill" data-cat-id="${c.CategoryId}">
@@ -139,7 +215,7 @@ $(document).ready(async function() {
       $grid.append(pill);
     });
 
-    $('.category-card-pill').on('click', function() {
+    $('.category-card-pill').off('click').on('click', function() {
       const catId = $(this).data('cat-id');
       selectCategory(catId);
     });
@@ -162,13 +238,19 @@ $(document).ready(async function() {
     $srvSelect.empty().append('<option value="">-- Select Specific Service Package --</option>');
 
     const filtered = allServices.filter(s => s.CategoryId === catId);
-    filtered.forEach((s, idx) => {
-      $srvSelect.append(`<option value="${s.ServiceId}" data-price="${s.BasePrice}">${s.ServiceName} (₹${s.BasePrice})</option>`);
-    });
+    if (filtered.length === 0) {
+      // Fallback if specific category filter had no match
+      $srvSelect.append(`<option value="SRV-CUSTOM" data-price="599">Standard Doorstep Inspection &amp; Servicing (₹599)</option>`);
+    } else {
+      filtered.forEach(s => {
+        $srvSelect.append(`<option value="${s.ServiceId}" data-price="${s.BasePrice}">${s.ServiceName} (₹${s.BasePrice})</option>`);
+      });
+    }
 
-    // Auto-select first service if available
-    if (filtered.length > 0) {
-      $srvSelect.val(filtered[0].ServiceId).trigger('change');
+    // Auto-select first service
+    const firstOptionVal = $srvSelect.find('option:nth-child(2)').val();
+    if (firstOptionVal) {
+      $srvSelect.val(firstOptionVal).trigger('change');
     }
   }
 
@@ -181,7 +263,11 @@ $(document).ready(async function() {
   // Service package dropdown changed
   $('#select-service').on('change', function() {
     const srvId = $(this).val();
-    selectedService = allServices.find(s => s.ServiceId === srvId);
+    selectedService = allServices.find(s => s.ServiceId === srvId) || {
+      ServiceId: srvId || 'SRV-CUSTOM',
+      ServiceName: $('#select-service option:selected').text().split('(')[0].trim() || 'On-Demand Service',
+      BasePrice: Number($('#select-service option:selected').data('price')) || 599
+    };
     updatePriceSummary();
   });
 
@@ -282,7 +368,6 @@ $(document).ready(async function() {
   });
 
   function goToStep(step) {
-    currentStep = step;
     $('.booking-step-pane').addClass('d-none');
     $(`#pane-step-${step}`).removeClass('d-none');
 
@@ -295,7 +380,9 @@ $(document).ready(async function() {
     }
 
     // Scroll to top of card on mobile
-    window.scrollTo({ top: $('.booking-card-main').offset().top - 80, behavior: 'smooth' });
+    if ($('.booking-card-main').length) {
+      window.scrollTo({ top: $('.booking-card-main').offset().top - 80, behavior: 'smooth' });
+    }
   }
 
   /**
@@ -335,7 +422,7 @@ $(document).ready(async function() {
         customerEmail: email,
         password: password,
         categoryId: $('#select-category').val(),
-        serviceId: selectedService ? selectedService.ServiceId : 'SRV-GEN-01',
+        serviceId: selectedService ? selectedService.ServiceId : 'SRV-AC-01',
         serviceName: selectedService ? selectedService.ServiceName : 'On-Demand Home Service',
         basePrice: selectedService ? selectedService.BasePrice : 599,
         issueDescription: $('#text-issue').val().trim(),
