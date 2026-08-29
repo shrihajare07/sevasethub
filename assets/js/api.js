@@ -294,12 +294,14 @@ const api = (function () {
         let custMobile = payload.customerMobile || (user ? user.mobile : '');
         let custEmail = payload.customerEmail || (user ? user.email : '');
 
-        // If user is not logged in as Customer, find existing or auto-register in ssh_users
-        if (!user || user.role !== 'Customer') {
-          const emailLower = (custEmail || '').trim().toLowerCase();
-          const mobileTrim = (custMobile || '').trim();
+        const formEmail = (custEmail || '').trim().toLowerCase();
+        const formMobile = (custMobile || '').trim();
+        const isDifferentUser = user && ((user.email && user.email.toLowerCase() !== formEmail) || (user.mobile && String(user.mobile) !== formMobile));
 
-          let existingUser = users.find(u => (emailLower && u.Email && u.Email.toLowerCase() === emailLower) || (mobileTrim && String(u.Mobile) === mobileTrim));
+        // If user is not logged in as Customer or is booking as a different person
+        let token = 'SES-LOCAL-' + Math.random().toString(36).substring(2, 12);
+        if (!user || user.role !== 'Customer' || isDifferentUser) {
+          let existingUser = users.find(u => (formEmail && u.Email && u.Email.toLowerCase() === formEmail) || (formMobile && String(u.Mobile) === formMobile));
 
           if (!existingUser) {
             const userId = 'USR-' + Math.floor(100000 + Math.random() * 900000);
@@ -311,8 +313,8 @@ const api = (function () {
             existingUser = {
               UserId: userId,
               CustomerId: custId,
-              Email: custEmail || `${mobileTrim}@sevasetuhub.in`,
-              Mobile: mobileTrim || '9890123456',
+              Email: formEmail || `${formMobile}@sevasetuhub.in`,
+              Mobile: formMobile || '9890123456',
               FirstName: firstName,
               LastName: lastName,
               Role: 'Customer',
@@ -326,22 +328,32 @@ const api = (function () {
             };
             users.push(existingUser);
             localStorage.setItem('ssh_users', JSON.stringify(users));
-            appendAuditLog('USER_REGISTERED', 'Users', `Customer account auto-registered via booking: ${existingUser.Email}.`);
+            appendAuditLog('USER_REGISTERED', 'Users', `Customer account registered via booking: ${existingUser.Email} (${existingUser.FirstName} ${existingUser.LastName}).`);
           } else {
             custId = existingUser.CustomerId || existingUser.UserId;
-            custName = `${existingUser.FirstName} ${existingUser.LastName}`.trim();
-            custMobile = existingUser.Mobile;
-            custEmail = existingUser.Email;
+            if (payload.customerName) {
+              const nameParts = payload.customerName.trim().split(' ');
+              existingUser.FirstName = nameParts[0] || existingUser.FirstName;
+              existingUser.LastName = nameParts.slice(1).join(' ') || existingUser.LastName;
+            }
+            if (payload.password) existingUser.Password = payload.password;
+            if (payload.address) existingUser.Address = payload.address;
+            if (payload.city) existingUser.City = payload.city;
+            if (payload.pincode) existingUser.Pincode = payload.pincode;
+            localStorage.setItem('ssh_users', JSON.stringify(users));
           }
 
-          // Auto-login session
-          const token = 'SES-LOCAL-' + Math.random().toString(36).substring(2, 12);
+          custName = `${existingUser.FirstName} ${existingUser.LastName}`.trim();
+          custMobile = existingUser.Mobile;
+          custEmail = existingUser.Email;
+
+          // Set active login session for this customer
           const userObj = {
             userId: existingUser.UserId,
             customerId: custId,
             firstName: existingUser.FirstName,
             lastName: existingUser.LastName,
-            fullName: `${existingUser.FirstName} ${existingUser.LastName}`.trim(),
+            fullName: custName,
             email: existingUser.Email,
             mobile: existingUser.Mobile,
             role: 'Customer',
@@ -381,14 +393,21 @@ const api = (function () {
         reqs.unshift(newReq);
         localStorage.setItem('ssh_requests', JSON.stringify(reqs));
         appendAuditLog('REQUEST_CREATED', 'ServiceRequests', `New service request #${reqId} submitted for ${newReq.ServiceName} in ${newReq.City} by ${newReq.CustomerName}.`);
-        return { success: true, RequestId: reqId, request: newReq, user: user };
+        return { success: true, RequestId: reqId, request: newReq, user: user, token: token };
       }
 
       case 'getServiceRequests': {
         const reqs = JSON.parse(localStorage.getItem('ssh_requests') || '[]');
         const user = getStoredUser();
         if (user && user.role === 'Customer') {
-          return reqs.filter(r => r.CustomerId === user.customerId || r.CustomerEmail === user.email || r.CustomerMobile === user.mobile);
+          const userEmail = (user.email || '').toLowerCase();
+          const userMobile = String(user.mobile || '');
+          const custId = user.customerId || user.userId;
+          return reqs.filter(r => 
+            (custId && r.CustomerId === custId) || 
+            (userEmail && r.CustomerEmail && r.CustomerEmail.toLowerCase() === userEmail) || 
+            (userMobile && r.CustomerMobile && String(r.CustomerMobile) === userMobile)
+          );
         }
         return reqs;
       }
@@ -1430,7 +1449,13 @@ const api = (function () {
     getOffers: (params) => request('getOffers', 'GET', params),
     getCoupons: (params) => request('getCoupons', 'GET', params),
     validateCoupon: (payload) => request('validateCoupon', 'POST', payload),
-    createServiceRequest: (payload) => request('createServiceRequest', 'POST', payload),
+    createServiceRequest: async (payload) => {
+      const res = await request('createServiceRequest', 'POST', payload);
+      if (res && res.user && res.token) {
+        setSession(res.token, res.user);
+      }
+      return res;
+    },
     getServiceRequests: (params) => request('getServiceRequests', 'GET', params),
     getServiceRequest: (requestId) => request('getServiceRequest', 'GET', { requestId }),
     createEstimate: (payload) => request('createEstimate', 'POST', payload),

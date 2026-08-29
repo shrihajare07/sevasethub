@@ -439,6 +439,26 @@ $(document).ready(async function() {
       const res = await api.createServiceRequest(payload);
       const reqId = res.RequestId || (res.request ? res.request.RequestId : 'REQ-104930');
 
+      // Guarantee active session is saved for this customer
+      if (res && res.user && res.token) {
+        api.setSession(res.token, res.user);
+      } else {
+        const nameParts = fullName.split(' ');
+        const token = 'SES-LOCAL-' + Math.random().toString(36).substring(2, 12);
+        const userObj = {
+          userId: 'USR-' + Math.floor(100000 + Math.random() * 900000),
+          customerId: 'CUS-' + Math.floor(100000 + Math.random() * 900000),
+          firstName: nameParts[0] || 'Customer',
+          lastName: nameParts.slice(1).join(' ') || '',
+          fullName: fullName,
+          email: email,
+          mobile: mobile,
+          role: 'Customer',
+          tenantId: 'TNT-DEFAULT'
+        };
+        api.setSession(token, userObj);
+      }
+
       // Populate Success Modal
       $('#success-req-id').text('#' + reqId);
       $('#success-service-name').text(payload.serviceName);
