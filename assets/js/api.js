@@ -605,35 +605,103 @@ const api = (function () {
       }
 
       case 'getInvoices': {
-        const invs = JSON.parse(localStorage.getItem('ssh_invoices') || '[]');
+        let invs = JSON.parse(localStorage.getItem('ssh_invoices') || '[]');
         const reqs = JSON.parse(localStorage.getItem('ssh_requests') || '[]');
-        return invs.map(i => ({
-          ...i,
-          serviceName: (reqs.find(r => r.RequestId === i.RequestId) || {}).ServiceName || 'AC Service'
-        }));
+        const user = getStoredUser();
+
+        // Auto-generate invoice for any completed request that doesn't have an invoice yet
+        let updated = false;
+        reqs.forEach(r => {
+          if (r.Status === 'Completed') {
+            const hasInv = invs.some(i => i.RequestId === r.RequestId);
+            if (!hasInv) {
+              const base = Number(r.BasePrice) || 599;
+              const disc = Number(r.CouponDiscount) || 0;
+              const sub = Math.max(0, base - disc);
+              const tax = Math.round(sub * 0.18);
+              invs.unshift({
+                InvoiceId: 'INV-' + Math.floor(100000 + Math.random() * 900000),
+                InvoiceNumber: 'INV-2026-' + Math.floor(1000 + Math.random() * 9000),
+                RequestId: r.RequestId,
+                WorkOrderId: '',
+                CustomerId: r.CustomerId || 'CUS-001',
+                LabourTotal: base,
+                MaterialTotal: 0,
+                TaxTotal: tax,
+                DiscountTotal: disc,
+                GrandTotal: sub + tax,
+                PaymentStatus: 'Pending',
+                CreatedAt: r.UpdatedAt || new Date().toLocaleString('en-IN')
+              });
+              updated = true;
+            }
+          }
+        });
+        if (updated) {
+          localStorage.setItem('ssh_invoices', JSON.stringify(invs));
+        }
+
+        let filtered = invs;
+        if (user && user.role === 'Customer') {
+          const custId = user.customerId || user.userId;
+          filtered = invs.filter(i => i.CustomerId === custId || !i.CustomerId || i.CustomerId === 'CUS-001');
+        }
+
+        return filtered.map(i => {
+          const req = reqs.find(r => r.RequestId === i.RequestId) || {};
+          return {
+            ...i,
+            serviceName: req.ServiceName || i.serviceName || 'On-Demand Service',
+            customerName: req.CustomerName || 'Valued Customer',
+            customerMobile: req.CustomerMobile || '9890123456',
+            address: req.Address || 'Kolhapur, Maharashtra'
+          };
+        });
       }
 
       case 'createPayment': {
         const invs = JSON.parse(localStorage.getItem('ssh_invoices') || '[]');
+        const pmts = JSON.parse(localStorage.getItem('ssh_payments') || '[]');
         const targetInv = invs.find(i => i.InvoiceId === payload.invoiceId);
+        const txnId = payload.transactionId || 'TXN-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+        
         if (targetInv) {
           targetInv.PaymentStatus = 'Paid';
+          targetInv.PaidAt = new Date().toLocaleString('en-IN');
+          targetInv.PaymentMethod = payload.paymentMethod || 'UPI';
+          targetInv.TransactionId = txnId;
           localStorage.setItem('ssh_invoices', JSON.stringify(invs));
+          appendAuditLog('PAYMENT_RECEIVED', 'Payments', `Payment of ₹${targetInv.GrandTotal} received for Invoice #${targetInv.InvoiceNumber} via ${targetInv.PaymentMethod}.`);
         }
-        return { success: true, message: 'Payment recorded successfully.' };
+
+        const pmtObj = {
+          PaymentId: 'PAY-' + Date.now(),
+          InvoiceId: payload.invoiceId,
+          Amount: targetInv ? targetInv.GrandTotal : (Number(payload.amount) || 0),
+          PaymentMethod: payload.paymentMethod || 'UPI',
+          TransactionId: txnId,
+          Status: 'Successful',
+          PaidAt: new Date().toLocaleString('en-IN')
+        };
+        pmts.push(pmtObj);
+        localStorage.setItem('ssh_payments', JSON.stringify(pmts));
+
+        return { success: true, payment: pmtObj, invoice: targetInv, message: 'Payment recorded successfully.' };
       }
 
       case 'submitFeedback': {
         const fdbs = JSON.parse(localStorage.getItem('ssh_feedback') || '[]');
-        fdbs.push({
+        const newFeedback = {
           FeedbackId: 'FDB-' + Date.now(),
           RequestId: payload.requestId,
-          OverallRating: payload.overallRating || 5,
+          OverallRating: Number(payload.overallRating) || 5,
           Comments: payload.comments || '',
           CreatedAt: new Date().toLocaleString('en-IN')
-        });
+        };
+        fdbs.push(newFeedback);
         localStorage.setItem('ssh_feedback', JSON.stringify(fdbs));
-        return { success: true, message: 'Feedback submitted.' };
+        appendAuditLog('FEEDBACK_SUBMITTED', 'Feedback', `Customer rated service #${payload.requestId} with ${newFeedback.OverallRating} Stars.`);
+        return { success: true, feedback: newFeedback, message: 'Thank you for your rating and feedback!' };
       }
 
       case 'getDashboard': {
