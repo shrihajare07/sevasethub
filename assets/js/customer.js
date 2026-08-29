@@ -83,6 +83,20 @@ $(document).ready(function() {
   }
 
   /**
+   * Helper: Calculate accurate final payable amount with 18% GST
+   */
+  function calculateInvoiceAmount(r, inv) {
+    if (inv && Number(inv.GrandTotal)) {
+      return Number(inv.GrandTotal);
+    }
+    const base = Number(r.BasePrice || 599);
+    const disc = Number(r.CouponDiscount || 0);
+    const sub = Math.max(0, base - disc);
+    const tax = Math.round(sub * 0.18);
+    return sub + tax;
+  }
+
+  /**
    * 2. Render Recent Requests Table on Dashboard
    */
   function renderRecentRequestsTable(reqs, invoices) {
@@ -96,12 +110,13 @@ $(document).ready(function() {
 
     reqs.forEach(r => {
       const statusBadge = getStatusBadge(r.Status);
-      const inv = invoices ? invoices.find(i => i.RequestId === r.RequestId) : null;
-      
+      const inv = invoices ? invoices.find(i => i.RequestId === r.RequestId || (r.InvoiceId && i.InvoiceId === r.InvoiceId)) : null;
+      const isPaid = (inv && inv.PaymentStatus === 'Paid') || r.PaymentStatus === 'Paid';
+      const payAmt = calculateInvoiceAmount(r, inv);
+
       let actionButtons = '';
       if (r.Status === 'Completed') {
-        if (!inv || inv.PaymentStatus === 'Pending') {
-          const payAmt = inv ? inv.GrandTotal : (Number(r.BasePrice || 599) - Number(r.CouponDiscount || 0));
+        if (!isPaid) {
           actionButtons = `
             <div class="d-flex gap-1">
               <button class="btn btn-sm btn-success fw-bold btn-pay-direct" data-invid="${inv ? inv.InvoiceId : ''}" data-reqid="${r.RequestId}" data-amount="${payAmt}" data-service="${r.ServiceName}">
@@ -172,14 +187,15 @@ $(document).ready(function() {
 
       filtered.forEach(r => {
         const statusBadge = getStatusBadge(r.Status);
-        const inv = allInvs.find(i => i.RequestId === r.RequestId);
+        const inv = allInvs.find(i => i.RequestId === r.RequestId || (r.InvoiceId && i.InvoiceId === r.InvoiceId));
+        const isPaid = (inv && inv.PaymentStatus === 'Paid') || r.PaymentStatus === 'Paid';
+        const payAmt = calculateInvoiceAmount(r, inv);
 
         let invoicePaymentCol = '<span class="text-muted small">Not generated</span>';
         let actionCol = '';
 
         if (r.Status === 'Completed') {
-          if (!inv || inv.PaymentStatus === 'Pending') {
-            const payAmt = inv ? inv.GrandTotal : (Number(r.BasePrice || 599) - Number(r.CouponDiscount || 0));
+          if (!isPaid) {
             invoicePaymentCol = `<span class="badge bg-warning text-dark"><i class="bi bi-clock-history me-1"></i>Payment Due: ₹${payAmt}</span>`;
             actionCol = `
               <div class="d-flex gap-1">
@@ -194,13 +210,13 @@ $(document).ready(function() {
           } else {
             invoicePaymentCol = `
               <div>
-                <span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>Paid ₹${inv.GrandTotal}</span>
-                <div class="small text-muted font-monospace">${inv.InvoiceNumber}</div>
+                <span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>Paid ₹${payAmt}</span>
+                <div class="small text-muted font-monospace">${inv ? inv.InvoiceNumber : 'INV-PAID'}</div>
               </div>
             `;
             actionCol = `
               <div class="d-flex gap-1">
-                <button class="btn btn-sm btn-outline-success btn-view-receipt-row" data-invid="${inv.InvoiceId}" title="View Receipt">
+                <button class="btn btn-sm btn-outline-success btn-view-receipt-row" data-invid="${inv ? inv.InvoiceId : ''}" data-reqid="${r.RequestId}" title="View Receipt">
                   <i class="bi bi-receipt"></i> Receipt
                 </button>
                 <button class="btn btn-sm btn-outline-primary btn-view-request" data-id="${r.RequestId}">
@@ -263,9 +279,10 @@ $(document).ready(function() {
 
     $('.btn-view-receipt-row').off('click').on('click', async function() {
       const invId = $(this).data('invid');
+      const reqId = $(this).data('reqid');
       try {
         const invs = await api.getInvoices();
-        const targetInv = invs.find(i => i.InvoiceId === invId);
+        let targetInv = invs.find(i => (invId && i.InvoiceId === invId) || (reqId && i.RequestId === reqId));
         if (targetInv) {
           openReceiptModal(targetInv);
         } else {
@@ -308,10 +325,13 @@ $(document).ready(function() {
           DiscountTotal: Number(req.CouponDiscount || 0),
           TaxTotal: Math.round((Math.max(0, Number(req.BasePrice || 599) - Number(req.CouponDiscount || 0))) * 0.18),
           GrandTotal: Math.round((Math.max(0, Number(req.BasePrice || 599) - Number(req.CouponDiscount || 0))) * 1.18),
-          PaymentStatus: 'Pending'
+          PaymentStatus: req.PaymentStatus === 'Paid' ? 'Paid' : 'Pending'
         };
 
-        const isPaid = inv.PaymentStatus === 'Paid';
+        const isPaid = (inv && inv.PaymentStatus === 'Paid') || req.PaymentStatus === 'Paid';
+        if (isPaid && inv) {
+          inv.PaymentStatus = 'Paid';
+        }
 
         $invContainer.html(`
           <div class="card p-3 border-2 ${isPaid ? 'border-success' : 'border-warning'}" style="background: ${isPaid ? 'rgba(16,185,129,0.04)' : 'rgba(245,158,11,0.04)'}; border-radius: var(--radius-lg);">
@@ -511,6 +531,7 @@ $(document).ready(function() {
     try {
       const res = await api.createPayment({
         invoiceId: invId,
+        requestId: reqId,
         paymentMethod: method,
         amount: 0 // Pay full
       });
@@ -519,10 +540,15 @@ $(document).ready(function() {
       const payModal = bootstrap.Modal.getInstance(document.getElementById('modalPayment'));
       if (payModal) payModal.hide();
 
-      // Refresh background data
-      loadCustomerDashboard();
-      if (!$('#section-requests').hasClass('d-none')) loadCustomerRequests(currentRequestFilter);
-      if (!$('#section-invoices').hasClass('d-none')) loadCustomerInvoices();
+      // Refresh background data across views
+      await loadCustomerDashboard();
+      if (!$('#section-requests').hasClass('d-none')) await loadCustomerRequests(currentRequestFilter);
+      if (!$('#section-invoices').hasClass('d-none')) await loadCustomerInvoices();
+
+      // If Track modal is currently open, refresh its view
+      if ($('#modalTrackRequest').hasClass('show') && reqId) {
+        await viewRequestDetails(reqId);
+      }
 
       // Open tax receipt modal
       if (res && res.invoice) {

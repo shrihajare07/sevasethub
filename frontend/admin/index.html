@@ -77,6 +77,9 @@
       <a href="#" class="nav-link-custom admin-nav-link" data-target="technicians">
         <i class="bi bi-people-fill"></i> <span>Technicians Roster</span>
       </a>
+      <a href="#" class="nav-link-custom admin-nav-link admin-only-section" data-target="dispatchers">
+        <i class="bi bi-headset"></i> <span>Dispatchers</span>
+      </a>
 
       <div class="menu-category mt-3 admin-only-section">Marketing & Sales</div>
       <a href="#" class="nav-link-custom admin-nav-link admin-only-section" data-target="offers">
@@ -344,7 +347,39 @@
         </div>
       </section>
 
-      <!-- SECTION 4: Offers Management -->
+      <!-- SECTION 3C: Dispatchers Management (SuperAdmin only) -->
+      <section id="section-dispatchers" class="admin-section d-none admin-only-section">
+        <div class="card border-0 shadow-sm mb-4" style="border-radius:var(--radius-xl);overflow:hidden;">
+          <div class="portal-card-header">
+            <div>
+              <h6 class="portal-card-header-title mb-0"><i class="bi bi-headset text-primary me-2"></i>Dispatcher User Management</h6>
+              <small class="text-muted">Manage dispatcher portal logins, assignments, and access credentials</small>
+            </div>
+            <button class="btn btn-primary btn-sm rounded-pill px-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalAddDispatcher" style="background:var(--gradient-brand);border:none;">
+              <i class="bi bi-person-plus-fill me-1"></i> Add New Dispatcher
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="table-admin-dispatchers">
+              <thead class="table-light">
+                <tr>
+                  <th>User ID &amp; Name</th>
+                  <th>Email Address</th>
+                  <th>Mobile</th>
+                  <th>City</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="dispatchers-table-body">
+                <tr><td colspan="6" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm"></span> Loading dispatchers...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+
       <section id="section-offers" class="admin-section d-none">
         <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
           <div class="portal-card-header">
@@ -831,7 +866,167 @@
   </div>
 </div>
 
+<!-- ============================================================
+     MODAL: Edit Technician Modal
+     ============================================================ -->
+<div class="modal fade" id="modalEditTechnician" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow" style="border-radius:var(--radius-xl);">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold"><i class="bi bi-person-gear text-primary me-2"></i>Edit Technician Profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="form-edit-technician">
+          <input type="hidden" id="edit-tech-id">
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="edit-tech-fullname">Full Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="edit-tech-fullname" required>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-semibold" for="edit-tech-mobile">Mobile Number <span class="text-danger">*</span></label>
+              <input type="tel" class="form-control" id="edit-tech-mobile" required maxlength="10">
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold" for="edit-tech-city">City / Territory</label>
+              <input type="text" class="form-control" id="edit-tech-city">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="edit-tech-email">Login Email Address <span class="text-danger">*</span></label>
+            <input type="email" class="form-control" id="edit-tech-email" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="edit-tech-password">Portal Login Password</label>
+            <input type="text" class="form-control" id="edit-tech-password" placeholder="Leave blank to keep existing password">
+            <small class="text-muted" style="font-size:0.75rem;">Leave blank to keep current password unchanged</small>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-semibold" for="edit-tech-specialization">Specialization</label>
+              <select class="form-select" id="edit-tech-specialization">
+                <option value="AC &amp; HVAC Service">AC &amp; HVAC Service</option>
+                <option value="Deep Cleaning &amp; Pest">Deep Cleaning &amp; Pest</option>
+                <option value="Plumbing Services">Plumbing Services</option>
+                <option value="Electrical Repairs">Electrical Repairs</option>
+                <option value="Fabrication &amp; Welding">Fabrication &amp; Welding</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold" for="edit-tech-status">Status</label>
+              <select class="form-select" id="edit-tech-status">
+                <option value="Available">Available (Active)</option>
+                <option value="Busy">Busy (On Duty)</option>
+                <option value="On-Leave">On-Leave</option>
+              </select>
+            </div>
+          </div>
+          <div class="mt-4">
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" id="btn-update-technician">
+              <i class="bi bi-check2-circle me-1"></i> Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Add Dispatcher Modal
+     ============================================================ -->
+<div class="modal fade" id="modalAddDispatcher" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow" style="border-radius:var(--radius-xl);">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold"><i class="bi bi-headset text-primary me-2"></i>Add New Dispatcher</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="form-add-dispatcher">
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="disp-fullname">Full Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="disp-fullname" placeholder="e.g. Priya Desai" required>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-semibold" for="disp-mobile">Mobile Number <span class="text-danger">*</span></label>
+              <input type="tel" class="form-control" id="disp-mobile" placeholder="10-digit mobile" required maxlength="10">
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold" for="disp-city">City</label>
+              <input type="text" class="form-control" id="disp-city" value="Kolhapur">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="disp-email">Login Email Address <span class="text-danger">*</span></label>
+            <input type="email" class="form-control" id="disp-email" placeholder="e.g. priya.disp@sevasetuhub.in" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="disp-password">Portal Login Password <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="disp-password" value="DispPassword@2026" required>
+            <small class="text-muted" style="font-size:0.75rem;">Default credentials for dispatcher portal login</small>
+          </div>
+          <div class="mt-4">
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" id="btn-save-dispatcher">
+              <i class="bi bi-check2-circle me-1"></i> Register &amp; Activate Dispatcher
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Edit Dispatcher Modal
+     ============================================================ -->
+<div class="modal fade" id="modalEditDispatcher" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow" style="border-radius:var(--radius-xl);">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold"><i class="bi bi-person-gear text-primary me-2"></i>Edit Dispatcher</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="form-edit-dispatcher">
+          <input type="hidden" id="edit-disp-id">
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="edit-disp-fullname">Full Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="edit-disp-fullname" required>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-semibold" for="edit-disp-mobile">Mobile Number</label>
+              <input type="tel" class="form-control" id="edit-disp-mobile" maxlength="10">
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold" for="edit-disp-city">City</label>
+              <input type="text" class="form-control" id="edit-disp-city">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="edit-disp-email">Login Email</label>
+            <input type="email" class="form-control" id="edit-disp-email" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="edit-disp-password">New Password</label>
+            <input type="text" class="form-control" id="edit-disp-password" placeholder="Leave blank to keep existing">
+          </div>
+          <div class="mt-4">
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" id="btn-update-dispatcher">
+              <i class="bi bi-check2-circle me-1"></i> Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Scripts -->
+
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

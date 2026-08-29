@@ -326,11 +326,37 @@ const api = (function () {
         const wos = JSON.parse(localStorage.getItem('ssh_work_orders') || '[]');
         const phts = JSON.parse(localStorage.getItem('ssh_photos') || '[]');
         const reps = JSON.parse(localStorage.getItem('ssh_reports') || '[]');
-        const invs = JSON.parse(localStorage.getItem('ssh_invoices') || '[]');
+        let invs = JSON.parse(localStorage.getItem('ssh_invoices') || '[]');
         const fdbs = JSON.parse(localStorage.getItem('ssh_feedback') || '[]');
 
         const req = reqs.find(r => r.RequestId === payload.requestId);
         if (!req) throw new Error('Service Request not found.');
+
+        // If request is completed and no invoice exists in ssh_invoices, generate one and save it so it has a persistent ID
+        let reqInvs = invs.filter(i => i.RequestId === payload.requestId);
+        if (req.Status === 'Completed' && reqInvs.length === 0) {
+          const base = Number(req.BasePrice) || 599;
+          const disc = Number(req.CouponDiscount) || 0;
+          const sub = Math.max(0, base - disc);
+          const tax = Math.round(sub * 0.18);
+          const autoInv = {
+            InvoiceId: 'INV-' + Math.floor(100000 + Math.random() * 900000),
+            InvoiceNumber: 'INV-2026-' + Math.floor(1000 + Math.random() * 9000),
+            RequestId: req.RequestId,
+            WorkOrderId: '',
+            CustomerId: req.CustomerId || 'CUS-001',
+            LabourTotal: base,
+            MaterialTotal: 0,
+            TaxTotal: tax,
+            DiscountTotal: disc,
+            GrandTotal: sub + tax,
+            PaymentStatus: req.PaymentStatus === 'Paid' ? 'Paid' : 'Pending',
+            CreatedAt: req.UpdatedAt || new Date().toLocaleString('en-IN')
+          };
+          invs.unshift(autoInv);
+          localStorage.setItem('ssh_invoices', JSON.stringify(invs));
+          reqInvs = [autoInv];
+        }
 
         return {
           request: req,
@@ -338,7 +364,7 @@ const api = (function () {
           workOrders: wos.filter(w => w.RequestId === payload.requestId),
           photos: phts.filter(p => p.RequestId === payload.requestId),
           reports: reps.filter(r => r.RequestId === payload.requestId),
-          invoices: invs.filter(i => i.RequestId === payload.requestId),
+          invoices: reqInvs,
           feedback: fdbs.filter(f => f.RequestId === payload.requestId)
         };
       }
@@ -751,10 +777,35 @@ const api = (function () {
 
       case 'createPayment': {
         const invs = JSON.parse(localStorage.getItem('ssh_invoices') || '[]');
+        const reqs = JSON.parse(localStorage.getItem('ssh_requests') || '[]');
         const pmts = JSON.parse(localStorage.getItem('ssh_payments') || '[]');
-        const targetInv = invs.find(i => i.InvoiceId === payload.invoiceId);
+
+        let targetInv = invs.find(i => (payload.invoiceId && i.InvoiceId === payload.invoiceId) || (payload.requestId && i.RequestId === payload.requestId));
         const txnId = payload.transactionId || 'TXN-' + Math.random().toString(36).substring(2, 10).toUpperCase();
-        
+        const targetReq = reqs.find(r => r.RequestId === (payload.requestId || (targetInv ? targetInv.RequestId : '')));
+
+        if (!targetInv && targetReq) {
+          const base = Number(targetReq.BasePrice) || 599;
+          const disc = Number(targetReq.CouponDiscount) || 0;
+          const sub = Math.max(0, base - disc);
+          const tax = Math.round(sub * 0.18);
+          targetInv = {
+            InvoiceId: payload.invoiceId || ('INV-' + Math.floor(100000 + Math.random() * 900000)),
+            InvoiceNumber: 'INV-2026-' + Math.floor(1000 + Math.random() * 9000),
+            RequestId: targetReq.RequestId,
+            WorkOrderId: '',
+            CustomerId: targetReq.CustomerId || 'CUS-001',
+            LabourTotal: base,
+            MaterialTotal: 0,
+            TaxTotal: tax,
+            DiscountTotal: disc,
+            GrandTotal: sub + tax,
+            PaymentStatus: 'Pending',
+            CreatedAt: targetReq.UpdatedAt || new Date().toLocaleString('en-IN')
+          };
+          invs.unshift(targetInv);
+        }
+
         if (targetInv) {
           targetInv.PaymentStatus = 'Paid';
           targetInv.PaidAt = new Date().toLocaleString('en-IN');
@@ -764,10 +815,16 @@ const api = (function () {
           appendAuditLog('PAYMENT_RECEIVED', 'Payments', `Payment of ₹${targetInv.GrandTotal} received for Invoice #${targetInv.InvoiceNumber} via ${targetInv.PaymentMethod}.`);
         }
 
+        if (targetReq) {
+          targetReq.PaymentStatus = 'Paid';
+          localStorage.setItem('ssh_requests', JSON.stringify(reqs));
+        }
+
         const pmtObj = {
           PaymentId: 'PAY-' + Date.now(),
-          InvoiceId: payload.invoiceId,
-          Amount: targetInv ? targetInv.GrandTotal : (Number(payload.amount) || 0),
+          InvoiceId: targetInv ? targetInv.InvoiceId : payload.invoiceId,
+          RequestId: targetReq ? targetReq.RequestId : (targetInv ? targetInv.RequestId : payload.requestId),
+          Amount: targetInv ? targetInv.GrandTotal : (Number(payload.amount) || 707),
           PaymentMethod: payload.paymentMethod || 'UPI',
           TransactionId: txnId,
           Status: 'Successful',
@@ -840,7 +897,8 @@ const api = (function () {
           localStorage.setItem('ssh_technicians', JSON.stringify(defaultTechs));
           return defaultTechs;
         }
-        return techs;
+        // Filter out soft-deleted technicians
+        return techs.filter(t => !t.IsDeleted);
       }
 
       case 'createTechnician': {
@@ -898,11 +956,80 @@ const api = (function () {
       }
 
       case 'deleteTechnician': {
-        let techs = JSON.parse(localStorage.getItem('ssh_technicians') || '[]');
-        const tech = techs.find(t => t.TechnicianId === payload.technicianId);
-        techs = techs.filter(t => t.TechnicianId !== payload.technicianId);
-        localStorage.setItem('ssh_technicians', JSON.stringify(techs));
-        appendAuditLog('TECHNICIAN_DELETED', 'Technicians', `Technician ${tech ? tech.FullName : payload.technicianId} removed from roster.`);
+        const techs = JSON.parse(localStorage.getItem('ssh_technicians') || '[]');
+        const idx = techs.findIndex(t => t.TechnicianId === payload.technicianId);
+        if (idx !== -1) {
+          techs[idx].IsDeleted = true;
+          techs[idx].DeletedAt = new Date().toLocaleString('en-IN');
+          localStorage.setItem('ssh_technicians', JSON.stringify(techs));
+          // Also soft-delete linked user account
+          const users = JSON.parse(localStorage.getItem('ssh_users') || '[]');
+          const uIdx = users.findIndex(u => u.TechnicianId === payload.technicianId || u.UserId === techs[idx].UserId);
+          if (uIdx !== -1) { users[uIdx].Status = 'Inactive'; localStorage.setItem('ssh_users', JSON.stringify(users)); }
+          appendAuditLog('TECHNICIAN_SOFT_DELETED', 'Technicians', `Technician ${techs[idx].FullName} (${payload.technicianId}) soft-deleted from roster.`);
+        }
+        return { success: true };
+      }
+
+      case 'getDispatchers': {
+        const users = JSON.parse(localStorage.getItem('ssh_users') || '[]');
+        return users.filter(u => u.Role === 'Dispatcher' && u.Status !== 'Inactive');
+      }
+
+      case 'createDispatcher': {
+        const users = JSON.parse(localStorage.getItem('ssh_users') || '[]');
+        const emailLower = (payload.email || '').trim().toLowerCase();
+        if (users.some(u => u.Email && u.Email.toLowerCase() === emailLower)) {
+          throw new Error('A user with this email already exists.');
+        }
+        const dispId = 'USR-DISP-' + Math.floor(100000 + Math.random() * 900000);
+        const nameParts = (payload.fullName || '').trim().split(' ');
+        const newDisp = {
+          UserId: dispId,
+          Email: payload.email,
+          Mobile: payload.mobile,
+          FirstName: nameParts[0] || 'Dispatcher',
+          LastName: nameParts.slice(1).join(' ') || 'Staff',
+          Role: 'Dispatcher',
+          Password: payload.password || 'DispPassword@2026',
+          City: payload.city || 'Kolhapur',
+          Status: 'Active',
+          CreatedAt: new Date().toLocaleString('en-IN')
+        };
+        users.push(newDisp);
+        localStorage.setItem('ssh_users', JSON.stringify(users));
+        appendAuditLog('DISPATCHER_ADDED', 'Users', `New dispatcher ${newDisp.FirstName} ${newDisp.LastName} (${dispId}) registered.`);
+        return newDisp;
+      }
+
+      case 'updateDispatcher': {
+        const users = JSON.parse(localStorage.getItem('ssh_users') || '[]');
+        const idx = users.findIndex(u => u.UserId === payload.userId);
+        if (idx === -1) throw new Error('Dispatcher not found.');
+        if (payload.fullName) {
+          const parts = payload.fullName.trim().split(' ');
+          users[idx].FirstName = parts[0];
+          users[idx].LastName = parts.slice(1).join(' ') || '';
+        }
+        if (payload.email) users[idx].Email = payload.email;
+        if (payload.mobile) users[idx].Mobile = payload.mobile;
+        if (payload.city) users[idx].City = payload.city;
+        if (payload.password) users[idx].Password = payload.password;
+        if (payload.status) users[idx].Status = payload.status;
+        localStorage.setItem('ssh_users', JSON.stringify(users));
+        appendAuditLog('DISPATCHER_UPDATED', 'Users', `Dispatcher ${users[idx].FirstName} ${users[idx].LastName} profile updated.`);
+        return users[idx];
+      }
+
+      case 'deleteDispatcher': {
+        const users = JSON.parse(localStorage.getItem('ssh_users') || '[]');
+        const idx = users.findIndex(u => u.UserId === payload.userId && u.Role === 'Dispatcher');
+        if (idx !== -1) {
+          users[idx].Status = 'Inactive';
+          users[idx].DeletedAt = new Date().toLocaleString('en-IN');
+          localStorage.setItem('ssh_users', JSON.stringify(users));
+          appendAuditLog('DISPATCHER_SOFT_DELETED', 'Users', `Dispatcher ${users[idx].FirstName} ${users[idx].LastName} soft-deleted.`);
+        }
         return { success: true };
       }
 
@@ -1252,6 +1379,10 @@ const api = (function () {
     createTechnician: (payload) => request('createTechnician', 'POST', payload),
     updateTechnician: (payload) => request('updateTechnician', 'POST', payload),
     deleteTechnician: (payload) => request('deleteTechnician', 'POST', payload),
+    getDispatchers: () => request('getDispatchers', 'GET'),
+    createDispatcher: (payload) => request('createDispatcher', 'POST', payload),
+    updateDispatcher: (payload) => request('updateDispatcher', 'POST', payload),
+    deleteDispatcher: (payload) => request('deleteDispatcher', 'POST', payload),
     getCustomers: () => request('getCustomers', 'GET'),
     getNotifications: () => request('getNotifications', 'GET'),
     getAuditLogs: () => request('getAuditLogs', 'GET'),

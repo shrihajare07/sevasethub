@@ -41,6 +41,7 @@ $(document).ready(function() {
     if (target === 'requests') loadAdminRequests();
     if (target === 'dispatch') loadDispatchBoardData();
     if (target === 'technicians') loadAdminTechnicians();
+    if (target === 'dispatchers') loadAdminDispatchers();
     if (target === 'offers') loadAdminOffers();
     if (target === 'coupons') loadAdminCoupons();
     if (target === 'invoices') loadAdminInvoices();
@@ -747,7 +748,8 @@ $(document).ready(function() {
                   <li><a class="dropdown-item btn-toggle-tech-status" href="#" data-id="${t.TechnicianId}" data-status="Busy"><i class="bi bi-clock text-warning"></i> Set Busy</a></li>
                   <li><a class="dropdown-item btn-toggle-tech-status" href="#" data-id="${t.TechnicianId}" data-status="On-Leave"><i class="bi bi-pause text-secondary"></i> Set On-Leave</a></li>
                   <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item text-danger btn-delete-tech" href="#" data-id="${t.TechnicianId}" data-name="${t.FullName}"><i class="bi bi-trash"></i> Remove</a></li>
+                  <li><a class="dropdown-item text-primary btn-edit-tech" href="#" data-id="${t.TechnicianId}"><i class="bi bi-pencil-square"></i> Edit Profile</a></li>
+                  <li><a class="dropdown-item text-danger btn-delete-tech" href="#" data-id="${t.TechnicianId}" data-name="${t.FullName}"><i class="bi bi-trash"></i> Soft Delete</a></li>
                 </ul>
               </div>
             </td>
@@ -769,12 +771,31 @@ $(document).ready(function() {
         }
       });
 
-      // Bind delete handler
+      // Bind Edit handler - pre-fill and open modal
+      $('.btn-edit-tech').on('click', async function(e) {
+        e.preventDefault();
+        const techId = $(this).data('id');
+        const techs = await api.getTechnicians();
+        const t = techs.find(tech => tech.TechnicianId === techId);
+        if (!t) return;
+        $('#edit-tech-id').val(t.TechnicianId);
+        $('#edit-tech-fullname').val(t.FullName);
+        $('#edit-tech-mobile').val(t.Mobile);
+        $('#edit-tech-email').val(t.Email);
+        $('#edit-tech-city').val(t.City);
+        $('#edit-tech-password').val('');
+        $('#edit-tech-specialization').val(t.Specialization);
+        $('#edit-tech-status').val(t.Status);
+        const modal = new bootstrap.Modal(document.getElementById('modalEditTechnician'));
+        modal.show();
+      });
+
+      // Bind soft-delete handler
       $('.btn-delete-tech').on('click', async function(e) {
         e.preventDefault();
         const techId = $(this).data('id');
         const techName = $(this).data('name');
-        if (confirm(`Are you sure you want to remove technician "${techName}" (${techId}) from the active roster?`)) {
+        if (confirm(`Soft-delete "${techName}" (${techId})? Their account will be deactivated but records will be preserved.`)) {
           try {
             await api.deleteTechnician({ technicianId: techId });
             loadAdminTechnicians();
@@ -788,6 +809,37 @@ $(document).ready(function() {
       $tbody.html(`<tr><td colspan="7" class="text-center py-4 text-danger"><i class="bi bi-exclamation-triangle me-1"></i> Error loading technicians: ${err.message}</td></tr>`);
     }
   }
+
+  // Handle Edit Technician Form Submit
+  $('#form-edit-technician').on('submit', async function(e) {
+    e.preventDefault();
+    const submitBtn = $('#btn-update-technician');
+    submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Updating...');
+    try {
+      const techId = $('#edit-tech-id').val();
+      const password = $('#edit-tech-password').val().trim();
+      const payload = {
+        technicianId: techId,
+        FullName: $('#edit-tech-fullname').val().trim(),
+        Mobile: $('#edit-tech-mobile').val().trim(),
+        Email: $('#edit-tech-email').val().trim(),
+        City: $('#edit-tech-city').val().trim(),
+        Specialization: $('#edit-tech-specialization').val(),
+        Status: $('#edit-tech-status').val()
+      };
+      if (password) payload.Password = password;
+      await api.updateTechnician(payload);
+      const modalEl = document.getElementById('modalEditTechnician');
+      const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+      modal.hide();
+      $('#form-edit-technician')[0].reset();
+      loadAdminTechnicians();
+    } catch (err) {
+      alert('Error updating technician: ' + err.message);
+    } finally {
+      submitBtn.prop('disabled', false).html('<i class="bi bi-check2-circle me-1"></i> Save Changes');
+    }
+  });
 
   // Handle Add Technician Form Submit
   $('#form-add-technician').on('submit', async function(e) {
@@ -822,6 +874,141 @@ $(document).ready(function() {
       alert('Error adding technician: ' + err.message);
     } finally {
       submitBtn.prop('disabled', false).html('<i class="bi bi-check2-circle me-1"></i> Register &amp; Activate Technician');
+    }
+  });
+
+  /**
+   * Dispatcher User Management (SuperAdmin only)
+   */
+  async function loadAdminDispatchers() {
+    const $tbody = $('#dispatchers-table-body');
+    $tbody.html('<tr><td colspan="6" class="text-center py-4"><span class="spinner-border spinner-border-sm text-primary"></span> Fetching dispatchers...</td></tr>');
+    try {
+      const disps = await api.getDispatchers();
+      $tbody.empty();
+
+      if (!disps || disps.length === 0) {
+        $tbody.html('<tr><td colspan="6" class="text-center py-4 text-muted"><i class="bi bi-headset fs-4 d-block mb-1 text-muted"></i>No dispatchers found. Click "+ Add New Dispatcher" to register one.</td></tr>');
+        return;
+      }
+
+      disps.forEach(d => {
+        const initials = `${(d.FirstName || 'D')[0]}${(d.LastName || 'S')[0]}`.toUpperCase();
+        $tbody.append(`
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div style="width:36px;height:36px;background:linear-gradient(135deg,#0284c7,#0369a1);color:#fff;font-size:0.85rem;font-weight:700;display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;">${initials}</div>
+                <div>
+                  <strong class="d-block text-dark">${d.FirstName} ${d.LastName}</strong>
+                  <span class="badge bg-light text-primary border" style="font-size:0.7rem;">${d.UserId}</span>
+                </div>
+              </div>
+            </td>
+            <td><i class="bi bi-envelope text-muted me-1 small"></i>${d.Email}</td>
+            <td><i class="bi bi-telephone text-muted me-1 small"></i><strong>${d.Mobile}</strong></td>
+            <td><i class="bi bi-geo-alt text-danger me-1 small"></i>${d.City || 'Kolhapur'}</td>
+            <td><span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Active</span></td>
+            <td>
+              <div class="d-flex gap-1">
+                <button class="btn btn-sm btn-outline-primary btn-edit-disp" data-id="${d.UserId}" title="Edit">
+                  <i class="bi bi-pencil-square"></i> Edit
+                </button>
+                <button class="btn btn-sm btn-outline-danger btn-delete-disp" data-id="${d.UserId}" data-name="${d.FirstName} ${d.LastName}" title="Soft Delete">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `);
+      });
+
+      // Edit dispatcher
+      $('.btn-edit-disp').on('click', function() {
+        const userId = $(this).data('id');
+        const disp = disps.find(d => d.UserId === userId);
+        if (!disp) return;
+        $('#edit-disp-id').val(disp.UserId);
+        $('#edit-disp-fullname').val(`${disp.FirstName} ${disp.LastName}`.trim());
+        $('#edit-disp-mobile').val(disp.Mobile);
+        $('#edit-disp-email').val(disp.Email);
+        $('#edit-disp-city').val(disp.City || 'Kolhapur');
+        $('#edit-disp-password').val('');
+        const modal = new bootstrap.Modal(document.getElementById('modalEditDispatcher'));
+        modal.show();
+      });
+
+      // Soft-delete dispatcher
+      $('.btn-delete-disp').on('click', async function() {
+        const userId = $(this).data('id');
+        const name = $(this).data('name');
+        if (confirm(`Soft-delete dispatcher "${name}"? Their login will be deactivated but records preserved.`)) {
+          try {
+            await api.deleteDispatcher({ userId });
+            loadAdminDispatchers();
+          } catch (err) {
+            alert('Failed to deactivate dispatcher: ' + err.message);
+          }
+        }
+      });
+
+    } catch (err) {
+      $tbody.html(`<tr><td colspan="6" class="text-center py-4 text-danger"><i class="bi bi-exclamation-triangle me-1"></i> Error: ${err.message}</td></tr>`);
+    }
+  }
+
+  // Handle Add Dispatcher Form Submit
+  $('#form-add-dispatcher').on('submit', async function(e) {
+    e.preventDefault();
+    const $btn = $('#btn-save-dispatcher');
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Registering...');
+    try {
+      const newDisp = await api.createDispatcher({
+        fullName: $('#disp-fullname').val().trim(),
+        mobile: $('#disp-mobile').val().trim(),
+        email: $('#disp-email').val().trim(),
+        password: $('#disp-password').val().trim() || 'DispPassword@2026',
+        city: $('#disp-city').val().trim() || 'Kolhapur'
+      });
+      alert(`Success! Dispatcher ${newDisp.FirstName} ${newDisp.LastName} (${newDisp.UserId}) has been registered and activated.`);
+      const modalEl = document.getElementById('modalAddDispatcher');
+      const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+      modal.hide();
+      $('#form-add-dispatcher')[0].reset();
+      $('#disp-password').val('DispPassword@2026');
+      loadAdminDispatchers();
+    } catch (err) {
+      alert('Error adding dispatcher: ' + err.message);
+    } finally {
+      $btn.prop('disabled', false).html('<i class="bi bi-check2-circle me-1"></i> Register &amp; Activate Dispatcher');
+    }
+  });
+
+  // Handle Edit Dispatcher Form Submit
+  $('#form-edit-dispatcher').on('submit', async function(e) {
+    e.preventDefault();
+    const $btn = $('#btn-update-dispatcher');
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Saving...');
+    try {
+      const userId = $('#edit-disp-id').val();
+      const password = $('#edit-disp-password').val().trim();
+      const payload = {
+        userId,
+        fullName: $('#edit-disp-fullname').val().trim(),
+        mobile: $('#edit-disp-mobile').val().trim(),
+        email: $('#edit-disp-email').val().trim(),
+        city: $('#edit-disp-city').val().trim()
+      };
+      if (password) payload.password = password;
+      await api.updateDispatcher(payload);
+      const modalEl = document.getElementById('modalEditDispatcher');
+      const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+      modal.hide();
+      loadAdminDispatchers();
+    } catch (err) {
+      alert('Error updating dispatcher: ' + err.message);
+    } finally {
+      $btn.prop('disabled', false).html('<i class="bi bi-check2-circle me-1"></i> Save Changes');
     }
   });
 
