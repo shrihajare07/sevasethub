@@ -1917,3 +1917,373 @@ body.lang-devanagari li {
 body.lang-devanagari .lang-btn {
     font-family: 'Noto Sans Devanagari', sans-serif;
 }
+
+/* ══════════════════════════════════════════════════════════
+   DRIBBBLE-INSPIRED LIQUID / GOOEY MORPHING LOADER SYSTEM
+   ══════════════════════════════════════════════════════════ */
+.seva-loader-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 50% 45%, rgba(14, 42, 71, 0.82) 0%, rgba(8, 18, 33, 0.92) 100%);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s ease;
+    padding: 1.5rem;
+}
+
+.seva-loader-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.seva-loader-card {
+    position: relative;
+    max-width: 400px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 25px 60px -12px rgba(8, 145, 178, 0.25), 0 18px 36px -18px rgba(0, 0, 0, 0.25);
+    padding: 2.5rem 2rem 2rem;
+    text-align: center;
+    transform: scale(0.92) translateY(12px);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+}
+
+.seva-loader-overlay.active .seva-loader-card {
+    transform: scale(1) translateY(0);
+}
+
+/* Card top glowing line */
+.seva-loader-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #0891b2 0%, #0284c7 50%, #10b981 100%);
+}
+
+/* Liquid Canvas Stage */
+.seva-liquid-stage {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Glowing Ambient Aura */
+.seva-liquid-aura {
+    position: absolute;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(8, 145, 178, 0.35) 0%, rgba(2, 132, 199, 0.15) 50%, transparent 70%);
+    filter: blur(12px);
+    animation: sevaAuraBreath 2.8s ease-in-out infinite alternate;
+}
+
+.seva-liquid-ring {
+    position: absolute;
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    border: 2px dashed rgba(8, 145, 178, 0.22);
+    animation: sevaRingRotate 14s linear infinite;
+}
+
+.seva-liquid-ring::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #0891b2;
+    box-shadow: 0 0 10px #0891b2;
+}
+
+/* Gooey Liquid Filter Scene */
+.seva-gooey-scene {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    filter: url('#seva-gooey-effect');
+    -webkit-filter: url('#seva-gooey-effect');
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Center Morphing Liquid Drop */
+.seva-liquid-core {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #0891b2 0%, #0284c7 60%, #0369a1 100%);
+    border-radius: 50%;
+    animation: sevaLiquidCoreMorph 3.2s ease-in-out infinite alternate;
+    box-shadow: 0 4px 14px rgba(8, 145, 178, 0.4);
+}
+
+/* Satellite Liquid Droplets that Orbit & Merge */
+.seva-liquid-drop {
+    position: absolute;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #38bdf8 0%, #0891b2 100%);
+}
+
+.seva-liquid-drop.drop-1 {
+    width: 26px;
+    height: 26px;
+    animation: sevaLiquidOrbit1 2.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+.seva-liquid-drop.drop-2 {
+    width: 22px;
+    height: 22px;
+    background: linear-gradient(135deg, #0284c7 0%, #10b981 100%);
+    animation: sevaLiquidOrbit2 2.6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite reverse;
+}
+
+.seva-liquid-drop.drop-3 {
+    width: 18px;
+    height: 18px;
+    background: linear-gradient(135deg, #06b6d4 0%, #0284c7 100%);
+    animation: sevaLiquidOrbit3 1.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+/* Floating Brand Icon atop liquid */
+.seva-liquid-brand-symbol {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.1rem;
+    pointer-events: none;
+    z-index: 5;
+    animation: sevaSymbolFloat 2.8s ease-in-out infinite alternate;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+}
+
+/* Loader Text & Information */
+.seva-loader-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.35rem;
+    letter-spacing: -0.01em;
+}
+
+.seva-loader-subtitle {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 1.25rem;
+    line-height: 1.45;
+}
+
+.seva-loader-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: rgba(8, 145, 178, 0.08);
+    border: 1px solid rgba(8, 145, 178, 0.2);
+    border-radius: 999px;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #0891b2;
+}
+
+.seva-loader-pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #0891b2;
+    box-shadow: 0 0 0 0 rgba(8, 145, 178, 0.6);
+    animation: sevaDotPulse 1.4s infinite;
+}
+
+/* Progress bar inside card */
+.seva-loader-progress-wrap {
+    width: 100%;
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 1rem;
+    display: none;
+}
+
+.seva-loader-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #0891b2 0%, #0284c7 50%, #10b981 100%);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+}
+
+/* ══════════════════════════════════════════════════════════
+   INLINE LIQUID LOADER (Tables, Section Placeholders, Cards)
+   ══════════════════════════════════════════════════════════ */
+.seva-liquid-inline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    width: 100%;
+}
+
+.seva-liquid-inline .seva-liquid-stage {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 1rem;
+}
+
+.seva-liquid-inline .seva-liquid-aura {
+    width: 76px;
+    height: 76px;
+}
+
+.seva-liquid-inline .seva-liquid-ring {
+    width: 72px;
+    height: 72px;
+}
+
+.seva-liquid-inline .seva-gooey-scene {
+    width: 64px;
+    height: 64px;
+}
+
+.seva-liquid-inline .seva-liquid-core {
+    width: 32px;
+    height: 32px;
+}
+
+.seva-liquid-inline .seva-liquid-drop.drop-1 { width: 18px; height: 18px; }
+.seva-liquid-inline .seva-liquid-drop.drop-2 { width: 15px; height: 15px; }
+.seva-liquid-inline .seva-liquid-drop.drop-3 { width: 12px; height: 12px; }
+
+.seva-liquid-inline .seva-liquid-brand-symbol {
+    font-size: 0.85rem;
+}
+
+.seva-liquid-inline-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.seva-liquid-inline-subtitle {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+/* ══════════════════════════════════════════════════════════
+   KEYFRAME ANIMATIONS
+   ══════════════════════════════════════════════════════════ */
+@keyframes sevaAuraBreath {
+    0%   { transform: scale(0.9); opacity: 0.45; }
+    100% { transform: scale(1.25); opacity: 0.85; }
+}
+
+@keyframes sevaRingRotate {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes sevaLiquidCoreMorph {
+    0% {
+        border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
+        transform: scale(0.95) rotate(0deg);
+    }
+    33% {
+        border-radius: 40% 60% 55% 45% / 55% 45% 60% 40%;
+        transform: scale(1.06) rotate(60deg);
+    }
+    66% {
+        border-radius: 60% 40% 45% 55% / 45% 55% 40% 60%;
+        transform: scale(0.98) rotate(140deg);
+    }
+    100% {
+        border-radius: 50% 50% 40% 60% / 60% 40% 50% 50%;
+        transform: scale(1.04) rotate(220deg);
+    }
+}
+
+@keyframes sevaLiquidOrbit1 {
+    0% {
+        transform: rotate(0deg) translateX(30px) rotate(0deg) scale(1);
+    }
+    50% {
+        transform: rotate(180deg) translateX(35px) rotate(-180deg) scale(1.15);
+    }
+    100% {
+        transform: rotate(360deg) translateX(30px) rotate(-360deg) scale(1);
+    }
+}
+
+@keyframes sevaLiquidOrbit2 {
+    0% {
+        transform: rotate(60deg) translateX(26px) rotate(-60deg) scale(0.9);
+    }
+    50% {
+        transform: rotate(240deg) translateX(32px) rotate(-240deg) scale(1.1);
+    }
+    100% {
+        transform: rotate(420deg) translateX(26px) rotate(-420deg) scale(0.9);
+    }
+}
+
+@keyframes sevaLiquidOrbit3 {
+    0% {
+        transform: rotate(180deg) translateX(22px) rotate(-180deg) scale(0.85);
+    }
+    50% {
+        transform: rotate(360deg) translateX(28px) rotate(-360deg) scale(1.05);
+    }
+    100% {
+        transform: rotate(540deg) translateX(22px) rotate(-540deg) scale(0.85);
+    }
+}
+
+@keyframes sevaSymbolFloat {
+    0%   { transform: translateY(-1px) scale(0.95); opacity: 0.9; }
+    100% { transform: translateY(2px) scale(1.05); opacity: 1; }
+}
+
+@keyframes sevaDotPulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(8, 145, 178, 0.7);
+    }
+    70% {
+        transform: scale(1.2);
+        box-shadow: 0 0 0 8px rgba(8, 145, 178, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(8, 145, 178, 0);
+    }
+}
+

@@ -511,6 +511,16 @@ $(document).ready(async function() {
     const $submitBtn = $('#btn-submit-booking');
     $submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Booking Certified Service...');
 
+    if (window.SevaLoader) {
+      SevaLoader.show({
+        title: 'Confirming Your Doorstep Booking',
+        subtitle: `Assigning certified technician and registering your portal account for ${fullName}...`,
+        statusText: 'Registering Customer Account',
+        icon: 'bi-tools',
+        progress: 25
+      });
+    }
+
     try {
       const payload = {
         customerName: fullName,
@@ -532,8 +542,26 @@ $(document).ready(async function() {
         priority: 'High'
       };
 
+      if (window.SevaLoader) {
+        SevaLoader.update({
+          subtitle: 'Encrypting job notes and locking in preferred time slot...',
+          statusText: 'Creating Service Request',
+          progress: 60
+        });
+      }
+
       const res = await api.createServiceRequest(payload);
       const reqId = res.RequestId || (res.request ? res.request.RequestId : 'REQ-104930');
+
+      if (window.SevaLoader) {
+        SevaLoader.update({
+          title: 'Booking Confirmed!',
+          subtitle: `Request #${reqId} placed successfully. Preparing your customer tracker...`,
+          statusText: 'Account & Booking Active',
+          icon: 'bi-patch-check-fill',
+          progress: 100
+        });
+      }
 
       // The session is already set inside api.createServiceRequest with the correct CustomerId
       // that matches the saved request. Do NOT generate new random IDs here.
@@ -595,8 +623,11 @@ $(document).ready(async function() {
         });
       }
 
-      const successModal = new bootstrap.Modal(document.getElementById('modalBookingSuccess'));
-      successModal.show();
+      setTimeout(() => {
+        if (window.SevaLoader) SevaLoader.hide();
+        const successModal = new bootstrap.Modal(document.getElementById('modalBookingSuccess'));
+        successModal.show();
+      }, 500);
 
       // Wire the portal button — navigate only after session is confirmed in storage
       $('#btn-go-portal').off('click').on('click', function() {
@@ -612,6 +643,7 @@ $(document).ready(async function() {
       }, 6000);
 
     } catch (err) {
+      if (window.SevaLoader) SevaLoader.hide();
       alert('Booking could not be processed: ' + err.message);
     } finally {
       $submitBtn.prop('disabled', false).html('<i class="bi bi-check-circle-fill me-1"></i> Confirm Booking &amp; Register');

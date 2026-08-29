@@ -414,6 +414,7 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../assets/js/security.js"></script>
+<script src="../assets/js/components.js"></script>
 <script src="../assets/js/api.js"></script>
 <script src="../assets/js/auth.js"></script>
 
@@ -450,17 +451,38 @@
       $('#form-login').submit();
     });
 
-    // Form submit
+    // Form submit with Liquid Loader
     $('#form-login').on('submit', async function(e) {
       e.preventDefault();
       const email = $('#login-email').val().trim();
       const password = $('#login-password').val();
       const btn = $('#btn-submit-login');
       btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Verifying...');
+
+      if (window.SevaLoader) {
+        SevaLoader.show({
+          title: 'Authenticating Account',
+          subtitle: 'Verifying your credentials and establishing a secure session...',
+          statusText: 'Verifying Security Token',
+          icon: 'bi-shield-lock-fill'
+        });
+      }
+
       try {
         const res = await api.login(email, password);
-        AuthGuard.redirectByRole(res.user.role);
+        if (window.SevaLoader) {
+          SevaLoader.update({
+            title: 'Welcome Back!',
+            subtitle: `Signed in as ${res.user.fullName || res.user.firstName}. Redirecting to dashboard...`,
+            statusText: 'Session Active',
+            icon: 'bi-check-circle-fill'
+          });
+        }
+        setTimeout(() => {
+          AuthGuard.redirectByRole(res.user.role);
+        }, 500);
       } catch (err) {
+        if (window.SevaLoader) SevaLoader.hide();
         alert('Login failed: ' + err.message);
       } finally {
         btn.prop('disabled', false).text('Sign In to Dashboard');

@@ -174,6 +174,9 @@ $(document).ready(function() {
   }
 
   function getTableLoaderHtml(cols, text = 'Loading latest records...') {
+    if (window.SevaLoader) {
+      return `<tr><td colspan="${cols}" class="p-0 border-0">${window.SevaLoader.getHtml({ title: text, subtitle: 'Syncing live dispatch ledger' })}</td></tr>`;
+    }
     return `<tr><td colspan="${cols}" class="text-center py-5">
       <div class="table-loading-wrap">
         <div class="spinner-border text-primary" role="status" style="width:2.2rem;height:2.2rem;">

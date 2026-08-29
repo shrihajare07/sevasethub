@@ -221,9 +221,194 @@ const SevaCounter = (() => {
     return { init };
 })();
 
+/* ════════════════════════════════════════════════════════
+   DRIBBBLE-INSPIRED LIQUID / GOOEY LOADER ENGINE
+   ════════════════════════════════════════════════════════ */
+const SevaLoader = (() => {
+    let overlayEl = null;
+
+    function ensureGooeyFilter() {
+        if (!document.getElementById('seva-gooey-svg-filter')) {
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.id = 'seva-gooey-svg-filter';
+            svg.setAttribute('style', 'position:absolute;width:0;height:0;pointer-events:none;opacity:0;');
+            svg.setAttribute('aria-hidden', 'true');
+            svg.innerHTML = `
+                <defs>
+                    <filter id="seva-gooey-effect">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="blur" />
+                        <feColorMatrix in="blur" mode="matrix" values="
+                            1 0 0 0 0
+                            0 1 0 0 0
+                            0 0 1 0 0
+                            0 0 0 20 -8" result="goo" />
+                        <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+                    </filter>
+                </defs>
+            `;
+            document.body.appendChild(svg);
+        }
+    }
+
+    function getOverlay() {
+        ensureGooeyFilter();
+        if (!overlayEl) {
+            overlayEl = document.getElementById('seva-global-loader');
+            if (!overlayEl) {
+                overlayEl = document.createElement('div');
+                overlayEl.id = 'seva-global-loader';
+                overlayEl.className = 'seva-loader-overlay';
+                overlayEl.setAttribute('role', 'status');
+                overlayEl.setAttribute('aria-live', 'polite');
+                overlayEl.innerHTML = `
+                    <div class="seva-loader-card">
+                        <div class="seva-liquid-stage">
+                            <div class="seva-liquid-aura"></div>
+                            <div class="seva-liquid-ring"></div>
+                            <div class="seva-gooey-scene">
+                                <div class="seva-liquid-core"></div>
+                                <div class="seva-liquid-drop drop-1"></div>
+                                <div class="seva-liquid-drop drop-2"></div>
+                                <div class="seva-liquid-drop drop-3"></div>
+                            </div>
+                            <div class="seva-liquid-brand-symbol">
+                                <i class="bi bi-patch-check-fill" id="seva-loader-icon"></i>
+                            </div>
+                        </div>
+
+                        <div class="seva-loader-title" id="seva-loader-title">Connecting to SevaSetuHub</div>
+                        <div class="seva-loader-subtitle" id="seva-loader-subtitle">Please wait while we process your request securely...</div>
+
+                        <div class="seva-loader-status-pill">
+                            <span class="seva-loader-pulse-dot"></span>
+                            <span id="seva-loader-status">Processing</span>
+                        </div>
+
+                        <div class="seva-loader-progress-wrap" id="seva-loader-progress-wrap">
+                            <div class="seva-loader-progress-bar" id="seva-loader-progress-bar"></div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlayEl);
+            }
+        }
+        return overlayEl;
+    }
+
+    /**
+     * Show the fullscreen Liquid Loader
+     * @param {Object} options
+     * @param {string} options.title - Header text
+     * @param {string} options.subtitle - Description / subtext
+     * @param {string} options.statusText - Pill badge status
+     * @param {string} options.icon - Bootstrap icon class (e.g. 'bi-tools')
+     * @param {number} [options.progress] - Optional percentage 0-100
+     */
+    function show(options = {}) {
+        const overlay = getOverlay();
+        const titleEl = overlay.querySelector('#seva-loader-title');
+        const subEl = overlay.querySelector('#seva-loader-subtitle');
+        const statusEl = overlay.querySelector('#seva-loader-status');
+        const iconEl = overlay.querySelector('#seva-loader-icon');
+        const progWrap = overlay.querySelector('#seva-loader-progress-wrap');
+        const progBar = overlay.querySelector('#seva-loader-progress-bar');
+
+        if (titleEl) titleEl.textContent = options.title || 'Connecting to SevaSetuHub';
+        if (subEl) subEl.textContent = options.subtitle || 'Please wait while we process your request securely...';
+        if (statusEl) statusEl.textContent = options.statusText || 'Processing';
+        if (iconEl && options.icon) iconEl.className = `bi ${options.icon}`;
+
+        if (typeof options.progress === 'number') {
+            if (progWrap) progWrap.style.display = 'block';
+            if (progBar) progBar.style.width = Math.min(100, Math.max(0, options.progress)) + '%';
+        } else {
+            if (progWrap) progWrap.style.display = 'none';
+        }
+
+        // Force reflow and add active class
+        requestAnimationFrame(() => {
+            overlay.classList.add('active');
+        });
+    }
+
+    /**
+     * Update active loader text / progress dynamically
+     */
+    function update(options = {}) {
+        if (!overlayEl || !overlayEl.classList.contains('active')) return;
+        const titleEl = overlayEl.querySelector('#seva-loader-title');
+        const subEl = overlayEl.querySelector('#seva-loader-subtitle');
+        const statusEl = overlayEl.querySelector('#seva-loader-status');
+        const iconEl = overlayEl.querySelector('#seva-loader-icon');
+        const progWrap = overlayEl.querySelector('#seva-loader-progress-wrap');
+        const progBar = overlayEl.querySelector('#seva-loader-progress-bar');
+
+        if (options.title && titleEl) titleEl.textContent = options.title;
+        if (options.subtitle && subEl) subEl.textContent = options.subtitle;
+        if (options.statusText && statusEl) statusEl.textContent = options.statusText;
+        if (options.icon && iconEl) iconEl.className = `bi ${options.icon}`;
+
+        if (typeof options.progress === 'number') {
+            if (progWrap) progWrap.style.display = 'block';
+            if (progBar) progBar.style.width = Math.min(100, Math.max(0, options.progress)) + '%';
+        }
+    }
+
+    /**
+     * Hide and dismiss the liquid loader
+     */
+    function hide(delayMs = 0) {
+        if (!overlayEl) return;
+        setTimeout(() => {
+            overlayEl.classList.remove('active');
+        }, delayMs);
+    }
+
+    /**
+     * Get HTML string for embedding inline in tables, cards, or containers
+     */
+    function getHtml(options = {}) {
+        ensureGooeyFilter();
+        const title = options.title || 'Loading latest records...';
+        const subtitle = options.subtitle || 'Syncing data with cloud ledger';
+        const icon = options.icon || 'bi-patch-check-fill';
+
+        return `
+            <div class="seva-liquid-inline">
+                <div class="seva-liquid-stage">
+                    <div class="seva-liquid-aura"></div>
+                    <div class="seva-liquid-ring"></div>
+                    <div class="seva-gooey-scene">
+                        <div class="seva-liquid-core"></div>
+                        <div class="seva-liquid-drop drop-1"></div>
+                        <div class="seva-liquid-drop drop-2"></div>
+                        <div class="seva-liquid-drop drop-3"></div>
+                    </div>
+                    <div class="seva-liquid-brand-symbol">
+                        <i class="bi ${icon}"></i>
+                    </div>
+                </div>
+                <div class="seva-liquid-inline-title">${title}</div>
+                <div class="seva-liquid-inline-subtitle">${subtitle}</div>
+            </div>
+        `;
+    }
+
+    // Auto-inject filter when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ensureGooeyFilter);
+    } else {
+        ensureGooeyFilter();
+    }
+
+    return { show, update, hide, getHtml };
+})();
+
 // Export globals
 window.SevaToast      = SevaToast;
 window.SevaClipboard  = SevaClipboard;
 window.SevaScroll     = SevaScroll;
 window.SevaAnimations = SevaAnimations;
 window.SevaCounter    = SevaCounter;
+window.SevaLoader     = SevaLoader;
+
