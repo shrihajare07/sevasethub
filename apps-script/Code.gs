@@ -128,6 +128,10 @@ function doGet(e) {
         responseData = UsersModule.getTechnicians(params.token);
         break;
 
+      case 'getDispatchers':
+        responseData = UsersModule.getDispatchers(params.token);
+        break;
+
       case 'getCustomers':
         responseData = UsersModule.getCustomers(params.token);
         break;
@@ -312,6 +316,32 @@ function doPost(e) {
 
       case 'submitFeedback':
         responseData = PaymentsModule.submitFeedback(payload);
+        break;
+
+      // Technician Management
+      case 'createTechnician':
+        responseData = UsersModule.createTechnician(payload);
+        break;
+
+      case 'updateTechnician':
+        responseData = UsersModule.updateTechnician(payload);
+        break;
+
+      case 'deleteTechnician':
+        responseData = UsersModule.deleteTechnician(payload);
+        break;
+
+      // Dispatcher Management
+      case 'createDispatcher':
+        responseData = UsersModule.createDispatcher(payload);
+        break;
+
+      case 'updateDispatcher':
+        responseData = UsersModule.updateDispatcher(payload);
+        break;
+
+      case 'deleteDispatcher':
+        responseData = UsersModule.deleteDispatcher(payload);
         break;
 
       // Notifications

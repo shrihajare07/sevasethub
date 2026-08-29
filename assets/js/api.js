@@ -156,8 +156,7 @@ const api = (function () {
 
         if (!user) throw new Error('No account found with this email or mobile number.');
         if (user.Status === 'Inactive' || user.IsDeleted) throw new Error('This account has been deactivated. Please contact support.');
-        // Accept the stored password exactly, or the universal demo password
-        if (user.Password !== payload.password && payload.password !== 'demo') {
+        if (user.Password !== payload.password) {
           throw new Error('Incorrect password. Please try again.');
         }
 
@@ -986,23 +985,30 @@ const api = (function () {
 
       case 'getTechnicians': {
         const techs = JSON.parse(localStorage.getItem('ssh_technicians') || '[]');
-        if (techs.length === 0) {
-          const defaultTechs = [
-            { TechnicianId: 'TCH-001', UserId: 'USR-TECH', FullName: 'Mahesh Patil', Mobile: '9822001122', Email: 'tech@sevasetuhub.in', Specialization: 'AC & HVAC Service', City: 'Kolhapur', Rating: 4.9, Status: 'Available', CreatedAt: '2026-08-20' },
-            { TechnicianId: 'TCH-002', UserId: 'USR-TECH-002', FullName: 'Sachin Kulkarni', Mobile: '9822003344', Email: 'sachin.k@sevasetuhub.in', Specialization: 'Electrical Repairs', City: 'Kolhapur', Rating: 4.8, Status: 'Busy', CreatedAt: '2026-08-20' },
-            { TechnicianId: 'TCH-003', UserId: 'USR-TECH-003', FullName: 'Ramesh Jadhav', Mobile: '9822005566', Email: 'ramesh.j@sevasetuhub.in', Specialization: 'Plumbing Services', City: 'Sangli', Rating: 4.9, Status: 'Available', CreatedAt: '2026-08-21' },
-            { TechnicianId: 'TCH-004', UserId: 'USR-TECH-004', FullName: 'Anil Shinde', Mobile: '9822007788', Email: 'anil.s@sevasetuhub.in', Specialization: 'Deep Cleaning & Pest', City: 'Kolhapur', Rating: 4.7, Status: 'Available', CreatedAt: '2026-08-21' }
-          ];
-          localStorage.setItem('ssh_technicians', JSON.stringify(defaultTechs));
-          return defaultTechs;
-        }
-        // Filter out soft-deleted technicians
+        // Filter out soft-deleted technicians; return empty array when none added yet
         return techs.filter(t => !t.IsDeleted);
       }
 
       case 'createTechnician': {
         const techs = JSON.parse(localStorage.getItem('ssh_technicians') || '[]');
         const users = JSON.parse(localStorage.getItem('ssh_users') || '[]');
+
+        // Duplicate email / mobile validation
+        const emailLowerT = (payload.email || '').trim().toLowerCase();
+        const mobileT = (payload.mobile || '').trim();
+        if (emailLowerT && users.some(u => u.Email && u.Email.toLowerCase() === emailLowerT)) {
+          throw new Error('A user account with this email already exists.');
+        }
+        if (mobileT && users.some(u => String(u.Mobile || '') === mobileT)) {
+          throw new Error('A user account with this mobile number already exists.');
+        }
+        if (emailLowerT && techs.some(t => !t.IsDeleted && t.Email && t.Email.toLowerCase() === emailLowerT)) {
+          throw new Error('A technician with this email is already registered.');
+        }
+        if (mobileT && techs.some(t => !t.IsDeleted && String(t.Mobile || '') === mobileT)) {
+          throw new Error('A technician with this mobile number is already registered.');
+        }
+
         const techId = 'TCH-' + Math.floor(100 + Math.random() * 900);
         const userId = 'USR-' + techId;
 
@@ -1078,8 +1084,12 @@ const api = (function () {
       case 'createDispatcher': {
         const users = JSON.parse(localStorage.getItem('ssh_users') || '[]');
         const emailLower = (payload.email || '').trim().toLowerCase();
-        if (users.some(u => u.Email && u.Email.toLowerCase() === emailLower)) {
-          throw new Error('A user with this email already exists.');
+        const mobileD = (payload.mobile || '').trim();
+        if (emailLower && users.some(u => u.Email && u.Email.toLowerCase() === emailLower)) {
+          throw new Error('A user account with this email already exists.');
+        }
+        if (mobileD && users.some(u => String(u.Mobile || '') === mobileD)) {
+          throw new Error('A user account with this mobile number already exists.');
         }
         const dispId = 'USR-DISP-' + Math.floor(100000 + Math.random() * 900000);
         const nameParts = (payload.fullName || '').trim().split(' ');
@@ -1132,12 +1142,20 @@ const api = (function () {
         return { success: true };
       }
 
-      case 'getCustomers':
-        return [
-          { CustomerId: 'CUS-001', FullName: 'Rahul Deshmukh', Mobile: '9890123456', Email: 'rahul.d@gmail.com', City: 'Kolhapur' },
-          { CustomerId: 'CUS-002', FullName: 'Pooja Sawant', Mobile: '9890654321', Email: 'pooja.s@yahoo.com', City: 'Kolhapur' },
-          { CustomerId: 'CUS-003', FullName: 'Amit Joshi', Mobile: '9890789012', Email: 'amit.j@outlook.com', City: 'Sangli' }
-        ];
+      case 'getCustomers': {
+        // Return real customers registered through the app
+        const allUsers = JSON.parse(localStorage.getItem('ssh_users') || '[]');
+        return allUsers
+          .filter(u => u.Role === 'Customer' && !u.IsDeleted && u.Status !== 'Inactive')
+          .map(u => ({
+            CustomerId: u.CustomerId || u.UserId,
+            FullName: `${u.FirstName || ''} ${u.LastName || ''}`.trim(),
+            Mobile: u.Mobile,
+            Email: u.Email,
+            City: u.City || '',
+            CreatedAt: u.CreatedAt || ''
+          }));
+      }
 
       case 'getAuditLogs': {
         const localLogs = JSON.parse(localStorage.getItem('ssh_audit_logs') || '[]');
@@ -1205,6 +1223,62 @@ const api = (function () {
    * Seed Local Storage for instant out-of-the-box browser demonstration
    */
   function ensureLocalSeedData() {
+    // ── One-time migration: remove old mock/demo accounts ────────────────
+    // Removes demo accounts from any localStorage seeded by a previous version.
+    const MOCK_PURGE_KEY = 'ssh_mock_purged_v2';
+    if (!localStorage.getItem(MOCK_PURGE_KEY)) {
+      const MOCK_EMAILS = [
+        'admin@sevasetuhub.in',
+        'dispatch@sevasetuhub.in',
+        'tech@sevasetuhub.in',
+        'tech2@sevasetuhub.in',
+        'customer@sevasetuhub.in',
+        'sachin.k@sevasetuhub.in',
+        'ramesh.j@sevasetuhub.in',
+        'anil.s@sevasetuhub.in'
+      ];
+      const MOCK_TECH_IDS = ['TCH-001', 'TCH-002', 'TCH-003', 'TCH-004'];
+      const MOCK_USER_IDS = ['USR-ADMIN', 'USR-DISP', 'USR-TECH', 'USR-TECH-002', 'USR-TECH-003', 'USR-TECH-004', 'USR-CUST'];
+      const MOCK_REQ_IDS  = ['REQ-104928', 'REQ-104929'];
+      const MOCK_WO_IDS   = ['WO-882910', 'WO-882911', 'WO-882912', 'WO-882913', 'WO-882901'];
+
+      // Purge mock users
+      try {
+        const users = JSON.parse(localStorage.getItem('ssh_users') || '[]');
+        const cleaned = users.filter(u =>
+          !MOCK_EMAILS.includes((u.Email || '').toLowerCase()) &&
+          !MOCK_USER_IDS.includes(u.UserId)
+        );
+        localStorage.setItem('ssh_users', JSON.stringify(cleaned));
+      } catch (e) { /* silent */ }
+
+      // Purge mock technicians
+      try {
+        const techs = JSON.parse(localStorage.getItem('ssh_technicians') || '[]');
+        const cleaned = techs.filter(t =>
+          !MOCK_TECH_IDS.includes(t.TechnicianId) &&
+          !MOCK_EMAILS.includes((t.Email || '').toLowerCase())
+        );
+        localStorage.setItem('ssh_technicians', JSON.stringify(cleaned));
+      } catch (e) { /* silent */ }
+
+      // Purge mock service requests
+      try {
+        const reqs = JSON.parse(localStorage.getItem('ssh_requests') || '[]');
+        const cleaned = reqs.filter(r => !MOCK_REQ_IDS.includes(r.RequestId));
+        localStorage.setItem('ssh_requests', JSON.stringify(cleaned));
+      } catch (e) { /* silent */ }
+
+      // Purge mock work orders
+      try {
+        const wos = JSON.parse(localStorage.getItem('ssh_work_orders') || '[]');
+        const cleaned = wos.filter(w => !MOCK_WO_IDS.includes(w.WorkOrderId));
+        localStorage.setItem('ssh_work_orders', JSON.stringify(cleaned));
+      } catch (e) { /* silent */ }
+
+      localStorage.setItem(MOCK_PURGE_KEY, '1');
+    }
+
     if (!localStorage.getItem('ssh_categories')) {
       const categories = [
         { CategoryId: 'CAT-AC', Name: 'AC Service & Repair', Slug: 'ac-service', Icon: 'bi-snow', Description: 'Precision cooling, foam jet wash, gas refill, repair & AMC' },
@@ -1248,175 +1322,47 @@ const api = (function () {
       localStorage.setItem('ssh_coupons', JSON.stringify(coupons));
     }
 
+    // ── Real admin credentials only ──────────────────────────────────────
     if (!localStorage.getItem('ssh_users')) {
       const users = [
-        { UserId: 'USR-ADMIN', Email: 'admin@sevasetuhub.in', Mobile: '9876543210', FirstName: 'Super', LastName: 'Admin', Role: 'SuperAdmin', Password: 'AdminPassword@2026', Status: 'Active' },
-        { UserId: 'USR-DISP', Email: 'dispatch@sevasetuhub.in', Mobile: '9876543211', FirstName: 'Rahul', LastName: 'Dispatcher', Role: 'Dispatcher', Password: 'DispPassword@2026', Status: 'Active' },
-        { UserId: 'USR-TECH', Email: 'tech@sevasetuhub.in', Mobile: '9822001122', FirstName: 'Mahesh', LastName: 'Patil', Role: 'Technician', TechnicianId: 'TCH-001', Password: 'TechPassword@2026', Status: 'Active' },
-        { UserId: 'USR-CUST', Email: 'customer@sevasetuhub.in', Mobile: '9890123456', FirstName: 'Suresh', LastName: 'Kadam', Role: 'Customer', CustomerId: 'CUS-001', Password: 'CustPassword@2026', Status: 'Active' }
+        {
+          UserId: 'USR-ADMIN-001',
+          Email: 'shri.hajare@gmail.com',
+          Mobile: '9876543210',
+          FirstName: 'Shri',
+          LastName: 'Hajare',
+          Role: 'SuperAdmin',
+          Password: '@dmin123',
+          Status: 'Active',
+          TenantId: APP_CONFIG.TENANT_ID
+        }
       ];
       localStorage.setItem('ssh_users', JSON.stringify(users));
+    } else {
+      // Migrate: if old mock admin exists, ensure the real admin account is present
+      const existingUsers = JSON.parse(localStorage.getItem('ssh_users') || '[]');
+      const realAdminEmail = 'shri.hajare@gmail.com';
+      const hasRealAdmin = existingUsers.some(u => u.Email && u.Email.toLowerCase() === realAdminEmail);
+      if (!hasRealAdmin) {
+        existingUsers.unshift({
+          UserId: 'USR-ADMIN-001',
+          Email: realAdminEmail,
+          Mobile: '9876543210',
+          FirstName: 'Shri',
+          LastName: 'Hajare',
+          Role: 'SuperAdmin',
+          Password: '@dmin123',
+          Status: 'Active',
+          TenantId: APP_CONFIG.TENANT_ID
+        });
+        localStorage.setItem('ssh_users', JSON.stringify(existingUsers));
+      }
     }
 
-    if (!localStorage.getItem('ssh_requests')) {
-      const requests = [
-        {
-          RequestId: 'REQ-104928',
-          TenantId: APP_CONFIG.TENANT_ID,
-          CustomerId: 'CUS-001',
-          CustomerName: 'Suresh Kadam',
-          CustomerMobile: '9890123456',
-          CustomerEmail: 'customer@sevasetuhub.in',
-          CategoryId: 'CAT-AC',
-          ServiceId: 'SRV-AC-01',
-          ServiceName: 'Split AC Power Jet Deep Service',
-          IssueDescription: 'AC cooling is low, bad smell and water dripping from indoor unit.',
-          Address: 'Flat 402, Royal Palms, Tarabai Park',
-          City: 'Kolhapur',
-          Pincode: '416003',
-          PreferredDate: '2026-08-22',
-          PreferredTimeSlot: '10:00 AM - 01:00 PM',
-          CouponCode: 'WELCOME100',
-          CouponDiscount: 100,
-          Status: 'Assigned',
-          Priority: 'High',
-          CreatedAt: '2026-08-21 10:15:00',
-          UpdatedAt: '2026-08-21 11:30:00'
-        },
-        {
-          RequestId: 'REQ-104929',
-          TenantId: APP_CONFIG.TENANT_ID,
-          CustomerId: 'CUS-002',
-          CustomerName: 'Pooja Sawant',
-          CustomerMobile: '9890654321',
-          CustomerEmail: 'pooja.s@yahoo.com',
-          CategoryId: 'CAT-CLN',
-          ServiceId: 'SRV-CLN-01',
-          ServiceName: '2 BHK Full Home Deep Cleaning',
-          IssueDescription: 'Deep cleaning before housewarming ceremony.',
-          Address: 'House 12, Rajarampuri 5th Lane',
-          City: 'Kolhapur',
-          Pincode: '416008',
-          PreferredDate: '2026-08-23',
-          PreferredTimeSlot: '02:00 PM - 05:00 PM',
-          CouponCode: 'CLEAN500',
-          CouponDiscount: 500,
-          Status: 'Estimate Sent',
-          Priority: 'Medium',
-          CreatedAt: '2026-08-21 12:00:00',
-          UpdatedAt: '2026-08-21 14:00:00'
-        }
-      ];
-      localStorage.setItem('ssh_requests', JSON.stringify(requests));
-    }
-
-    if (!localStorage.getItem('ssh_technicians')) {
-      const defaultTechs = [
-        { TechnicianId: 'TCH-001', UserId: 'USR-TECH', FullName: 'Mahesh Patil', Mobile: '9822001122', Email: 'tech@sevasetuhub.in', Specialization: 'AC & HVAC Service', City: 'Kolhapur', Rating: 4.9, Status: 'Busy', CreatedAt: '2026-08-20' },
-        { TechnicianId: 'TCH-002', UserId: 'USR-TECH-002', FullName: 'Sachin Kulkarni', Mobile: '9822003344', Email: 'sachin.k@sevasetuhub.in', Specialization: 'Electrical Repairs', City: 'Kolhapur', Rating: 4.8, Status: 'Available', CreatedAt: '2026-08-20' },
-        { TechnicianId: 'TCH-003', UserId: 'USR-TECH-003', FullName: 'Ramesh Jadhav', Mobile: '9822005566', Email: 'ramesh.j@sevasetuhub.in', Specialization: 'Plumbing Services', City: 'Sangli', Rating: 4.9, Status: 'Busy', CreatedAt: '2026-08-21' },
-        { TechnicianId: 'TCH-004', UserId: 'USR-TECH-004', FullName: 'Anil Shinde', Mobile: '9822007788', Email: 'anil.s@sevasetuhub.in', Specialization: 'Deep Cleaning & Pest', City: 'Kolhapur', Rating: 4.7, Status: 'Available', CreatedAt: '2026-08-21' }
-      ];
-      localStorage.setItem('ssh_technicians', JSON.stringify(defaultTechs));
-    }
-
-    const todayDateStr = new Date().toISOString().slice(0, 10);
-    const existingWos = JSON.parse(localStorage.getItem('ssh_work_orders') || '[]');
-
-    if (existingWos.length === 0 || !existingWos.some(w => w.ScheduledDate === todayDateStr)) {
-      const workOrders = [
-        {
-          WorkOrderId: 'WO-882910',
-          TenantId: APP_CONFIG.TENANT_ID,
-          RequestId: 'REQ-104928',
-          EstimateId: 'EST-9901',
-          CustomerId: 'CUS-001',
-          CustomerName: 'Suresh Kadam',
-          TechnicianId: 'TCH-001',
-          TechnicianName: 'Mahesh Patil',
-          ServiceName: 'Split AC Power Jet Deep Service',
-          ScheduledDate: todayDateStr,
-          StartTime: '09:00 AM',
-          EndTime: '11:00 AM',
-          Priority: 'High',
-          Status: 'In Progress',
-          CreatedAt: new Date().toLocaleString('en-IN')
-        },
-        {
-          WorkOrderId: 'WO-882911',
-          TenantId: APP_CONFIG.TENANT_ID,
-          RequestId: 'REQ-104929',
-          EstimateId: 'EST-9902',
-          CustomerId: 'CUS-002',
-          CustomerName: 'Pooja Sawant',
-          TechnicianId: 'TCH-001',
-          TechnicianName: 'Mahesh Patil',
-          ServiceName: 'AC Refrigerant Gas Refilling',
-          ScheduledDate: todayDateStr,
-          StartTime: '01:00 PM',
-          EndTime: '03:00 PM',
-          Priority: 'Medium',
-          Status: 'Assigned',
-          CreatedAt: new Date().toLocaleString('en-IN')
-        },
-        {
-          WorkOrderId: 'WO-882912',
-          TenantId: APP_CONFIG.TENANT_ID,
-          RequestId: 'REQ-104930',
-          EstimateId: 'EST-9903',
-          CustomerId: 'CUS-003',
-          CustomerName: 'Amol Deshmukh',
-          TechnicianId: 'TCH-003',
-          TechnicianName: 'Ramesh Jadhav',
-          ServiceName: 'Water Leakage & Pipe Repair',
-          ScheduledDate: todayDateStr,
-          StartTime: '11:00 AM',
-          EndTime: '01:00 PM',
-          Priority: 'High',
-          Status: 'En Route',
-          CreatedAt: new Date().toLocaleString('en-IN')
-        },
-        {
-          WorkOrderId: 'WO-882913',
-          TenantId: APP_CONFIG.TENANT_ID,
-          RequestId: 'REQ-104931',
-          EstimateId: 'EST-9904',
-          CustomerId: 'CUS-004',
-          CustomerName: 'Sunita Joshi',
-          TechnicianId: 'TCH-004',
-          TechnicianName: 'Anil Shinde',
-          ServiceName: '2 BHK Full Home Deep Cleaning',
-          ScheduledDate: todayDateStr,
-          StartTime: '03:00 PM',
-          EndTime: '05:00 PM',
-          Priority: 'Medium',
-          Status: 'Assigned',
-          CreatedAt: new Date().toLocaleString('en-IN')
-        },
-        // Also support static fallback date 2026-08-22
-        {
-          WorkOrderId: 'WO-882901',
-          TenantId: APP_CONFIG.TENANT_ID,
-          RequestId: 'REQ-104928',
-          EstimateId: 'EST-9901',
-          CustomerId: 'CUS-001',
-          CustomerName: 'Suresh Kadam',
-          TechnicianId: 'TCH-001',
-          TechnicianName: 'Mahesh Patil',
-          ServiceName: 'Split AC Power Jet Deep Service',
-          ScheduledDate: '2026-08-22',
-          StartTime: '09:00 AM',
-          EndTime: '11:00 AM',
-          Priority: 'High',
-          Status: 'Completed',
-          CreatedAt: '2026-08-21 11:30:00'
-        }
-      ];
-
-      // Merge or initialize
-      const mergedWos = existingWos.length === 0 ? workOrders : [...existingWos, ...workOrders.filter(nw => !existingWos.some(ew => ew.WorkOrderId === nw.WorkOrderId))];
-      localStorage.setItem('ssh_work_orders', JSON.stringify(mergedWos));
-    }
+    // Initialise empty collections so getters always return arrays
+    if (!localStorage.getItem('ssh_requests'))    localStorage.setItem('ssh_requests',    '[]');
+    if (!localStorage.getItem('ssh_technicians')) localStorage.setItem('ssh_technicians', '[]');
+    if (!localStorage.getItem('ssh_work_orders')) localStorage.setItem('ssh_work_orders', '[]');
   }
 
   // Public API methods

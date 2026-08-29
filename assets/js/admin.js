@@ -63,7 +63,34 @@ $(document).ready(function() {
   });
 
   /**
-   * Load High-Level Dashboard Metrics & Charts
+   * Show a non-blocking Bootstrap toast notification
+   * @param {string} message - Message text to display
+   * @param {'success'|'danger'|'info'|'warning'} type - Bootstrap color type
+   */
+  function showToast(message, type = 'success') {
+    let container = document.getElementById('admin-toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'admin-toast-container';
+      container.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:0.5rem;min-width:280px;max-width:400px;';
+      document.body.appendChild(container);
+    }
+    const bgMap = { success: 'bg-success', danger: 'bg-danger', info: 'bg-info', warning: 'bg-warning text-dark' };
+    const toastEl = document.createElement('div');
+    toastEl.className = `toast align-items-center text-white ${bgMap[type] || 'bg-secondary'} border-0 show`;
+    toastEl.setAttribute('role', 'alert');
+    toastEl.innerHTML = `
+      <div class="d-flex">
+        <div class="toast-body fw-semibold" style="font-size:0.9rem;">${message}</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>`;
+    container.appendChild(toastEl);
+    toastEl.querySelector('[data-bs-dismiss="toast"]').addEventListener('click', () => toastEl.remove());
+    setTimeout(() => { toastEl.classList.remove('show'); setTimeout(() => toastEl.remove(), 300); }, 4000);
+  }
+
+  /**
+   * Load High-Level Dashboard Metrics &amp; Charts
    */
   async function loadDashboardData() {
     try {
@@ -741,9 +768,9 @@ $(document).ready(function() {
               ${statusBadge}
             </td>
             <td>
-              <div class="dropdown">
-                <button class="btn btn-sm btn-light border dropdown-toggle" data-bs-toggle="dropdown">Action</button>
-                <ul class="dropdown-menu">
+            <div class="dropdown">
+                <button class="btn btn-sm btn-light border dropdown-toggle" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">Action</button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                   <li><a class="dropdown-item btn-toggle-tech-status" href="#" data-id="${t.TechnicianId}" data-status="Available"><i class="bi bi-check2 text-success"></i> Set Available</a></li>
                   <li><a class="dropdown-item btn-toggle-tech-status" href="#" data-id="${t.TechnicianId}" data-status="Busy"><i class="bi bi-clock text-warning"></i> Set Busy</a></li>
                   <li><a class="dropdown-item btn-toggle-tech-status" href="#" data-id="${t.TechnicianId}" data-status="On-Leave"><i class="bi bi-pause text-secondary"></i> Set On-Leave</a></li>
@@ -764,10 +791,11 @@ $(document).ready(function() {
         const techId = $(this).data('id');
         const newStatus = $(this).data('status');
         try {
-          await api.updateTechnician({ technicianId: techId, status: newStatus });
+          await api.updateTechnician({ technicianId: techId, Status: newStatus, status: newStatus });
+          showToast(`✅ Status updated to "${newStatus}".`, 'success');
           loadAdminTechnicians();
         } catch (err) {
-          alert('Failed to update status: ' + err.message);
+          showToast('❌ Failed to update status: ' + err.message, 'danger');
         }
       });
 
@@ -798,9 +826,10 @@ $(document).ready(function() {
         if (confirm(`Soft-delete "${techName}" (${techId})? Their account will be deactivated but records will be preserved.`)) {
           try {
             await api.deleteTechnician({ technicianId: techId });
+            showToast(`🗑️ Technician "${techName}" has been deactivated.`, 'warning');
             loadAdminTechnicians();
           } catch (err) {
-            alert('Failed to remove technician: ' + err.message);
+            showToast('❌ Failed to remove technician: ' + err.message, 'danger');
           }
         }
       });
@@ -833,9 +862,12 @@ $(document).ready(function() {
       const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
       modal.hide();
       $('#form-edit-technician')[0].reset();
-      loadAdminTechnicians();
+      $(modalEl).one('hidden.bs.modal', function() {
+        showToast('✅ Technician profile updated successfully!', 'success');
+        loadAdminTechnicians();
+      });
     } catch (err) {
-      alert('Error updating technician: ' + err.message);
+      showToast('❌ Error updating technician: ' + err.message, 'danger');
     } finally {
       submitBtn.prop('disabled', false).html('<i class="bi bi-check2-circle me-1"></i> Save Changes');
     }
@@ -859,7 +891,6 @@ $(document).ready(function() {
       };
 
       const newTech = await api.createTechnician(payload);
-      alert(`Success! Technician ${newTech.FullName} (${newTech.TechnicianId}) has been registered and activated.`);
 
       // Hide modal & reset form
       const modalEl = document.getElementById('modalAddTechnician');
@@ -868,10 +899,13 @@ $(document).ready(function() {
       $('#form-add-technician')[0].reset();
       $('#tech-password').val('TechPassword@2026');
 
-      // Reload technicians table
-      loadAdminTechnicians();
+      // Reload technicians table after modal closes fully (avoids animation race)
+      $(modalEl).one('hidden.bs.modal', function() {
+        showToast(`✅ Technician ${newTech.FullName || payload.fullName} (${newTech.TechnicianId || '—'}) registered successfully!`, 'success');
+        loadAdminTechnicians();
+      });
     } catch (err) {
-      alert('Error adding technician: ' + err.message);
+      showToast('❌ Error adding technician: ' + err.message, 'danger');
     } finally {
       submitBtn.prop('disabled', false).html('<i class="bi bi-check2-circle me-1"></i> Register &amp; Activate Technician');
     }
@@ -945,9 +979,10 @@ $(document).ready(function() {
         if (confirm(`Soft-delete dispatcher "${name}"? Their login will be deactivated but records preserved.`)) {
           try {
             await api.deleteDispatcher({ userId });
+            showToast(`🗑️ Dispatcher "${name}" has been deactivated.`, 'warning');
             loadAdminDispatchers();
           } catch (err) {
-            alert('Failed to deactivate dispatcher: ' + err.message);
+            showToast('❌ Failed to deactivate dispatcher: ' + err.message, 'danger');
           }
         }
       });
@@ -970,15 +1005,17 @@ $(document).ready(function() {
         password: $('#disp-password').val().trim() || 'DispPassword@2026',
         city: $('#disp-city').val().trim() || 'Kolhapur'
       });
-      alert(`Success! Dispatcher ${newDisp.FirstName} ${newDisp.LastName} (${newDisp.UserId}) has been registered and activated.`);
       const modalEl = document.getElementById('modalAddDispatcher');
       const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
       modal.hide();
       $('#form-add-dispatcher')[0].reset();
       $('#disp-password').val('DispPassword@2026');
-      loadAdminDispatchers();
+      $(modalEl).one('hidden.bs.modal', function() {
+        showToast(`✅ Dispatcher ${newDisp.FirstName} ${newDisp.LastName} (${newDisp.UserId}) registered successfully!`, 'success');
+        loadAdminDispatchers();
+      });
     } catch (err) {
-      alert('Error adding dispatcher: ' + err.message);
+      showToast('❌ Error adding dispatcher: ' + err.message, 'danger');
     } finally {
       $btn.prop('disabled', false).html('<i class="bi bi-check2-circle me-1"></i> Register &amp; Activate Dispatcher');
     }

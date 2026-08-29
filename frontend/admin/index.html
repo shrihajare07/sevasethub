@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin SaaS Suite – SevaSetuHub</title>
+  <title>Admin SaaS Suite â€“ SevaSetuHub</title>
   <meta name="description" content="Manage service requests, dispatch technicians, track revenue and run marketing from the SevaSetuHub admin suite.">
 
   <!-- Google Fonts -->
@@ -36,6 +36,15 @@
     .portal-card-header-title { font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em; color: var(--text-primary); margin: 0; }
     .chart-card { border-radius: var(--radius-xl); border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm); padding: 1.5rem; margin-bottom: 1.5rem; }
     .chart-card-title { font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em; color: var(--text-primary); }
+    /* Fix Bootstrap dropdown clipping inside table-responsive */
+    .table-responsive { overflow: visible !important; }
+    .table-responsive > table { position: relative; }
+    .dropdown-menu { z-index: 1055; }
+    /* On small screens allow x-scroll without clipping dropdowns */
+    @media (max-width: 767.98px) {
+      .table-responsive { overflow-x: auto !important; }
+      .dropdown-menu { position: fixed !important; }
+    }
   </style>
 </head>
 <body>
@@ -157,7 +166,7 @@
           </div>
           <div class="col-6 col-md-3">
             <div class="stat-card">
-              <div><div class="stat-label">Total Revenue</div><div class="stat-value" id="stat-admin-revenue">₹0</div></div>
+              <div><div class="stat-label">Total Revenue</div><div class="stat-value" id="stat-admin-revenue">â‚¹0</div></div>
               <div class="stat-icon-wrapper stat-icon-emerald"><i class="bi bi-currency-rupee"></i></div>
             </div>
           </div>
@@ -166,7 +175,7 @@
         <!-- Revenue Chart Card -->
         <div class="chart-card">
           <div class="d-flex align-items-center justify-content-between mb-3">
-            <div class="chart-card-title"><i class="bi bi-graph-up text-primary me-2"></i>Monthly Revenue &amp; Growth (₹)</div>
+            <div class="chart-card-title"><i class="bi bi-graph-up text-primary me-2"></i>Monthly Revenue &amp; Growth (â‚¹)</div>
             <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">Last 6 Months</span>
           </div>
           <div style="height: 260px;">
@@ -296,11 +305,11 @@
                 <thead>
                   <tr>
                     <th>Certified Technician</th>
-                    <th>09:00 AM – 11:00 AM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 1</small></th>
-                    <th>11:00 AM – 01:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 2</small></th>
-                    <th>01:00 PM – 03:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 3</small></th>
-                    <th>03:00 PM – 05:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 4</small></th>
-                    <th>05:00 PM – 07:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 5</small></th>
+                    <th>09:00 AM â€“ 11:00 AM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 1</small></th>
+                    <th>11:00 AM â€“ 01:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 2</small></th>
+                    <th>01:00 PM â€“ 03:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 3</small></th>
+                    <th>03:00 PM â€“ 05:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 4</small></th>
+                    <th>05:00 PM â€“ 07:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 5</small></th>
                   </tr>
                 </thead>
                 <tbody id="dispatch-board-body"></tbody>
@@ -522,15 +531,15 @@
         <p class="small text-muted mb-3" id="est-modal-customer-info"></p>
 
         <div class="mb-3">
-          <label class="form-label fw-semibold">Labour & Service Charge (₹)</label>
+          <label class="form-label fw-semibold">Labour & Service Charge (â‚¹)</label>
           <input type="number" class="form-control" id="est-modal-labour" value="599">
         </div>
         <div class="mb-3">
-          <label class="form-label fw-semibold">Materials / Spare Parts (₹)</label>
+          <label class="form-label fw-semibold">Materials / Spare Parts (â‚¹)</label>
           <input type="number" class="form-control" id="est-modal-material" value="0">
         </div>
         <div class="mb-3">
-          <label class="form-label fw-semibold">Special Goodwill Discount (₹)</label>
+          <label class="form-label fw-semibold">Special Goodwill Discount (â‚¹)</label>
           <input type="number" class="form-control" id="est-modal-discount" value="0">
         </div>
         <div class="mb-3">
@@ -570,11 +579,11 @@
           <div class="col-6">
             <label class="form-label fw-semibold">Time Slot</label>
             <select class="form-select" id="assign-modal-time">
-              <option value="09:00 AM - 11:00 AM">09:00 AM – 11:00 AM (Slot 1)</option>
-              <option value="11:00 AM - 01:00 PM">11:00 AM – 01:00 PM (Slot 2)</option>
-              <option value="01:00 PM - 03:00 PM">01:00 PM – 03:00 PM (Slot 3)</option>
-              <option value="03:00 PM - 05:00 PM">03:00 PM – 05:00 PM (Slot 4)</option>
-              <option value="05:00 PM - 07:00 PM">05:00 PM – 07:00 PM (Slot 5)</option>
+              <option value="09:00 AM - 11:00 AM">09:00 AM â€“ 11:00 AM (Slot 1)</option>
+              <option value="11:00 AM - 01:00 PM">11:00 AM â€“ 01:00 PM (Slot 2)</option>
+              <option value="01:00 PM - 03:00 PM">01:00 PM â€“ 03:00 PM (Slot 3)</option>
+              <option value="03:00 PM - 05:00 PM">03:00 PM â€“ 05:00 PM (Slot 4)</option>
+              <option value="05:00 PM - 07:00 PM">05:00 PM â€“ 07:00 PM (Slot 5)</option>
             </select>
           </div>
         </div>
@@ -645,11 +654,14 @@
 
             <div class="p-3 border rounded">
               <h6 class="fw-bold text-dark mb-2"><i class="bi bi-arrow-repeat text-primary me-2"></i>Update Job Status</h6>
-              <div class="d-grid gap-1.5">
-                <button class="btn btn-sm btn-outline-info text-start btn-wo-change-status" data-status="Assigned"><i class="bi bi-clock me-1"></i> Mark as Assigned</button>
-                <button class="btn btn-sm btn-outline-secondary text-start btn-wo-change-status" data-status="En Route"><i class="bi bi-truck me-1"></i> Mark as En Route</button>
-                <button class="btn btn-sm btn-outline-warning text-start btn-wo-change-status" data-status="In Progress"><i class="bi bi-tools me-1"></i> Mark as In Progress</button>
-                <button class="btn btn-sm btn-outline-success text-start btn-wo-change-status" data-status="Completed"><i class="bi bi-check-circle-fill me-1"></i> Mark as Completed</button>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-light border dropdown-toggle" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">Action</button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                  <li><button class="dropdown-item btn-wo-change-status" data-status="Assigned"><i class="bi bi-clock me-1"></i> Mark as Assigned</button></li>
+                  <li><button class="dropdown-item btn-wo-change-status" data-status="En Route"><i class="bi bi-truck me-1"></i> Mark as En Route</button></li>
+                  <li><button class="dropdown-item btn-wo-change-status" data-status="In Progress"><i class="bi bi-tools me-1"></i> Mark as In Progress</button></li>
+                  <li><button class="dropdown-item btn-wo-change-status" data-status="Completed"><i class="bi bi-check-circle-fill me-1"></i> Mark as Completed</button></li>
+                </ul>
               </div>
             </div>
           </div>
@@ -688,11 +700,11 @@
           <div class="col-6">
             <label class="form-label fw-semibold">Time Slot</label>
             <select class="form-select" id="quick-dispatch-time">
-              <option value="09:00 AM - 11:00 AM">09:00 AM – 11:00 AM</option>
-              <option value="11:00 AM - 01:00 PM">11:00 AM – 01:00 PM</option>
-              <option value="01:00 PM - 03:00 PM">01:00 PM – 03:00 PM</option>
-              <option value="03:00 PM - 05:00 PM">03:00 PM – 05:00 PM</option>
-              <option value="05:00 PM - 07:00 PM">05:00 PM – 07:00 PM</option>
+              <option value="09:00 AM - 11:00 AM">09:00 AM â€“ 11:00 AM</option>
+              <option value="11:00 AM - 01:00 PM">11:00 AM â€“ 01:00 PM</option>
+              <option value="01:00 PM - 03:00 PM">01:00 PM â€“ 03:00 PM</option>
+              <option value="03:00 PM - 05:00 PM">03:00 PM â€“ 05:00 PM</option>
+              <option value="05:00 PM - 07:00 PM">05:00 PM â€“ 07:00 PM</option>
             </select>
           </div>
         </div>
@@ -728,7 +740,7 @@
             <label class="form-label fw-semibold">Discount Type</label>
             <select class="form-select" id="offer-type">
               <option value="Percentage">Percentage (%)</option>
-              <option value="FixedAmount">Fixed Amount (₹)</option>
+              <option value="FixedAmount">Fixed Amount (â‚¹)</option>
             </select>
           </div>
           <div class="col-6">
@@ -769,13 +781,13 @@
         </div>
         <div class="mb-3">
           <label class="form-label fw-semibold">Description</label>
-          <input type="text" class="form-control" id="coupon-desc" placeholder="Flat ₹250 discount on booking">
+          <input type="text" class="form-control" id="coupon-desc" placeholder="Flat â‚¹250 discount on booking">
         </div>
         <div class="row g-2 mb-3">
           <div class="col-6">
             <label class="form-label fw-semibold">Discount Type</label>
             <select class="form-select" id="coupon-type">
-              <option value="FixedAmount">Fixed Amount (₹)</option>
+              <option value="FixedAmount">Fixed Amount (â‚¹)</option>
               <option value="Percentage">Percentage (%)</option>
             </select>
           </div>
@@ -786,11 +798,11 @@
         </div>
         <div class="row g-2 mb-3">
           <div class="col-6">
-            <label class="form-label fw-semibold">Min Order (₹)</label>
+            <label class="form-label fw-semibold">Min Order (â‚¹)</label>
             <input type="number" class="form-control" id="coupon-min-order" value="500">
           </div>
           <div class="col-6">
-            <label class="form-label fw-semibold">Max Discount (₹)</label>
+            <label class="form-label fw-semibold">Max Discount (â‚¹)</label>
             <input type="number" class="form-control" id="coupon-max-disc" value="500">
           </div>
         </div>
@@ -1030,6 +1042,7 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="../../assets/js/security.js"></script>
 <script src="../../assets/js/api.js"></script>
 <script src="../../assets/js/auth.js"></script>
 <script src="../../assets/js/admin.js"></script>
