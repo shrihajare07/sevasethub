@@ -400,14 +400,19 @@ const api = (function () {
         const reqs = JSON.parse(localStorage.getItem('ssh_requests') || '[]');
         const user = getStoredUser();
         if (user && user.role === 'Customer') {
-          const userEmail = (user.email || '').toLowerCase();
-          const userMobile = String(user.mobile || '');
+          const userEmail = (user.email || '').toLowerCase().trim();
+          const userMobile = String(user.mobile || '').trim();
           const custId = user.customerId || user.userId;
-          return reqs.filter(r => 
-            (custId && r.CustomerId === custId) || 
-            (userEmail && r.CustomerEmail && r.CustomerEmail.toLowerCase() === userEmail) || 
-            (userMobile && r.CustomerMobile && String(r.CustomerMobile) === userMobile)
-          );
+          const userFullName = (user.fullName || '').toLowerCase().trim();
+          return reqs.filter(r => {
+            const reqEmail = (r.CustomerEmail || '').toLowerCase().trim();
+            const reqMobile = String(r.CustomerMobile || '').trim();
+            const reqName = (r.CustomerName || '').toLowerCase().trim();
+            return (custId && (r.CustomerId === custId || r.UserId === custId)) || 
+                   (userEmail && reqEmail && reqEmail === userEmail) || 
+                   (userMobile && reqMobile && reqMobile === userMobile) ||
+                   (userFullName && reqName && reqName === userFullName);
+          });
         }
         return reqs;
       }
@@ -1450,13 +1455,39 @@ const api = (function () {
     getCoupons: (params) => request('getCoupons', 'GET', params),
     validateCoupon: (payload) => request('validateCoupon', 'POST', payload),
     createServiceRequest: async (payload) => {
-      const res = await request('createServiceRequest', 'POST', payload);
-      if (res && res.user && res.token) {
-        setSession(res.token, res.user);
+      // 1. Always execute local fallback to ensure request, user, and session are instantly persisted in localStorage
+      const localResult = executeLocalFallback('createServiceRequest', 'POST', payload);
+      if (localResult && localResult.user && localResult.token) {
+        setSession(localResult.token, localResult.user);
       }
-      return res;
+
+      // 2. Also send to live API if configured
+      try {
+        const res = await request('createServiceRequest', 'POST', payload);
+        if (res && res.user && res.token) {
+          setSession(res.token, res.user);
+        }
+        return res || localResult;
+      } catch (err) {
+        return localResult;
+      }
     },
-    getServiceRequests: (params) => request('getServiceRequests', 'GET', params),
+    getServiceRequests: async (params) => {
+      const localReqs = executeLocalFallback('getServiceRequests', 'GET', params) || [];
+      try {
+        const remoteReqs = await request('getServiceRequests', 'GET', params);
+        if (remoteReqs && Array.isArray(remoteReqs) && remoteReqs.length > 0) {
+          const merged = [...localReqs];
+          remoteReqs.forEach(rem => {
+            if (!merged.some(m => m.RequestId === rem.RequestId)) {
+              merged.push(rem);
+            }
+          });
+          return merged;
+        }
+      } catch (e) {}
+      return localReqs;
+    },
     getServiceRequest: (requestId) => request('getServiceRequest', 'GET', { requestId }),
     createEstimate: (payload) => request('createEstimate', 'POST', payload),
     approveEstimate: (payload) => request('approveEstimate', 'POST', payload),
