@@ -19,11 +19,11 @@ const CONFIG = {
   SESSION_EXPIRY_HOURS: 24,
   PASSWORD_SALT: 'SevaSetuHub_Secured_2026_Salt_#*99',
   SUPERADMIN_DEFAULT: {
-    email: 'admin@sevasetuhub.in',
+    email: 'shri.hajare@gmail.com',
     mobile: '9876543210',
-    password: 'AdminPassword@2026',
-    firstName: 'Super',
-    lastName: 'Admin'
+    password: '@dmin123',
+    firstName: 'Shri',
+    lastName: 'Hajare'
   }
 };
 

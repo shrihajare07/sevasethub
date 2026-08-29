@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -35,15 +35,38 @@
     .portal-card-header { padding: 1rem 1.5rem; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
     .portal-card-header-title { font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em; color: var(--text-primary); margin: 0; }
     .chart-card { border-radius: var(--radius-xl); border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm); padding: 1.5rem; margin-bottom: 1.5rem; }
-    .chart-card-title { font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em; color: var(--text-primary); }
-    /* Fix Bootstrap dropdown clipping inside table-responsive */
-    .table-responsive { overflow: visible !important; }
+    /* Fix Bootstrap dropdown clipping inside table-responsive and card containers */
+    .card { overflow: visible !important; }
+    .card.border-0.shadow-sm { overflow: visible !important; }
+    .portal-card-header {
+      border-top-left-radius: var(--radius-xl);
+      border-top-right-radius: var(--radius-xl);
+    }
+    .table-responsive {
+      overflow: visible !important;
+      min-height: 140px;
+    }
     .table-responsive > table { position: relative; }
-    .dropdown-menu { z-index: 1055; }
+    .dropdown { position: relative; }
+    .dropdown-menu {
+      z-index: 1065 !important;
+      min-width: 190px;
+      border-radius: 0.6rem !important;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.18), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+      border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    }
+    .dropdown-item {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .dropdown-item i { font-size: 1rem; }
     /* On small screens allow x-scroll without clipping dropdowns */
     @media (max-width: 767.98px) {
       .table-responsive { overflow-x: auto !important; }
-      .dropdown-menu { position: fixed !important; }
+      .dropdown-menu { z-index: 1070 !important; }
     }
   </style>
 </head>
@@ -186,7 +209,7 @@
 
       <!-- SECTION 2: Service Requests -->
       <section id="section-requests" class="admin-section d-none">
-        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);">
           <div class="portal-card-header">
             <h6 class="portal-card-header-title"><i class="bi bi-inbox-fill text-primary me-2"></i>Service Requests &amp; Dispatch Ledger</h6>
           </div>
@@ -211,7 +234,7 @@
 
       <!-- SECTION 3: Interactive Dispatch Board -->
       <section id="section-dispatch" class="admin-section d-none">
-        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);">
           <div class="portal-card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
             <div class="d-flex align-items-center gap-2">
               <h6 class="portal-card-header-title mb-0"><i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Live Field Dispatch Board</h6>
@@ -321,7 +344,7 @@
 
       <!-- SECTION 3B: Technicians Management -->
       <section id="section-technicians" class="admin-section d-none">
-        <div class="card border-0 shadow-sm mb-4" style="border-radius:var(--radius-xl);overflow:hidden;">
+        <div class="card border-0 shadow-sm mb-4" style="border-radius:var(--radius-xl);">
           <div class="portal-card-header">
             <div>
               <h6 class="portal-card-header-title mb-0"><i class="bi bi-people-fill text-primary me-2"></i>Certified Field Technicians Roster</h6>
@@ -358,7 +381,7 @@
 
       <!-- SECTION 3C: Dispatchers Management (SuperAdmin only) -->
       <section id="section-dispatchers" class="admin-section d-none admin-only-section">
-        <div class="card border-0 shadow-sm mb-4" style="border-radius:var(--radius-xl);overflow:hidden;">
+        <div class="card border-0 shadow-sm mb-4" style="border-radius:var(--radius-xl);">
           <div class="portal-card-header">
             <div>
               <h6 class="portal-card-header-title mb-0"><i class="bi bi-headset text-primary me-2"></i>Dispatcher User Management</h6>
@@ -390,7 +413,7 @@
 
 
       <section id="section-offers" class="admin-section d-none">
-        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);">
           <div class="portal-card-header">
             <h6 class="portal-card-header-title"><i class="bi bi-tag-fill text-primary me-2"></i>Promotional Marketing Offers</h6>
             <button class="btn btn-primary btn-sm rounded-pill px-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalCreateOffer" style="background:var(--gradient-brand);border:none;">
@@ -417,7 +440,7 @@
 
       <!-- SECTION 5: Coupons Management -->
       <section id="section-coupons" class="admin-section d-none">
-        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);">
           <div class="portal-card-header">
             <h6 class="portal-card-header-title"><i class="bi bi-percent text-primary me-2"></i>Promotional Discount Coupons</h6>
             <button class="btn btn-primary btn-sm rounded-pill px-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalCreateCoupon" style="background:var(--gradient-brand);border:none;">
@@ -444,7 +467,7 @@
 
       <!-- SECTION 6: Invoices & Payments -->
       <section id="section-invoices" class="admin-section d-none">
-        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);">
           <div class="portal-card-header">
             <h6 class="portal-card-header-title"><i class="bi bi-receipt-cutoff text-primary me-2"></i>Customer Billing &amp; Invoices Ledger</h6>
           </div>
@@ -468,7 +491,7 @@
 
       <!-- SECTION 7: Audit Logs -->
       <section id="section-audit" class="admin-section d-none">
-        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);">
           <div class="portal-card-header">
             <h6 class="portal-card-header-title"><i class="bi bi-shield-lock-fill text-danger me-2"></i>Security &amp; Operations Audit Trail</h6>
             <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="btn-refresh-audit">
@@ -494,7 +517,7 @@
 
       <!-- SECTION 8: Settings & Apps Script Connection -->
       <section id="section-settings" class="admin-section d-none">
-        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);">
           <div class="portal-card-header">
             <h6 class="portal-card-header-title"><i class="bi bi-cloud-arrow-up text-primary me-2"></i>Google Apps Script Endpoint</h6>
           </div>

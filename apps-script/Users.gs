@@ -32,10 +32,11 @@ const UsersModule = {
     this.requireRole(session, ['SuperAdmin', 'BusinessAdmin', 'Dispatcher']);
 
     const techs = Utils.getAllRows(SHEETS.TECHNICIANS);
+    const activeTechs = techs.filter(t => !t.IsDeleted && String(t.IsDeleted).toLowerCase() !== 'true');
     if (session.role === 'SuperAdmin') {
-      return techs;
+      return activeTechs;
     }
-    return techs.filter(t => t.TenantId === session.tenantId);
+    return activeTechs.filter(t => t.TenantId === session.tenantId);
   },
 
   /**
@@ -95,21 +96,24 @@ const UsersModule = {
     };
 
     // Insert into Technicians sheet
-    Utils.appendRow(SHEETS.TECHNICIANS, newTech);
+    Utils.insertRow(SHEETS.TECHNICIANS, newTech);
 
-    // Create login account in Users sheet
-    Utils.appendRow(SHEETS.USERS, {
-      UserId:     userId,
-      Email:      payload.email  || '',
-      Mobile:     payload.mobile || '',
-      FirstName:  firstName,
-      LastName:   lastName,
-      Role:       'Technician',
-      TechnicianId: techId,
-      Password:   payload.password || 'TechPassword@2026',
-      Status:     'Active',
-      TenantId:   session.tenantId || 'TNT-DEFAULT',
-      CreatedAt:  Utils.nowFormatted()
+    // Create login account in Users sheet (hash password properly)
+    const salt = Utils.generateSalt();
+    const hash = Utils.hashPassword(payload.password || 'TechPassword@2026', salt);
+    Utils.insertRow(SHEETS.USERS, {
+      UserId:       userId,
+      TenantId:     session.tenantId || 'TNT-DEFAULT',
+      Email:        payload.email  || '',
+      Mobile:       payload.mobile || '',
+      PasswordHash: hash,
+      PasswordSalt: salt,
+      FirstName:    firstName,
+      LastName:     lastName,
+      Role:         'Technician',
+      Status:       'Active',
+      CreatedAt:    Utils.nowFormatted(),
+      LastLogin:    ''
     });
 
     return newTech;
@@ -179,24 +183,28 @@ const UsersModule = {
     const nameParts = (payload.fullName || '').trim().split(' ');
     const firstName = nameParts[0] || 'Dispatcher';
     const lastName  = nameParts.slice(1).join(' ') || 'User';
-    const userId    = 'DSP-' + Math.floor(1000 + Math.random() * 9000);
+    const userId    = Utils.generateId('DSP');
+
+    // Hash password before storing
+    const salt = Utils.generateSalt();
+    const hash = Utils.hashPassword(payload.password || 'DispPassword@2026', salt);
 
     const newDisp = {
-      UserId:    userId,
-      Email:     payload.email    || '',
-      Mobile:    payload.mobile   || '',
-      FirstName: firstName,
-      LastName:  lastName,
-      Role:      'Dispatcher',
-      Password:  payload.password || 'DispPassword@2026',
-      City:      payload.city     || 'Kolhapur',
-      Status:    'Active',
-      TenantId:  session.tenantId || 'TNT-DEFAULT',
-      IsDeleted: false,
-      CreatedAt: Utils.nowFormatted()
+      UserId:       userId,
+      TenantId:     session.tenantId || 'TNT-DEFAULT',
+      Email:        payload.email    || '',
+      Mobile:       payload.mobile   || '',
+      PasswordHash: hash,
+      PasswordSalt: salt,
+      FirstName:    firstName,
+      LastName:     lastName,
+      Role:         'Dispatcher',
+      Status:       'Active',
+      CreatedAt:    Utils.nowFormatted(),
+      LastLogin:    ''
     };
 
-    Utils.appendRow(SHEETS.USERS, newDisp);
+    Utils.insertRow(SHEETS.USERS, newDisp);
     return newDisp;
   },
 

@@ -242,7 +242,7 @@ function initializeDatabase() {
     },
     {
       name: SHEETS.TECHNICIANS,
-      headers: ['TechnicianId', 'UserId', 'TenantId', 'FullName', 'Mobile', 'Email', 'Specialization', 'Rating', 'Status', 'CurrentLat', 'CurrentLng', 'LastLocationUpdate', 'CreatedAt']
+      headers: ['TechnicianId', 'UserId', 'TenantId', 'FullName', 'Mobile', 'Email', 'Specialization', 'City', 'Rating', 'Status', 'CurrentLat', 'CurrentLng', 'LastLocationUpdate', 'IsDeleted', 'CreatedAt']
     },
     {
       name: SHEETS.SERVICE_CATEGORIES,
@@ -431,66 +431,93 @@ function seedDefaultData() {
 
 /**
  * Seed Initial SuperAdmin & Technician Accounts
+ * - Updates existing old admin if found
+ * - Creates new SuperAdmin if not present
  */
 function seedSuperAdmin() {
   const users = Utils.getAllRows(SHEETS.USERS);
-  const adminExists = users.some(u => u.Email === CONFIG.SUPERADMIN_DEFAULT.email);
 
-  if (!adminExists) {
-    const salt = Utils.generateSalt();
-    const hash = Utils.hashPassword(CONFIG.SUPERADMIN_DEFAULT.password, salt);
-    const userId = Utils.generateId('USR');
+  // Check if the NEW superadmin email already exists
+  const newAdminExists = users.some(u => u.Email === CONFIG.SUPERADMIN_DEFAULT.email);
 
-    Utils.insertRow(SHEETS.USERS, {
-      UserId: userId,
-      TenantId: CONFIG.DEFAULT_TENANT_ID,
-      Email: CONFIG.SUPERADMIN_DEFAULT.email,
-      Mobile: CONFIG.SUPERADMIN_DEFAULT.mobile,
-      PasswordHash: hash,
-      PasswordSalt: salt,
-      FirstName: CONFIG.SUPERADMIN_DEFAULT.firstName,
-      LastName: CONFIG.SUPERADMIN_DEFAULT.lastName,
-      Role: 'SuperAdmin',
-      Status: 'Active',
-      CreatedAt: Utils.nowFormatted(),
-      LastLogin: ''
-    });
+  if (!newAdminExists) {
+    // If the OLD admin@sevasetuhub.in record exists, update it to the new email
+    const oldAdmin = users.find(u => u.Email === 'admin@sevasetuhub.in' && u.Role === 'SuperAdmin');
+    if (oldAdmin) {
+      const newSalt = Utils.generateSalt();
+      const newHash = Utils.hashPassword(CONFIG.SUPERADMIN_DEFAULT.password, newSalt);
+      Utils.updateRow(SHEETS.USERS, 'UserId', oldAdmin.UserId, {
+        Email:        CONFIG.SUPERADMIN_DEFAULT.email,
+        Mobile:       CONFIG.SUPERADMIN_DEFAULT.mobile,
+        PasswordHash: newHash,
+        PasswordSalt: newSalt,
+        FirstName:    CONFIG.SUPERADMIN_DEFAULT.firstName,
+        LastName:     CONFIG.SUPERADMIN_DEFAULT.lastName
+      });
+      Logger.log('✅ Updated existing SuperAdmin email to: ' + CONFIG.SUPERADMIN_DEFAULT.email);
+    } else {
+      // No admin at all – create a brand new SuperAdmin
+      const salt   = Utils.generateSalt();
+      const hash   = Utils.hashPassword(CONFIG.SUPERADMIN_DEFAULT.password, salt);
+      const userId = Utils.generateId('USR');
 
-    // Seed Demo Technician
-    const techSalt = Utils.generateSalt();
-    const techHash = Utils.hashPassword('TechPassword@2026', techSalt);
-    const techUserId = Utils.generateId('USR');
-    const techId = Utils.generateId('TCH');
+      Utils.insertRow(SHEETS.USERS, {
+        UserId:       userId,
+        TenantId:     CONFIG.DEFAULT_TENANT_ID,
+        Email:        CONFIG.SUPERADMIN_DEFAULT.email,
+        Mobile:       CONFIG.SUPERADMIN_DEFAULT.mobile,
+        PasswordHash: hash,
+        PasswordSalt: salt,
+        FirstName:    CONFIG.SUPERADMIN_DEFAULT.firstName,
+        LastName:     CONFIG.SUPERADMIN_DEFAULT.lastName,
+        Role:         'SuperAdmin',
+        Status:       'Active',
+        CreatedAt:    Utils.nowFormatted(),
+        LastLogin:    ''
+      });
+      Logger.log('✅ Created new SuperAdmin: ' + CONFIG.SUPERADMIN_DEFAULT.email);
+    }
 
-    Utils.insertRow(SHEETS.USERS, {
-      UserId: techUserId,
-      TenantId: CONFIG.DEFAULT_TENANT_ID,
-      Email: 'tech@sevasetuhub.in',
-      Mobile: '9822001122',
-      PasswordHash: techHash,
-      PasswordSalt: techSalt,
-      FirstName: 'Mahesh',
-      LastName: 'Patil',
-      Role: 'Technician',
-      Status: 'Active',
-      CreatedAt: Utils.nowFormatted(),
-      LastLogin: ''
-    });
+    // Seed Demo Technician only if no technician exists yet
+    const techExists = users.some(u => u.Role === 'Technician');
+    if (!techExists) {
+      const techSalt   = Utils.generateSalt();
+      const techHash   = Utils.hashPassword('TechPassword@2026', techSalt);
+      const techUserId = Utils.generateId('USR');
+      const techId     = Utils.generateId('TCH');
 
-    Utils.insertRow(SHEETS.TECHNICIANS, {
-      TechnicianId: techId,
-      UserId: techUserId,
-      TenantId: CONFIG.DEFAULT_TENANT_ID,
-      FullName: 'Mahesh Patil',
-      Mobile: '9822001122',
-      Email: 'tech@sevasetuhub.in',
-      Specialization: 'AC, Electrical, Refrigeration',
-      Rating: 4.9,
-      Status: 'Available',
-      CurrentLat: '16.7050',
-      CurrentLng: '74.2433',
-      LastLocationUpdate: Utils.nowFormatted(),
-      CreatedAt: Utils.nowFormatted()
-    });
+      Utils.insertRow(SHEETS.USERS, {
+        UserId:       techUserId,
+        TenantId:     CONFIG.DEFAULT_TENANT_ID,
+        Email:        'tech@sevasetuhub.in',
+        Mobile:       '9822001122',
+        PasswordHash: techHash,
+        PasswordSalt: techSalt,
+        FirstName:    'Mahesh',
+        LastName:     'Patil',
+        Role:         'Technician',
+        Status:       'Active',
+        CreatedAt:    Utils.nowFormatted(),
+        LastLogin:    ''
+      });
+
+      Utils.insertRow(SHEETS.TECHNICIANS, {
+        TechnicianId:       techId,
+        UserId:             techUserId,
+        TenantId:           CONFIG.DEFAULT_TENANT_ID,
+        FullName:           'Mahesh Patil',
+        Mobile:             '9822001122',
+        Email:              'tech@sevasetuhub.in',
+        Specialization:     'AC, Electrical, Refrigeration',
+        Rating:             4.9,
+        Status:             'Available',
+        CurrentLat:         '16.7050',
+        CurrentLng:         '74.2433',
+        LastLocationUpdate: Utils.nowFormatted(),
+        CreatedAt:          Utils.nowFormatted()
+      });
+    }
+  } else {
+    Logger.log('ℹ️ SuperAdmin already exists: ' + CONFIG.SUPERADMIN_DEFAULT.email);
   }
 }

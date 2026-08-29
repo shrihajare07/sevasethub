@@ -160,6 +160,20 @@ $(document).ready(function() {
       }
 
       reqs.forEach(r => {
+        let cleanDate = r.PreferredDate || 'Immediate';
+        if (cleanDate.includes('T')) {
+          try {
+            const d = new Date(cleanDate);
+            if (!isNaN(d.getTime())) {
+              cleanDate = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+            } else {
+              cleanDate = cleanDate.slice(0, 10);
+            }
+          } catch(e) {
+            cleanDate = cleanDate.slice(0, 10);
+          }
+        }
+
         const row = `
           <tr>
             <td><strong>#${r.RequestId}</strong></td>
@@ -168,17 +182,19 @@ $(document).ready(function() {
               <small class="text-muted">${r.CustomerMobile}</small>
             </td>
             <td>${r.ServiceName}</td>
-            <td>${r.PreferredDate} (${r.PreferredTimeSlot || 'Standard'})</td>
+            <td>${cleanDate} <small class="text-muted d-block">(${r.PreferredTimeSlot || 'Standard Slot'})</small></td>
             <td><span class="badge ${getStatusClass(r.Status)}">${r.Status}</span></td>
             <td>${r.Priority === 'High' ? '<span class="badge bg-danger">High</span>' : '<span class="badge bg-secondary">Normal</span>'}</td>
             <td>
               <div class="dropdown">
-                <button class="btn btn-sm btn-light border dropdown-toggle" data-bs-toggle="dropdown">Actions</button>
-                <ul class="dropdown-menu">
-                  <li><a class="dropdown-item btn-action-estimate" href="#" data-id="${r.RequestId}" data-name="${r.CustomerName}" data-service="${r.ServiceName}"><i class="bi bi-calculator"></i> Create Estimate</a></li>
-                  <li><a class="dropdown-item btn-action-assign" href="#" data-id="${r.RequestId}"><i class="bi bi-person-check"></i> Assign Technician</a></li>
+                <button class="btn btn-sm btn-light border dropdown-toggle" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
+                  <i class="bi bi-three-dots-vertical me-1"></i>Actions
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                  <li><a class="dropdown-item btn-action-estimate" href="#" data-id="${r.RequestId}" data-name="${r.CustomerName}" data-service="${r.ServiceName}"><i class="bi bi-calculator text-primary me-2"></i> Create Estimate</a></li>
+                  <li><a class="dropdown-item btn-action-assign" href="#" data-id="${r.RequestId}"><i class="bi bi-person-check text-success me-2"></i> Assign Technician</a></li>
                   <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item text-danger btn-action-cancel" href="#" data-id="${r.RequestId}"><i class="bi bi-x-circle"></i> Cancel</a></li>
+                  <li><a class="dropdown-item text-danger btn-action-cancel" href="#" data-id="${r.RequestId}"><i class="bi bi-x-circle me-2"></i> Cancel Request</a></li>
                 </ul>
               </div>
             </td>
@@ -768,15 +784,17 @@ $(document).ready(function() {
               ${statusBadge}
             </td>
             <td>
-            <div class="dropdown">
-                <button class="btn btn-sm btn-light border dropdown-toggle" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">Action</button>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-light border dropdown-toggle" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
+                  <i class="bi bi-three-dots-vertical me-1"></i>Action
+                </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                  <li><a class="dropdown-item btn-toggle-tech-status" href="#" data-id="${t.TechnicianId}" data-status="Available"><i class="bi bi-check2 text-success"></i> Set Available</a></li>
-                  <li><a class="dropdown-item btn-toggle-tech-status" href="#" data-id="${t.TechnicianId}" data-status="Busy"><i class="bi bi-clock text-warning"></i> Set Busy</a></li>
-                  <li><a class="dropdown-item btn-toggle-tech-status" href="#" data-id="${t.TechnicianId}" data-status="On-Leave"><i class="bi bi-pause text-secondary"></i> Set On-Leave</a></li>
+                  <li><a class="dropdown-item btn-toggle-tech-status" href="#" data-id="${t.TechnicianId}" data-status="Available"><i class="bi bi-check2 text-success me-2"></i> Set Available</a></li>
+                  <li><a class="dropdown-item btn-toggle-tech-status" href="#" data-id="${t.TechnicianId}" data-status="Busy"><i class="bi bi-clock text-warning me-2"></i> Set Busy</a></li>
+                  <li><a class="dropdown-item btn-toggle-tech-status" href="#" data-id="${t.TechnicianId}" data-status="On-Leave"><i class="bi bi-pause text-secondary me-2"></i> Set On-Leave</a></li>
                   <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item text-primary btn-edit-tech" href="#" data-id="${t.TechnicianId}"><i class="bi bi-pencil-square"></i> Edit Profile</a></li>
-                  <li><a class="dropdown-item text-danger btn-delete-tech" href="#" data-id="${t.TechnicianId}" data-name="${t.FullName}"><i class="bi bi-trash"></i> Soft Delete</a></li>
+                  <li><a class="dropdown-item text-primary btn-edit-tech" href="#" data-id="${t.TechnicianId}"><i class="bi bi-pencil-square me-2"></i> Edit Profile</a></li>
+                  <li><a class="dropdown-item text-danger btn-delete-tech" href="#" data-id="${t.TechnicianId}" data-name="${t.FullName}"><i class="bi bi-trash me-2"></i> Soft Delete</a></li>
                 </ul>
               </div>
             </td>
