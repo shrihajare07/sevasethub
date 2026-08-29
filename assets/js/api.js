@@ -250,9 +250,11 @@ const api = (function () {
       }
 
       case 'getOffers':
+        ensureLocalSeedData();
         return JSON.parse(localStorage.getItem('ssh_offers') || '[]');
 
       case 'getCoupons':
+        ensureLocalSeedData();
         return JSON.parse(localStorage.getItem('ssh_coupons') || '[]');
 
       case 'validateCoupon': {
@@ -1212,6 +1214,22 @@ const api = (function () {
         localStorage.setItem('ssh_coupons', JSON.stringify(cpns));
         appendAuditLog('COUPON_CREATED', 'Coupons', `New coupon '${newCpn.CouponCode}' created — ${newCpn.DiscountType} discount of ₹${newCpn.DiscountValue}.`);
         return newCpn;
+      }
+
+      case 'deleteOffer': {
+        let ofrs = JSON.parse(localStorage.getItem('ssh_offers') || '[]');
+        ofrs = ofrs.filter(o => o.OfferId !== payload.offerId);
+        localStorage.setItem('ssh_offers', JSON.stringify(ofrs));
+        appendAuditLog('OFFER_DELETED', 'Offers', `Offer ${payload.offerId} deleted.`);
+        return { success: true };
+      }
+
+      case 'deleteCoupon': {
+        let cpns = JSON.parse(localStorage.getItem('ssh_coupons') || '[]');
+        cpns = cpns.filter(c => c.CouponId !== payload.couponId);
+        localStorage.setItem('ssh_coupons', JSON.stringify(cpns));
+        appendAuditLog('COUPON_DELETED', 'Coupons', `Coupon ${payload.couponId} deleted.`);
+        return { success: true };
       }
 
       default:

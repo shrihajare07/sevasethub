@@ -68,9 +68,35 @@
       .table-responsive { overflow-x: auto !important; }
       .dropdown-menu { z-index: 1070 !important; }
     }
+    /* Top Progress Bar Loader */
+    #top-progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3.5px;
+      width: 0%;
+      background: linear-gradient(90deg, #0284c7, #2563eb, #06b6d4, #10b981);
+      background-size: 200% 100%;
+      z-index: 100000;
+      transition: width 0.25s ease, opacity 0.3s ease;
+      box-shadow: 0 0 12px rgba(2, 132, 199, 0.85);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .table-loading-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1rem;
+      gap: 0.75rem;
+    }
   </style>
 </head>
 <body>
+
+<!-- Top Progress Bar Loader -->
+<div id="top-progress-bar"></div>
 
 <div class="app-wrapper">
   
@@ -113,11 +139,11 @@
         <i class="bi bi-headset"></i> <span>Dispatchers</span>
       </a>
 
-      <div class="menu-category mt-3 admin-only-section">Marketing & Sales</div>
-      <a href="#" class="nav-link-custom admin-nav-link admin-only-section" data-target="offers">
+      <div class="menu-category mt-3">Marketing &amp; Sales</div>
+      <a href="#" class="nav-link-custom admin-nav-link" data-target="offers">
         <i class="bi bi-tag-fill"></i> <span>Promotional Offers</span>
       </a>
-      <a href="#" class="nav-link-custom admin-nav-link admin-only-section" data-target="coupons">
+      <a href="#" class="nav-link-custom admin-nav-link" data-target="coupons">
         <i class="bi bi-percent"></i> <span>Discount Coupons</span>
       </a>
 
