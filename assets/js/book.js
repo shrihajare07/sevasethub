@@ -386,10 +386,101 @@ $(document).ready(async function() {
   }
 
   /**
+   * Real-time duplicate account detection on Step 3
+   * Checks ssh_users on blur of mobile/email fields
+   */
+  let existingUserFoundByMobile = false;
+  let existingUserFoundByEmail = false;
+
+  function buildDuplicateHint(field, existingUser) {
+    const loginUrl = `../frontend/login.html`;
+    return `
+      <div class="d-flex align-items-start gap-2 p-2 rounded-2 border" style="background:#fff3cd;border-color:#ffc107!important;">
+        <i class="bi bi-exclamation-triangle-fill text-warning mt-1" style="font-size:0.85rem;flex-shrink:0;"></i>
+        <div style="font-size:0.78rem;line-height:1.4;">
+          <strong class="text-dark">Account already exists</strong> for this ${field}.<br>
+          <span class="text-muted">Registered as <strong>${existingUser.FirstName} ${existingUser.LastName}</strong>. 
+          You can <a href="login.html" class="text-primary fw-semibold">log in here</a> or continue to book with your existing account.</span>
+        </div>
+      </div>`;
+  }
+
+  function checkDuplicateByMobile(mobile) {
+    if (!mobile || mobile.length < 10) {
+      $('#hint-mobile').addClass('d-none').html('');
+      existingUserFoundByMobile = false;
+      return;
+    }
+    const users = JSON.parse(localStorage.getItem('ssh_users') || '[]');
+    const found = users.find(u => u.Role === 'Customer' && String(u.Mobile).trim() === mobile && !u.IsDeleted);
+    if (found) {
+      existingUserFoundByMobile = true;
+      $('#hint-mobile').removeClass('d-none').html(buildDuplicateHint('mobile number', found));
+      $('#cust-mobile').addClass('is-invalid').removeClass('is-valid');
+      // Auto-fill name if not already filled
+      if (!$('#cust-fullname').val().trim()) {
+        $('#cust-fullname').val(`${found.FirstName} ${found.LastName}`.trim());
+      }
+    } else {
+      existingUserFoundByMobile = false;
+      $('#hint-mobile').addClass('d-none').html('');
+      $('#cust-mobile').removeClass('is-invalid').addClass('is-valid');
+    }
+  }
+
+  function checkDuplicateByEmail(email) {
+    if (!email || !email.includes('@')) {
+      $('#hint-email').addClass('d-none').html('');
+      existingUserFoundByEmail = false;
+      return;
+    }
+    const users = JSON.parse(localStorage.getItem('ssh_users') || '[]');
+    const found = users.find(u => u.Role === 'Customer' && u.Email && u.Email.toLowerCase() === email.toLowerCase() && !u.IsDeleted);
+    if (found) {
+      existingUserFoundByEmail = true;
+      $('#hint-email').removeClass('d-none').html(buildDuplicateHint('email address', found));
+      $('#cust-email').addClass('is-invalid').removeClass('is-valid');
+      // Auto-fill name if not already filled
+      if (!$('#cust-fullname').val().trim()) {
+        $('#cust-fullname').val(`${found.FirstName} ${found.LastName}`.trim());
+      }
+    } else {
+      existingUserFoundByEmail = false;
+      $('#hint-email').addClass('d-none').html('');
+      $('#cust-email').removeClass('is-invalid').addClass('is-valid');
+    }
+  }
+
+  $('#cust-mobile').on('blur', function() {
+    checkDuplicateByMobile($(this).val().trim());
+  });
+
+  $('#cust-email').on('blur', function() {
+    checkDuplicateByEmail($(this).val().trim().toLowerCase());
+  });
+
+  // Clear validation state when user edits a field again
+  $('#cust-mobile').on('input', function() {
+    if (existingUserFoundByMobile) {
+      $('#hint-mobile').addClass('d-none').html('');
+      $(this).removeClass('is-invalid');
+      existingUserFoundByMobile = false;
+    }
+  });
+  $('#cust-email').on('input', function() {
+    if (existingUserFoundByEmail) {
+      $('#hint-email').addClass('d-none').html('');
+      $(this).removeClass('is-invalid');
+      existingUserFoundByEmail = false;
+    }
+  });
+
+  /**
    * Form Submission (Direct Booking + Automatic Registration)
    */
   $('#form-direct-booking').on('submit', async function(e) {
     e.preventDefault();
+
 
     const fullName = $('#cust-fullname').val().trim();
     const mobile = $('#cust-mobile').val().trim();
