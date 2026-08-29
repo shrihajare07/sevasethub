@@ -152,7 +152,14 @@ const api = (function () {
       case 'login': {
         const users = JSON.parse(localStorage.getItem('ssh_users') || '[]');
         const query = (payload.emailOrMobile || '').trim().toLowerCase();
-        const user = users.find(u => (u.Email && u.Email.toLowerCase() === query) || String(u.Mobile) === query);
+        const queryDigits = query.replace(/\D/g, '');
+        const user = users.find(u => {
+          const uEmail = (u.Email || '').toLowerCase().trim();
+          const uMobile = String(u.Mobile || '').trim();
+          const uMobileDigits = uMobile.replace(/\D/g, '');
+          return (uEmail && uEmail === query) ||
+                 (uMobile && (uMobile === query || (queryDigits.length >= 10 && uMobileDigits.endsWith(queryDigits.slice(-10)))));
+        });
 
         if (!user) throw new Error('No account found with this email or mobile number.');
         if (user.Status === 'Inactive' || user.IsDeleted) throw new Error('This account has been deactivated. Please contact support.');
@@ -304,12 +311,19 @@ const api = (function () {
         // If user is not logged in as Customer or is booking as a different person
         let token = 'SES-LOCAL-' + Math.random().toString(36).substring(2, 12);
         if (!user || user.role !== 'Customer' || isDifferentUser) {
-          let existingUser = users.find(u => (formEmail && u.Email && u.Email.toLowerCase() === formEmail) || (formMobile && String(u.Mobile) === formMobile));
+          const formMobileDigits = formMobile.replace(/\D/g, '');
+          let existingUser = users.find(u => {
+            const uEmail = (u.Email || '').toLowerCase().trim();
+            const uMobile = String(u.Mobile || '').trim();
+            const uMobileDigits = uMobile.replace(/\D/g, '');
+            return (formEmail && uEmail && uEmail === formEmail) ||
+                   (formMobile && uMobile && (uMobile === formMobile || (formMobileDigits.length >= 10 && uMobileDigits.endsWith(formMobileDigits.slice(-10)))));
+          });
 
           if (!existingUser) {
             const userId = 'USR-' + Math.floor(100000 + Math.random() * 900000);
             custId = 'CUS-' + Math.floor(100000 + Math.random() * 900000);
-            const nameParts = (custName || 'Valued Customer').trim().split(' ');
+            const nameParts = (custName || 'Valued Customer').trim().split(/\s+/);
             const firstName = nameParts[0] || 'Valued';
             const lastName = nameParts.slice(1).join(' ') || 'Customer';
 
@@ -335,7 +349,7 @@ const api = (function () {
           } else {
             custId = existingUser.CustomerId || existingUser.UserId;
             if (payload.customerName) {
-              const nameParts = payload.customerName.trim().split(' ');
+              const nameParts = payload.customerName.trim().split(/\s+/);
               existingUser.FirstName = nameParts[0] || existingUser.FirstName;
               existingUser.LastName = nameParts.slice(1).join(' ') || existingUser.LastName;
             }

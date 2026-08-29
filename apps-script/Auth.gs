@@ -103,8 +103,15 @@ const AuthModule = {
     }
 
     const query = String(emailOrMobile).trim().toLowerCase();
+    const queryDigits = query.replace(/\D/g, '');
     const users = Utils.getAllRows(SHEETS.USERS);
-    const user = users.find(u => u.Email.toLowerCase() === query || String(u.Mobile) === query);
+    const user = users.find(u => {
+      const uEmail = (u.Email || '').toLowerCase().trim();
+      const uMobile = String(u.Mobile || '').trim();
+      const uMobileDigits = uMobile.replace(/\D/g, '');
+      return (uEmail && uEmail === query) ||
+             (uMobile && (uMobile === query || (queryDigits.length >= 10 && uMobileDigits.endsWith(queryDigits.slice(-10)))));
+    });
 
     if (!user) {
       throw new Error('Invalid email/mobile or password.');

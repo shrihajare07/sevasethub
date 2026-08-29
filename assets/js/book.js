@@ -502,6 +502,11 @@ $(document).ready(async function() {
       $('#cust-email').focus();
       return;
     }
+    if (password && password.length < 6) {
+      alert('Account password must be at least 6 characters long.');
+      $('#cust-password').focus();
+      return;
+    }
 
     const $submitBtn = $('#btn-submit-booking');
     $submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Booking Certified Service...');

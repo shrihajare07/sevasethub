@@ -32,18 +32,36 @@ const RequestsModule = {
 
     if (!customerId) {
       // Auto-register guest if not exists
-      const existingUser = Utils.getAllRows(SHEETS.USERS).find(u => u.Email.toLowerCase() === (customerEmail || '').toLowerCase() || u.Mobile === customerMobile);
+      const existingUser = Utils.getAllRows(SHEETS.USERS).find(u => {
+        const uEmail = (u.Email || '').toLowerCase().trim();
+        const uMobile = String(u.Mobile || '').trim();
+        return (customerEmail && uEmail === customerEmail.toLowerCase().trim()) || 
+               (customerMobile && uMobile === customerMobile.trim());
+      });
       if (existingUser) {
         userId = existingUser.UserId;
         const cust = Utils.findOne(SHEETS.CUSTOMERS, 'UserId', userId);
         if (cust) customerId = cust.CustomerId;
+        if (payload.password && String(payload.password).trim().length >= 6) {
+          const salt = existingUser.PasswordSalt || Utils.generateSalt();
+          const hash = Utils.hashPassword(String(payload.password).trim(), salt);
+          Utils.updateRow(SHEETS.USERS, 'UserId', userId, {
+            PasswordHash: hash,
+            PasswordSalt: salt
+          });
+        }
       } else {
+        const nameParts = (customerName || 'Valued Customer').trim().split(/\s+/);
+        const firstName = nameParts[0] || 'Valued';
+        const lastName = nameParts.slice(1).join(' ') || 'Customer';
+        const userPass = payload.password && String(payload.password).trim().length >= 6 ? String(payload.password).trim() : 'Customer@2026';
+
         const regRes = AuthModule.register({
           email: customerEmail || `customer_${Date.now()}@sevasetuhub.in`,
           mobile: customerMobile || '9999999999',
-          password: 'User@' + Math.floor(1000 + Math.random() * 9000),
-          firstName: customerName || 'Valued',
-          lastName: 'Customer',
+          password: userPass,
+          firstName: firstName,
+          lastName: lastName,
           address: payload.address || '',
           city: payload.city || '',
           pincode: payload.pincode || '',
