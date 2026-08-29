@@ -1455,39 +1455,16 @@ const api = (function () {
     getCoupons: (params) => request('getCoupons', 'GET', params),
     validateCoupon: (payload) => request('validateCoupon', 'POST', payload),
     createServiceRequest: async (payload) => {
-      // 1. Always execute local fallback to ensure request, user, and session are instantly persisted in localStorage
-      const localResult = executeLocalFallback('createServiceRequest', 'POST', payload);
-      if (localResult && localResult.user && localResult.token) {
-        setSession(localResult.token, localResult.user);
+      // request() already calls executeLocalFallback internally when no live API is set.
+      // Calling executeLocalFallback directly AND then request() creates two different users
+      // with two different CustomerId values — causing the session to mismatch the saved request.
+      const res = await request('createServiceRequest', 'POST', payload);
+      if (res && res.user && res.token) {
+        setSession(res.token, res.user);
       }
-
-      // 2. Also send to live API if configured
-      try {
-        const res = await request('createServiceRequest', 'POST', payload);
-        if (res && res.user && res.token) {
-          setSession(res.token, res.user);
-        }
-        return res || localResult;
-      } catch (err) {
-        return localResult;
-      }
+      return res;
     },
-    getServiceRequests: async (params) => {
-      const localReqs = executeLocalFallback('getServiceRequests', 'GET', params) || [];
-      try {
-        const remoteReqs = await request('getServiceRequests', 'GET', params);
-        if (remoteReqs && Array.isArray(remoteReqs) && remoteReqs.length > 0) {
-          const merged = [...localReqs];
-          remoteReqs.forEach(rem => {
-            if (!merged.some(m => m.RequestId === rem.RequestId)) {
-              merged.push(rem);
-            }
-          });
-          return merged;
-        }
-      } catch (e) {}
-      return localReqs;
-    },
+    getServiceRequests: (params) => request('getServiceRequests', 'GET', params),
     getServiceRequest: (requestId) => request('getServiceRequest', 'GET', { requestId }),
     createEstimate: (payload) => request('createEstimate', 'POST', payload),
     approveEstimate: (payload) => request('approveEstimate', 'POST', payload),

@@ -439,24 +439,33 @@ $(document).ready(async function() {
       const res = await api.createServiceRequest(payload);
       const reqId = res.RequestId || (res.request ? res.request.RequestId : 'REQ-104930');
 
-      // Guarantee active session is saved for this customer
-      if (res && res.user && res.token) {
-        api.setSession(res.token, res.user);
-      } else {
+      // The session is already set inside api.createServiceRequest with the correct CustomerId
+      // that matches the saved request. Do NOT generate new random IDs here.
+      // If for any reason the session wasn't set (edge case), set it now using the form data.
+      const currentUser = api.getStoredUser();
+      if (!currentUser || currentUser.role !== 'Customer') {
         const nameParts = fullName.split(' ');
-        const token = 'SES-LOCAL-' + Math.random().toString(36).substring(2, 12);
-        const userObj = {
-          userId: 'USR-' + Math.floor(100000 + Math.random() * 900000),
-          customerId: 'CUS-' + Math.floor(100000 + Math.random() * 900000),
-          firstName: nameParts[0] || 'Customer',
-          lastName: nameParts.slice(1).join(' ') || '',
-          fullName: fullName,
-          email: email,
-          mobile: mobile,
-          role: 'Customer',
-          tenantId: 'TNT-DEFAULT'
-        };
-        api.setSession(token, userObj);
+        const savedReqs = JSON.parse(localStorage.getItem('ssh_requests') || '[]');
+        // Find the request that was just saved by email or mobile
+        const savedReq = savedReqs.find(r =>
+          (email && r.CustomerEmail && r.CustomerEmail.toLowerCase() === email.toLowerCase()) ||
+          (mobile && String(r.CustomerMobile) === mobile)
+        );
+        if (savedReq) {
+          const token = 'SES-LOCAL-' + Math.random().toString(36).substring(2, 12);
+          const userObj = {
+            userId: savedReq.CustomerId,
+            customerId: savedReq.CustomerId,
+            firstName: nameParts[0] || 'Customer',
+            lastName: nameParts.slice(1).join(' ') || '',
+            fullName: fullName,
+            email: email,
+            mobile: mobile,
+            role: 'Customer',
+            tenantId: 'TNT-DEFAULT'
+          };
+          api.setSession(token, userObj);
+        }
       }
 
       // Populate Success Modal
