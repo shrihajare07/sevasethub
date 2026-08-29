@@ -212,19 +212,70 @@ $(document).ready(function() {
     }
   });
 
+  const TIME_SLOTS = [
+    { index: 0, label: '09:00 AM - 11:00 AM', shortTime: '09:00 AM' },
+    { index: 1, label: '11:00 AM - 01:00 PM', shortTime: '11:00 AM' },
+    { index: 2, label: '01:00 PM - 03:00 PM', shortTime: '01:00 PM' },
+    { index: 3, label: '03:00 PM - 05:00 PM', shortTime: '03:00 PM' },
+    { index: 4, label: '05:00 PM - 07:00 PM', shortTime: '05:00 PM' }
+  ];
+
+  function mapTimeToSlotIndex(timeStr) {
+    if (!timeStr) return 0;
+    const str = timeStr.toUpperCase();
+
+    if (str.includes('SLOT 1') || str.includes('09:00') || str.includes('10:00') || str.includes('9:00') || str.includes('10:30')) return 0;
+    if (str.includes('SLOT 2') || str.includes('11:00') || str.includes('12:00') || str.includes('11:30') || str.includes('12:30')) return 1;
+    if (str.includes('SLOT 3') || str.includes('01:00') || str.includes('02:00') || str.includes('1:00') || str.includes('2:00') || str.includes('13:') || str.includes('14:')) return 2;
+    if (str.includes('SLOT 4') || str.includes('03:00') || str.includes('04:00') || str.includes('3:00') || str.includes('4:00') || str.includes('03:30') || str.includes('15:') || str.includes('16:')) return 3;
+    if (str.includes('SLOT 5') || str.includes('05:00') || str.includes('06:00') || str.includes('5:00') || str.includes('6:00') || str.includes('17:') || str.includes('18:') || str.includes('19:')) return 4;
+
+    const match = str.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i);
+    if (match) {
+      let h = parseInt(match[1], 10);
+      const ampm = (match[3] || '').toUpperCase();
+      if (ampm === 'PM' && h < 12) h += 12;
+      if (ampm === 'AM' && h === 12) h = 0;
+
+      if (h >= 8 && h < 11) return 0;
+      if (h >= 11 && h < 13) return 1;
+      if (h >= 13 && h < 15) return 2;
+      if (h >= 15 && h < 17) return 3;
+      if (h >= 17) return 4;
+    }
+    return 0;
+  }
+
   /**
    * Assign Technician Modal
    */
-  async function openAssignModal(reqId) {
+  async function openAssignModal(reqId, preselectedTechId, preselectedSlot) {
     const techs = await api.getTechnicians();
+    const reqs = await api.getServiceRequests();
+    const targetReq = (reqs || []).find(r => r.RequestId === reqId);
+
     const $techSelect = $('#assign-modal-tech');
-    $techSelect.empty().append('<option value="">-- Choose Technician --</option>');
+    $techSelect.empty().append('<option value="">-- Choose Certified Technician --</option>');
 
     techs.forEach(t => {
-      $techSelect.append(`<option value="${t.TechnicianId}" data-name="${t.FullName}">${t.FullName} (${t.Specialization} - ${t.Status})</option>`);
+      const isSelected = preselectedTechId && preselectedTechId === t.TechnicianId ? 'selected' : '';
+      $techSelect.append(`<option value="${t.TechnicianId}" data-name="${t.FullName}" ${isSelected}>${t.FullName} (${t.Specialization} - ${t.Status})</option>`);
     });
 
-    $('#assign-modal-req-id').val(reqId);
+    $('#assign-modal-req-id').val(reqId || '');
+    if (targetReq) {
+      $('#assign-modal-request-info').html(`<strong>Request #${targetReq.RequestId}</strong>: ${targetReq.ServiceName} for ${targetReq.CustomerName} (${targetReq.City || 'Kolhapur'})`).show();
+    } else {
+      $('#assign-modal-request-info').hide();
+    }
+
+    const currentDateVal = $('#dispatch-filter-date').val() || new Date().toISOString().slice(0, 10);
+    $('#assign-modal-date').val(targetReq && targetReq.PreferredDate ? targetReq.PreferredDate : currentDateVal);
+
+    if (preselectedSlot) {
+      $('#assign-modal-time').val(preselectedSlot);
+    }
+
     const modal = new bootstrap.Modal(document.getElementById('modalAssignTech'));
     modal.show();
   }
@@ -243,7 +294,6 @@ $(document).ready(function() {
     }
 
     try {
-      // Find or create Work Order
       const wo = await api.createWorkOrder({
         requestId: reqId,
         technicianId: techId,
@@ -252,55 +302,387 @@ $(document).ready(function() {
         startTime: time
       });
 
-      alert(`Technician ${techName} assigned to Work Order #${wo.WorkOrderId}`);
+      alert(`Technician ${techName} scheduled successfully for Work Order #${wo.WorkOrderId}`);
       bootstrap.Modal.getInstance(document.getElementById('modalAssignTech')).hide();
       loadAdminRequests();
+      loadDispatchBoardData();
     } catch (err) {
       alert('Assignment failed: ' + err.message);
     }
   });
 
   /**
-   * Interactive Dispatch Board
+   * Interactive Real-Time Dispatch Board
    */
+  let _dispatchDateFilterMode = 'single'; // 'single' or 'all'
+
   function initDispatchBoard() {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    $('#dispatch-filter-date').val(todayStr);
+    $('#assign-modal-date').val(todayStr);
+    $('#quick-dispatch-date').val(todayStr);
+
+    // Date Navigation Controls
+    $('#btn-dispatch-prev-day').on('click', function() {
+      _dispatchDateFilterMode = 'single';
+      const cur = new Date($('#dispatch-filter-date').val() || new Date());
+      cur.setDate(cur.getDate() - 1);
+      $('#dispatch-filter-date').val(cur.toISOString().slice(0, 10));
+      loadDispatchBoardData();
+    });
+
+    $('#btn-dispatch-next-day').on('click', function() {
+      _dispatchDateFilterMode = 'single';
+      const cur = new Date($('#dispatch-filter-date').val() || new Date());
+      cur.setDate(cur.getDate() + 1);
+      $('#dispatch-filter-date').val(cur.toISOString().slice(0, 10));
+      loadDispatchBoardData();
+    });
+
+    $('#btn-dispatch-today').on('click', function() {
+      _dispatchDateFilterMode = 'single';
+      $('#dispatch-filter-date').val(new Date().toISOString().slice(0, 10));
+      loadDispatchBoardData();
+    });
+
+    $('#btn-dispatch-all-dates').on('click', function() {
+      _dispatchDateFilterMode = 'all';
+      loadDispatchBoardData();
+    });
+
+    $('#dispatch-filter-date').on('change', function() {
+      _dispatchDateFilterMode = 'single';
+      loadDispatchBoardData();
+    });
+
+    $('#dispatch-filter-spec, #dispatch-filter-status').on('change', function() {
+      loadDispatchBoardData();
+    });
+
+    // Refresh Board Button
+    $('#btn-refresh-dispatch').on('click', function() {
+      const $btn = $(this);
+      $btn.find('i').addClass('spinner-border spinner-border-sm border-0').removeClass('bi-arrow-clockwise');
+      loadDispatchBoardData().finally(() => {
+        setTimeout(() => {
+          $btn.find('i').removeClass('spinner-border spinner-border-sm border-0').addClass('bi-arrow-clockwise');
+        }, 400);
+      });
+    });
+
+    // Quick Dispatch Trigger
+    $('#btn-open-quick-dispatch').on('click', async function() {
+      await openQuickDispatchModal();
+    });
+
+    $('#btn-confirm-quick-dispatch').on('click', async function() {
+      const reqId = $('#quick-dispatch-req-select').val();
+      const techId = $('#quick-dispatch-tech-select').val();
+      const techName = $('#quick-dispatch-tech-select option:selected').data('name');
+      const date = $('#quick-dispatch-date').val();
+      const time = $('#quick-dispatch-time').val();
+
+      if (!reqId) {
+        alert('Please select a service request.');
+        return;
+      }
+      if (!techId) {
+        alert('Please select a certified technician.');
+        return;
+      }
+
+      try {
+        const wo = await api.createWorkOrder({
+          requestId: reqId,
+          technicianId: techId,
+          technicianName: techName,
+          scheduledDate: date,
+          startTime: time
+        });
+
+        alert(`Work order #${wo.WorkOrderId} dispatched to ${techName}!`);
+        bootstrap.Modal.getInstance(document.getElementById('modalQuickDispatch')).hide();
+        loadDispatchBoardData();
+        loadAdminRequests();
+      } catch (err) {
+        alert('Quick dispatch failed: ' + err.message);
+      }
+    });
+
+    // Reassign handler from Work Order details modal
+    $('#btn-wo-modal-reassign').on('click', async function() {
+      const woId = $('#wo-modal-current-wo-id').val();
+      const newTechId = $('#wo-modal-reassign-tech').val();
+      const newTechName = $('#wo-modal-reassign-tech option:selected').data('name');
+
+      if (!woId || !newTechId) return;
+
+      try {
+        await api.assignTechnician({
+          workOrderId: woId,
+          technicianId: newTechId,
+          technicianName: newTechName
+        });
+        alert(`Job reassigned to ${newTechName}.`);
+        bootstrap.Modal.getInstance(document.getElementById('modalDispatchWorkOrderDetails')).hide();
+        loadDispatchBoardData();
+      } catch (err) {
+        alert('Reassign failed: ' + err.message);
+      }
+    });
+
+    // Status change handler from Work Order details modal
+    $('.btn-wo-change-status').on('click', async function() {
+      const woId = $('#wo-modal-current-wo-id').val();
+      const newStatus = $(this).data('status');
+
+      if (!woId || !newStatus) return;
+
+      try {
+        if (newStatus === 'Completed') {
+          await api.completeWorkOrder({ workOrderId: woId });
+        } else {
+          await api.updateJobStatus({ workOrderId: woId, status: newStatus });
+        }
+        alert(`Work Order #${woId} status updated to '${newStatus}'.`);
+        bootstrap.Modal.getInstance(document.getElementById('modalDispatchWorkOrderDetails')).hide();
+        loadDispatchBoardData();
+        loadAdminRequests();
+      } catch (err) {
+        alert('Status update failed: ' + err.message);
+      }
+    });
+
+    // Auto-refresh polling every 20 seconds when Dispatch section is visible
+    setInterval(() => {
+      if (!$('#section-dispatch').hasClass('d-none')) {
+        loadDispatchBoardData(true);
+      }
+    }, 20000);
+
     loadDispatchBoardData();
   }
 
-  async function loadDispatchBoardData() {
+  async function openQuickDispatchModal(preselectedTechId, preselectedSlot) {
+    const reqs = await api.getServiceRequests();
+    const techs = await api.getTechnicians();
+
+    const $reqSelect = $('#quick-dispatch-req-select');
+    $reqSelect.empty().append('<option value="">-- Choose Pending Service Request --</option>');
+
+    (reqs || []).forEach(r => {
+      $reqSelect.append(`<option value="${r.RequestId}">#${r.RequestId} - ${r.ServiceName} (${r.CustomerName}, ${r.City || 'Kolhapur'} - ${r.Status})</option>`);
+    });
+
+    const $techSelect = $('#quick-dispatch-tech-select');
+    $techSelect.empty().append('<option value="">-- Choose Certified Technician --</option>');
+
+    (techs || []).forEach(t => {
+      const isSelected = preselectedTechId && preselectedTechId === t.TechnicianId ? 'selected' : '';
+      $techSelect.append(`<option value="${t.TechnicianId}" data-name="${t.FullName}" ${isSelected}>${t.FullName} (${t.Specialization} - ${t.Status})</option>`);
+    });
+
+    const currentDateVal = $('#dispatch-filter-date').val() || new Date().toISOString().slice(0, 10);
+    $('#quick-dispatch-date').val(currentDateVal);
+
+    if (preselectedSlot) {
+      $('#quick-dispatch-time').val(preselectedSlot);
+    }
+
+    const modal = new bootstrap.Modal(document.getElementById('modalQuickDispatch'));
+    modal.show();
+  }
+
+  async function openWorkOrderInspector(workOrder, matchingTech) {
+    $('#wo-modal-current-wo-id').val(workOrder.WorkOrderId);
+    $('#wo-modal-id').text(`#${workOrder.WorkOrderId}`);
+
+    const req = workOrder.serviceRequest || {};
+    $('#wo-modal-service-title').text(req.ServiceName || workOrder.ServiceName || 'Technical Field Service');
+    $('#wo-modal-customer-name').text(req.CustomerName || workOrder.CustomerName || 'Valued Customer');
+    $('#wo-modal-customer-address').html(`<i class="bi bi-geo-alt me-1"></i>${req.Address || 'Kolhapur Central'}, ${req.City || 'Kolhapur'}`);
+
+    const phone = req.CustomerMobile || workOrder.CustomerMobile || '9890123456';
+    $('#wo-modal-customer-phone').text(phone);
+    $('#wo-modal-btn-call').attr('href', `tel:${phone}`);
+    $('#wo-modal-btn-whatsapp').attr('href', `https://wa.me/91${phone}?text=Hello%20${encodeURIComponent(req.CustomerName || 'Customer')},%20regarding%20your%20SevaSetuHub%20service%20booking%20#${workOrder.WorkOrderId}`);
+
+    $('#wo-modal-date').text(workOrder.ScheduledDate || 'Today');
+    $('#wo-modal-time').text(workOrder.StartTime || '09:00 AM – 11:00 AM');
+    $('#wo-modal-priority').text(workOrder.Priority || 'Normal').removeClass('bg-danger bg-warning bg-secondary').addClass(workOrder.Priority === 'High' ? 'bg-danger' : 'bg-primary');
+
+    const statusBadge = $('#wo-modal-status-badge');
+    statusBadge.text(workOrder.Status || 'Assigned');
+    statusBadge.removeClass('bg-success bg-warning bg-primary bg-secondary bg-purple text-dark text-white');
+    if (workOrder.Status === 'Completed') statusBadge.addClass('bg-success text-white');
+    else if (workOrder.Status === 'In Progress') statusBadge.addClass('bg-warning text-dark');
+    else if (workOrder.Status === 'En Route') statusBadge.addClass('bg-info text-dark');
+    else statusBadge.addClass('bg-primary text-white');
+
+    const techName = workOrder.TechnicianName || (matchingTech ? matchingTech.FullName : 'Technician');
+    const initials = techName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    $('#wo-modal-tech-avatar').text(initials);
+    $('#wo-modal-tech-name').text(techName);
+    $('#wo-modal-tech-spec').text(matchingTech ? matchingTech.Specialization : 'Certified Technician');
+
+    // Populate reassign dropdown
+    const techs = await api.getTechnicians();
+    const $reassign = $('#wo-modal-reassign-tech');
+    $reassign.empty();
+    techs.forEach(t => {
+      const sel = t.TechnicianId === workOrder.TechnicianId ? 'selected' : '';
+      $reassign.append(`<option value="${t.TechnicianId}" data-name="${t.FullName}" ${sel}>${t.FullName} (${t.Specialization})</option>`);
+    });
+
+    const modal = new bootstrap.Modal(document.getElementById('modalDispatchWorkOrderDetails'));
+    modal.show();
+  }
+
+  async function loadDispatchBoardData(isSilent) {
     try {
       const techs = await api.getTechnicians();
       const workOrders = await api.getWorkOrders();
+
+      const selectedDate = $('#dispatch-filter-date').val() || new Date().toISOString().slice(0, 10);
+      const selectedSpec = $('#dispatch-filter-spec').val() || 'all';
+      const selectedStatus = $('#dispatch-filter-status').val() || 'all';
+
+      // Update KPI Statistics
+      const activeTechsCount = (techs || []).length;
+      const availableTechsCount = (techs || []).filter(t => t.Status === 'Available').length;
+      const busyTechsCount = (techs || []).filter(t => t.Status === 'Busy').length;
+
+      const dateFilteredWos = _dispatchDateFilterMode === 'all'
+        ? (workOrders || [])
+        : (workOrders || []).filter(w => !w.ScheduledDate || w.ScheduledDate === selectedDate);
+
+      $('#dispatch-kpi-total-techs').text(activeTechsCount);
+      $('#dispatch-kpi-available-techs').text(availableTechsCount);
+      $('#dispatch-kpi-busy-techs').text(busyTechsCount);
+      $('#dispatch-kpi-scheduled-jobs').text(dateFilteredWos.length);
+
       const $tbody = $('#dispatch-board-body');
       $tbody.empty();
 
-      techs.forEach(t => {
-        const assignedJobs = workOrders.filter(w => w.TechnicianId === t.TechnicianId);
+      // Filter Techs
+      let filteredTechs = (techs || []);
+      if (selectedSpec !== 'all') {
+        filteredTechs = filteredTechs.filter(t => (t.Specialization || '').toLowerCase().includes(selectedSpec.toLowerCase()));
+      }
+      if (selectedStatus !== 'all') {
+        filteredTechs = filteredTechs.filter(t => t.Status === selectedStatus);
+      }
 
-        let row = `<tr><td><strong>${t.FullName}</strong><br><small class="text-muted">${t.Specialization}</small></td>`;
-        const timeSlots = ['09:00 AM', '11:00 AM', '01:00 PM', '03:00 PM', '05:00 PM'];
+      if (filteredTechs.length === 0) {
+        $tbody.html('<tr><td colspan="6" class="text-center py-5 text-muted"><i class="bi bi-people text-muted fs-3 d-block mb-2"></i>No certified technicians match current filters.</td></tr>');
+        return;
+      }
 
-        timeSlots.forEach(slot => {
-          const matchingJob = assignedJobs.find(j => (j.StartTime || '').includes(slot.slice(0, 2)));
+      filteredTechs.forEach(t => {
+        const initials = (t.FullName || 'T').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+        const statusBadge = t.Status === 'Available'
+          ? '<span class="badge bg-success-subtle text-success border border-success-subtle px-1.5" style="font-size:0.65rem;">Available</span>'
+          : t.Status === 'Busy'
+          ? '<span class="badge bg-warning-subtle text-warning border border-warning-subtle px-1.5" style="font-size:0.65rem;">Busy</span>'
+          : '<span class="badge bg-secondary-subtle text-secondary border px-1.5" style="font-size:0.65rem;">On-Leave</span>';
+
+        // Sticky Technician Column
+        let row = `
+          <tr>
+            <td>
+              <div class="dispatch-tech-profile">
+                <div class="dispatch-tech-avatar">${initials}</div>
+                <div class="overflow-hidden">
+                  <div class="d-flex align-items-center gap-1">
+                    <strong class="text-dark small text-truncate d-block">${t.FullName}</strong>
+                  </div>
+                  <div class="text-muted" style="font-size:0.7rem;">${t.Specialization}</div>
+                  <div class="d-flex align-items-center gap-1.5 mt-1">
+                    ${statusBadge}
+                    <span class="text-warning small fw-bold" style="font-size:0.68rem;"><i class="bi bi-star-fill"></i> ${t.Rating || '4.9'}</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+        `;
+
+        // Technician's assigned jobs for the target date
+        const assignedJobs = dateFilteredWos.filter(w => w.TechnicianId === t.TechnicianId || (w.TechnicianName && w.TechnicianName.includes(t.FullName.split(' ')[0])));
+
+        // 5 Time Slots
+        TIME_SLOTS.forEach(slot => {
+          const matchingJob = assignedJobs.find(j => {
+            const jobSlotIndex = mapTimeToSlotIndex(j.StartTime || j.ScheduledTime || (j.serviceRequest ? j.serviceRequest.PreferredTimeSlot : ''));
+            return jobSlotIndex === slot.index;
+          });
+
           if (matchingJob) {
+            const rawStatus = matchingJob.Status || 'Assigned';
+            const statusClass = 'status-' + rawStatus.replace(/\s+/g, '-');
+            const badgeClass = rawStatus === 'Completed' ? 'bg-success'
+              : rawStatus === 'In Progress' ? 'bg-warning text-dark'
+              : rawStatus === 'En Route' ? 'bg-indigo text-white'
+              : 'bg-primary';
+
+            const req = matchingJob.serviceRequest || {};
+            const srvName = req.ServiceName || matchingJob.ServiceName || 'Field Service';
+            const custName = req.CustomerName || matchingJob.CustomerName || 'Customer';
+            const city = req.City || matchingJob.City || 'Kolhapur';
+            const priorityBadge = matchingJob.Priority === 'High' ? '<span class="badge bg-danger ms-1" style="font-size:0.6rem;">HIGH</span>' : '';
+
             row += `
               <td>
-                <div class="dispatch-slot-card">
-                  <strong>#${matchingJob.WorkOrderId}</strong><br>
-                  <span>${matchingJob.serviceRequest ? matchingJob.serviceRequest.ServiceName : 'Service'}</span>
+                <div class="dispatch-slot-card ${statusClass}" data-wo-id="${matchingJob.WorkOrderId}">
+                  <div class="slot-time-badge">
+                    <span><strong>#${matchingJob.WorkOrderId}</strong>${priorityBadge}</span>
+                    <span class="badge ${badgeClass}" style="font-size:0.62rem;">${rawStatus}</span>
+                  </div>
+                  <div class="slot-service-name" title="${srvName}">${srvName}</div>
+                  <div class="slot-customer-info">
+                    <i class="bi bi-person-fill text-muted"></i> <span>${custName} · ${city}</span>
+                  </div>
+                  <div class="text-muted" style="font-size:0.65rem;">
+                    <i class="bi bi-clock me-1"></i>${matchingJob.StartTime || slot.shortTime}
+                  </div>
                 </div>
               </td>
             `;
           } else {
-            row += `<td><span class="text-muted small" style="opacity:0.4;">Available</span></td>`;
+            row += `
+              <td>
+                <div class="dispatch-slot-empty" data-tech-id="${t.TechnicianId}" data-tech-name="${t.FullName}" data-slot="${slot.label}">
+                  <span class="empty-label"><i class="bi bi-check2 me-1"></i>Available</span>
+                  <span class="btn-quick-slot-assign"><i class="bi bi-plus-circle me-1"></i>+ Dispatch</span>
+                </div>
+              </td>
+            `;
           }
         });
 
         row += `</tr>`;
         $tbody.append(row);
       });
+
+      // Bind slot card click event to open Work Order Details Inspector
+      $('.dispatch-slot-card').off('click').on('click', function(e) {
+        e.stopPropagation();
+        const woId = $(this).data('wo-id');
+        const wo = (workOrders || []).find(w => w.WorkOrderId === woId);
+        if (wo) {
+          const tech = (techs || []).find(t => t.TechnicianId === wo.TechnicianId);
+          openWorkOrderInspector(wo, tech);
+        }
+      });
+
+      // Bind empty slot click event to open quick dispatch pre-filled
+      $('.dispatch-slot-empty').off('click').on('click', function() {
+        const techId = $(this).data('tech-id');
+        const slotLabel = $(this).data('slot');
+        openQuickDispatchModal(techId, slotLabel);
+      });
+
     } catch (e) {
-      console.error(e);
+      console.error('Failed to load dispatch board:', e);
     }
   }
 

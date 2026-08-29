@@ -200,26 +200,109 @@
       <!-- SECTION 3: Interactive Dispatch Board -->
       <section id="section-dispatch" class="admin-section d-none">
         <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);overflow:hidden;">
-          <div class="portal-card-header">
-            <h6 class="portal-card-header-title"><i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Live Field Dispatch Board</h6>
-            <span style="font-size:0.72rem;font-weight:600;color:var(--text-muted);">Real-time technician schedules</span>
+          <div class="portal-card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <h6 class="portal-card-header-title mb-0"><i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Live Field Dispatch Board</h6>
+              <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size:0.7rem;">
+                <span class="spinner-grow spinner-grow-sm text-success me-1" style="width:6px;height:6px;vertical-align:middle;"></span> Live Real-Time
+              </span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <button class="btn btn-outline-secondary btn-sm px-3 rounded-pill" id="btn-refresh-dispatch" title="Refresh Live Board">
+                <i class="bi bi-arrow-clockwise me-1"></i> Refresh Board
+              </button>
+              <button class="btn btn-primary btn-sm rounded-pill px-3 fw-semibold" id="btn-open-quick-dispatch" style="background:var(--gradient-brand);border:none;">
+                <i class="bi bi-plus-circle me-1"></i> Quick Dispatch
+              </button>
+            </div>
           </div>
+
+          <!-- Controls Toolbar -->
+          <div class="dispatch-controls-bar">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="text-muted fw-semibold small"><i class="bi bi-calendar3 me-1"></i>Schedule Date:</span>
+              <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-outline-secondary" id="btn-dispatch-prev-day" title="Previous Day"><i class="bi bi-chevron-left"></i></button>
+                <input type="date" class="form-control form-control-sm fw-bold text-center border-secondary-subtle" id="dispatch-filter-date" style="width:145px;border-radius:0;">
+                <button type="button" class="btn btn-outline-secondary" id="btn-dispatch-next-day" title="Next Day"><i class="bi bi-chevron-right"></i></button>
+              </div>
+              <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-2.5" id="btn-dispatch-today">Today</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-2.5" id="btn-dispatch-all-dates">All Dates</button>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <div class="d-flex align-items-center gap-1">
+                <span class="text-muted small fw-semibold">Specialization:</span>
+                <select class="form-select form-select-sm" id="dispatch-filter-spec" style="min-width:160px;">
+                  <option value="all">All Specializations</option>
+                  <option value="AC & HVAC Service">AC &amp; HVAC Service</option>
+                  <option value="Electrical Repairs">Electrical Repairs</option>
+                  <option value="Plumbing Services">Plumbing Services</option>
+                  <option value="Deep Cleaning & Pest">Deep Cleaning &amp; Pest</option>
+                  <option value="Fabrication & Welding">Fabrication &amp; Welding</option>
+                </select>
+              </div>
+
+              <div class="d-flex align-items-center gap-1">
+                <span class="text-muted small fw-semibold">Status:</span>
+                <select class="form-select form-select-sm" id="dispatch-filter-status" style="width:125px;">
+                  <option value="all">All Statuses</option>
+                  <option value="Available">Available</option>
+                  <option value="Busy">Busy / On Job</option>
+                  <option value="On-Leave">On-Leave</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Real-Time KPI Bar -->
+          <div class="dispatch-kpi-bar">
+            <div class="dispatch-kpi-chip">
+              <div class="dispatch-kpi-icon bg-primary-subtle text-primary"><i class="bi bi-people-fill"></i></div>
+              <div>
+                <div class="text-muted small" style="font-size:0.7rem;text-transform:uppercase;font-weight:600;">Active Technicians</div>
+                <strong class="fs-6 text-dark" id="dispatch-kpi-total-techs">4</strong>
+              </div>
+            </div>
+            <div class="dispatch-kpi-chip">
+              <div class="dispatch-kpi-icon bg-success-subtle text-success"><i class="bi bi-check-circle-fill"></i></div>
+              <div>
+                <div class="text-muted small" style="font-size:0.7rem;text-transform:uppercase;font-weight:600;">Available Now</div>
+                <strong class="fs-6 text-success" id="dispatch-kpi-available-techs">2</strong>
+              </div>
+            </div>
+            <div class="dispatch-kpi-chip">
+              <div class="dispatch-kpi-icon bg-warning-subtle text-warning"><i class="bi bi-person-workspace"></i></div>
+              <div>
+                <div class="text-muted small" style="font-size:0.7rem;text-transform:uppercase;font-weight:600;">Busy / In Field</div>
+                <strong class="fs-6 text-warning" id="dispatch-kpi-busy-techs">2</strong>
+              </div>
+            </div>
+            <div class="dispatch-kpi-chip">
+              <div class="dispatch-kpi-icon bg-info-subtle text-info"><i class="bi bi-calendar-check-fill"></i></div>
+              <div>
+                <div class="text-muted small" style="font-size:0.7rem;text-transform:uppercase;font-weight:600;">Scheduled Slots</div>
+                <strong class="fs-6 text-primary" id="dispatch-kpi-scheduled-jobs">4</strong>
+              </div>
+            </div>
+          </div>
+
           <div class="p-3">
-          <div class="dispatch-board-container">
-            <table class="dispatch-table">
-              <thead>
-                <tr>
-                  <th>Technician</th>
-                  <th>09:00 AM</th>
-                  <th>11:00 AM</th>
-                  <th>01:00 PM</th>
-                  <th>03:00 PM</th>
-                  <th>05:00 PM</th>
-                </tr>
-              </thead>
-              <tbody id="dispatch-board-body"></tbody>
-            </table>
-          </div>
+            <div class="dispatch-board-container">
+              <table class="dispatch-table">
+                <thead>
+                  <tr>
+                    <th>Certified Technician</th>
+                    <th>09:00 AM – 11:00 AM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 1</small></th>
+                    <th>11:00 AM – 01:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 2</small></th>
+                    <th>01:00 PM – 03:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 3</small></th>
+                    <th>03:00 PM – 05:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 4</small></th>
+                    <th>05:00 PM – 07:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 5</small></th>
+                  </tr>
+                </thead>
+                <tbody id="dispatch-board-body"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
@@ -431,13 +514,14 @@
      ============================================================ -->
 <div class="modal fade" id="modalAssignTech" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow">
+    <div class="modal-content border-0 shadow" style="border-radius:var(--radius-xl);">
       <div class="modal-header bg-light">
         <h5 class="modal-title fw-bold"><i class="bi bi-person-check text-primary me-2"></i>Assign Technician</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body p-4">
         <input type="hidden" id="assign-modal-req-id">
+        <div id="assign-modal-request-info" class="p-2 mb-3 bg-light rounded small text-muted"></div>
 
         <div class="mb-3">
           <label class="form-label fw-semibold">Select Certified Technician</label>
@@ -445,20 +529,141 @@
         </div>
         <div class="row g-2 mb-3">
           <div class="col-6">
-            <label class="form-label fw-semibold">Date</label>
-            <input type="date" class="form-control" id="assign-modal-date" value="2026-08-22">
+            <label class="form-label fw-semibold">Scheduled Date</label>
+            <input type="date" class="form-control" id="assign-modal-date">
           </div>
           <div class="col-6">
-            <label class="form-label fw-semibold">Slot</label>
+            <label class="form-label fw-semibold">Time Slot</label>
             <select class="form-select" id="assign-modal-time">
-              <option value="10:00 AM">10:00 AM</option>
-              <option value="01:00 PM">01:00 PM</option>
-              <option value="03:30 PM">03:30 PM</option>
+              <option value="09:00 AM - 11:00 AM">09:00 AM – 11:00 AM (Slot 1)</option>
+              <option value="11:00 AM - 01:00 PM">11:00 AM – 01:00 PM (Slot 2)</option>
+              <option value="01:00 PM - 03:00 PM">01:00 PM – 03:00 PM (Slot 3)</option>
+              <option value="03:00 PM - 05:00 PM">03:00 PM – 05:00 PM (Slot 4)</option>
+              <option value="05:00 PM - 07:00 PM">05:00 PM – 07:00 PM (Slot 5)</option>
             </select>
           </div>
         </div>
 
-        <button class="btn btn-primary w-100 py-2 fw-bold" id="btn-confirm-assign">Confirm Assignment</button>
+        <button class="btn btn-primary w-100 py-2 fw-bold" id="btn-confirm-assign" style="background:var(--gradient-brand);border:none;">Confirm & Dispatch Technician</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Dispatch Work Order Details Inspector Modal
+     ============================================================ -->
+<div class="modal fade" id="modalDispatchWorkOrderDetails" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:var(--radius-xl);">
+      <div class="modal-header bg-light">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-primary px-2 py-1" id="wo-modal-id">#WO-000000</span>
+          <h5 class="modal-title fw-bold mb-0" id="wo-modal-service-title">Work Order Details</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="wo-modal-current-wo-id">
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-7">
+            <div class="p-3 border rounded bg-light mb-3">
+              <h6 class="fw-bold text-dark mb-2"><i class="bi bi-person-fill text-primary me-2"></i>Customer & Location</h6>
+              <div class="mb-1"><strong id="wo-modal-customer-name">Customer Name</strong></div>
+              <div class="small text-muted mb-2" id="wo-modal-customer-address"><i class="bi bi-geo-alt me-1"></i>Address</div>
+              <div class="d-flex gap-2">
+                <a href="#" id="wo-modal-btn-call" class="btn btn-sm btn-outline-primary"><i class="bi bi-telephone-fill me-1"></i> <span id="wo-modal-customer-phone">Call Customer</span></a>
+                <a href="#" id="wo-modal-btn-whatsapp" target="_blank" class="btn btn-sm btn-outline-success"><i class="bi bi-whatsapp me-1"></i> WhatsApp</a>
+              </div>
+            </div>
+
+            <div class="p-3 border rounded">
+              <h6 class="fw-bold text-dark mb-2"><i class="bi bi-calendar-event-fill text-primary me-2"></i>Appointment Schedule</h6>
+              <div class="d-flex justify-content-between small text-muted mb-1">
+                <span>Date: <strong class="text-dark" id="wo-modal-date">2026-08-29</strong></span>
+                <span>Time Slot: <strong class="text-dark" id="wo-modal-time">09:00 AM - 11:00 AM</strong></span>
+              </div>
+              <div class="d-flex justify-content-between small text-muted">
+                <span>Priority: <span class="badge bg-danger" id="wo-modal-priority">High</span></span>
+                <span>Current Status: <span class="badge bg-warning text-dark" id="wo-modal-status-badge">In Progress</span></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-5">
+            <div class="p-3 border rounded bg-light mb-3">
+              <h6 class="fw-bold text-dark mb-2"><i class="bi bi-person-badge-fill text-primary me-2"></i>Assigned Technician</h6>
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="user-avatar-circle" id="wo-modal-tech-avatar" style="width:36px;height:36px;background:var(--gradient-brand);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;border-radius:50%;">MP</div>
+                <div>
+                  <strong class="d-block text-dark" id="wo-modal-tech-name">Mahesh Patil</strong>
+                  <small class="text-muted" id="wo-modal-tech-spec">AC &amp; HVAC</small>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label small fw-semibold text-muted mb-1">Reassign to another technician:</label>
+                <select class="form-select form-select-sm" id="wo-modal-reassign-tech"></select>
+              </div>
+              <button class="btn btn-outline-primary btn-sm w-100 fw-semibold" id="btn-wo-modal-reassign">Reassign Job</button>
+            </div>
+
+            <div class="p-3 border rounded">
+              <h6 class="fw-bold text-dark mb-2"><i class="bi bi-arrow-repeat text-primary me-2"></i>Update Job Status</h6>
+              <div class="d-grid gap-1.5">
+                <button class="btn btn-sm btn-outline-info text-start btn-wo-change-status" data-status="Assigned"><i class="bi bi-clock me-1"></i> Mark as Assigned</button>
+                <button class="btn btn-sm btn-outline-secondary text-start btn-wo-change-status" data-status="En Route"><i class="bi bi-truck me-1"></i> Mark as En Route</button>
+                <button class="btn btn-sm btn-outline-warning text-start btn-wo-change-status" data-status="In Progress"><i class="bi bi-tools me-1"></i> Mark as In Progress</button>
+                <button class="btn btn-sm btn-outline-success text-start btn-wo-change-status" data-status="Completed"><i class="bi bi-check-circle-fill me-1"></i> Mark as Completed</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Quick Dispatch Modal
+     ============================================================ -->
+<div class="modal fade" id="modalQuickDispatch" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow" style="border-radius:var(--radius-xl);">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold"><i class="bi bi-lightning-charge-fill text-primary me-2"></i>Quick Service Dispatch</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Select Service Request</label>
+          <select class="form-select" id="quick-dispatch-req-select">
+            <option value="">-- Choose Pending Service Request --</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Select Technician</label>
+          <select class="form-select" id="quick-dispatch-tech-select"></select>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold">Date</label>
+            <input type="date" class="form-control" id="quick-dispatch-date">
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">Time Slot</label>
+            <select class="form-select" id="quick-dispatch-time">
+              <option value="09:00 AM - 11:00 AM">09:00 AM – 11:00 AM</option>
+              <option value="11:00 AM - 01:00 PM">11:00 AM – 01:00 PM</option>
+              <option value="01:00 PM - 03:00 PM">01:00 PM – 03:00 PM</option>
+              <option value="03:00 PM - 05:00 PM">03:00 PM – 05:00 PM</option>
+              <option value="05:00 PM - 07:00 PM">05:00 PM – 07:00 PM</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary w-100 py-2 fw-bold" id="btn-confirm-quick-dispatch" style="background:var(--gradient-brand);border:none;">
+          <i class="bi bi-send-check me-1"></i> Dispatch Technician Now
+        </button>
       </div>
     </div>
   </div>

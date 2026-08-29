@@ -432,24 +432,110 @@ const api = (function () {
 
         let filtered = wos;
         if (user && user.role === 'Technician') {
-          filtered = wos.filter(w => w.TechnicianId === user.technicianId || w.TechnicianName.includes(user.firstName));
+          filtered = wos.filter(w => w.TechnicianId === user.technicianId || (w.TechnicianName && w.TechnicianName.includes(user.firstName)));
         }
 
-        return filtered.map(w => ({
-          ...w,
-          serviceRequest: reqs.find(r => r.RequestId === w.RequestId) || {}
-        }));
+        return filtered.map(w => {
+          const req = reqs.find(r => r.RequestId === w.RequestId) || {};
+          return {
+            ...w,
+            serviceRequest: {
+              ...req,
+              ServiceName: req.ServiceName || w.ServiceName || 'Field Technical Service',
+              CustomerName: req.CustomerName || w.CustomerName || 'Valued Customer',
+              CustomerMobile: req.CustomerMobile || w.CustomerMobile || '9890123456',
+              Address: req.Address || w.Address || 'Kolhapur Central',
+              City: req.City || w.City || 'Kolhapur'
+            }
+          };
+        });
+      }
+
+      case 'createWorkOrder': {
+        const wos = JSON.parse(localStorage.getItem('ssh_work_orders') || '[]');
+        const reqs = JSON.parse(localStorage.getItem('ssh_requests') || '[]');
+        const targetReq = reqs.find(r => r.RequestId === payload.requestId);
+
+        let wo = wos.find(w => w.RequestId === payload.requestId && payload.requestId);
+        if (!wo) {
+          wo = {
+            WorkOrderId: 'WO-' + Math.floor(100000 + Math.random() * 900000),
+            TenantId: APP_CONFIG.TENANT_ID,
+            RequestId: payload.requestId || ('REQ-' + Math.floor(100000 + Math.random() * 900000)),
+            EstimateId: targetReq ? targetReq.EstimateId || '' : '',
+            CustomerId: targetReq ? targetReq.CustomerId || 'CUS-001' : 'CUS-001',
+            CustomerName: targetReq ? targetReq.CustomerName : (payload.customerName || 'Customer'),
+            TechnicianId: payload.technicianId,
+            TechnicianName: payload.technicianName || 'Field Technician',
+            ScheduledDate: payload.scheduledDate || new Date().toISOString().slice(0, 10),
+            StartTime: payload.startTime || '09:00 AM',
+            EndTime: payload.endTime || '11:00 AM',
+            Priority: targetReq ? targetReq.Priority || 'Medium' : (payload.priority || 'Medium'),
+            Status: 'Assigned',
+            CreatedAt: new Date().toLocaleString('en-IN')
+          };
+          wos.unshift(wo);
+        } else {
+          wo.TechnicianId = payload.technicianId;
+          wo.TechnicianName = payload.technicianName || wo.TechnicianName;
+          if (payload.scheduledDate) wo.ScheduledDate = payload.scheduledDate;
+          if (payload.startTime) wo.StartTime = payload.startTime;
+          if (payload.endTime) wo.EndTime = payload.endTime;
+          wo.Status = 'Assigned';
+        }
+
+        if (targetReq) {
+          targetReq.Status = 'Assigned';
+          targetReq.TechnicianId = payload.technicianId;
+          targetReq.TechnicianName = payload.technicianName;
+          targetReq.ScheduledDate = payload.scheduledDate || targetReq.ScheduledDate;
+          targetReq.ScheduledTime = payload.startTime || targetReq.ScheduledTime;
+          localStorage.setItem('ssh_requests', JSON.stringify(reqs));
+        }
+
+        // Update technician status to Busy
+        const techs = JSON.parse(localStorage.getItem('ssh_technicians') || '[]');
+        const tech = techs.find(t => t.TechnicianId === payload.technicianId);
+        if (tech && tech.Status === 'Available') {
+          tech.Status = 'Busy';
+          localStorage.setItem('ssh_technicians', JSON.stringify(techs));
+        }
+
+        localStorage.setItem('ssh_work_orders', JSON.stringify(wos));
+        appendAuditLog('TECH_ASSIGNED', 'WorkOrders', `Technician ${payload.technicianName || payload.technicianId} assigned to Work Order #${wo.WorkOrderId}.`);
+        return wo;
       }
 
       case 'assignTechnician': {
         const wos = JSON.parse(localStorage.getItem('ssh_work_orders') || '[]');
+        const reqs = JSON.parse(localStorage.getItem('ssh_requests') || '[]');
+        const techs = JSON.parse(localStorage.getItem('ssh_technicians') || '[]');
+
         const targetWo = wos.find(w => w.WorkOrderId === payload.workOrderId);
         if (targetWo) {
           targetWo.TechnicianId = payload.technicianId;
-          targetWo.TechnicianName = payload.technicianName || 'Mahesh Patil';
-          targetWo.Status = 'Assigned';
+          targetWo.TechnicianName = payload.technicianName || 'Field Technician';
+          targetWo.Status = payload.status || 'Assigned';
           if (payload.scheduledDate) targetWo.ScheduledDate = payload.scheduledDate;
+          if (payload.startTime) targetWo.StartTime = payload.startTime;
           localStorage.setItem('ssh_work_orders', JSON.stringify(wos));
+
+          if (targetWo.RequestId) {
+            const targetReq = reqs.find(r => r.RequestId === targetWo.RequestId);
+            if (targetReq) {
+              targetReq.TechnicianId = payload.technicianId;
+              targetReq.TechnicianName = targetWo.TechnicianName;
+              targetReq.Status = 'Assigned';
+              localStorage.setItem('ssh_requests', JSON.stringify(reqs));
+            }
+          }
+
+          const tech = techs.find(t => t.TechnicianId === payload.technicianId);
+          if (tech && tech.Status === 'Available') {
+            tech.Status = 'Busy';
+            localStorage.setItem('ssh_technicians', JSON.stringify(techs));
+          }
+
           appendAuditLog('TECH_ASSIGNED', 'WorkOrders', `Technician ${targetWo.TechnicianName} assigned to Work Order #${payload.workOrderId}.`);
         }
         return { success: true, workOrder: targetWo };
@@ -840,7 +926,20 @@ const api = (function () {
       localStorage.setItem('ssh_requests', JSON.stringify(requests));
     }
 
-    if (!localStorage.getItem('ssh_work_orders')) {
+    if (!localStorage.getItem('ssh_technicians')) {
+      const defaultTechs = [
+        { TechnicianId: 'TCH-001', UserId: 'USR-TECH', FullName: 'Mahesh Patil', Mobile: '9822001122', Email: 'tech@sevasetuhub.in', Specialization: 'AC & HVAC Service', City: 'Kolhapur', Rating: 4.9, Status: 'Busy', CreatedAt: '2026-08-20' },
+        { TechnicianId: 'TCH-002', UserId: 'USR-TECH-002', FullName: 'Sachin Kulkarni', Mobile: '9822003344', Email: 'sachin.k@sevasetuhub.in', Specialization: 'Electrical Repairs', City: 'Kolhapur', Rating: 4.8, Status: 'Available', CreatedAt: '2026-08-20' },
+        { TechnicianId: 'TCH-003', UserId: 'USR-TECH-003', FullName: 'Ramesh Jadhav', Mobile: '9822005566', Email: 'ramesh.j@sevasetuhub.in', Specialization: 'Plumbing Services', City: 'Sangli', Rating: 4.9, Status: 'Busy', CreatedAt: '2026-08-21' },
+        { TechnicianId: 'TCH-004', UserId: 'USR-TECH-004', FullName: 'Anil Shinde', Mobile: '9822007788', Email: 'anil.s@sevasetuhub.in', Specialization: 'Deep Cleaning & Pest', City: 'Kolhapur', Rating: 4.7, Status: 'Available', CreatedAt: '2026-08-21' }
+      ];
+      localStorage.setItem('ssh_technicians', JSON.stringify(defaultTechs));
+    }
+
+    const todayDateStr = new Date().toISOString().slice(0, 10);
+    const existingWos = JSON.parse(localStorage.getItem('ssh_work_orders') || '[]');
+
+    if (existingWos.length === 0 || !existingWos.some(w => w.ScheduledDate === todayDateStr)) {
       const workOrders = [
         {
           WorkOrderId: 'WO-882910',
@@ -848,17 +947,91 @@ const api = (function () {
           RequestId: 'REQ-104928',
           EstimateId: 'EST-9901',
           CustomerId: 'CUS-001',
+          CustomerName: 'Suresh Kadam',
           TechnicianId: 'TCH-001',
           TechnicianName: 'Mahesh Patil',
-          ScheduledDate: '2026-08-22',
-          StartTime: '10:00 AM',
+          ServiceName: 'Split AC Power Jet Deep Service',
+          ScheduledDate: todayDateStr,
+          StartTime: '09:00 AM',
+          EndTime: '11:00 AM',
+          Priority: 'High',
+          Status: 'In Progress',
+          CreatedAt: new Date().toLocaleString('en-IN')
+        },
+        {
+          WorkOrderId: 'WO-882911',
+          TenantId: APP_CONFIG.TENANT_ID,
+          RequestId: 'REQ-104929',
+          EstimateId: 'EST-9902',
+          CustomerId: 'CUS-002',
+          CustomerName: 'Pooja Sawant',
+          TechnicianId: 'TCH-001',
+          TechnicianName: 'Mahesh Patil',
+          ServiceName: 'AC Refrigerant Gas Refilling',
+          ScheduledDate: todayDateStr,
+          StartTime: '01:00 PM',
+          EndTime: '03:00 PM',
+          Priority: 'Medium',
+          Status: 'Assigned',
+          CreatedAt: new Date().toLocaleString('en-IN')
+        },
+        {
+          WorkOrderId: 'WO-882912',
+          TenantId: APP_CONFIG.TENANT_ID,
+          RequestId: 'REQ-104930',
+          EstimateId: 'EST-9903',
+          CustomerId: 'CUS-003',
+          CustomerName: 'Amol Deshmukh',
+          TechnicianId: 'TCH-003',
+          TechnicianName: 'Ramesh Jadhav',
+          ServiceName: 'Water Leakage & Pipe Repair',
+          ScheduledDate: todayDateStr,
+          StartTime: '11:00 AM',
           EndTime: '01:00 PM',
           Priority: 'High',
+          Status: 'En Route',
+          CreatedAt: new Date().toLocaleString('en-IN')
+        },
+        {
+          WorkOrderId: 'WO-882913',
+          TenantId: APP_CONFIG.TENANT_ID,
+          RequestId: 'REQ-104931',
+          EstimateId: 'EST-9904',
+          CustomerId: 'CUS-004',
+          CustomerName: 'Sunita Joshi',
+          TechnicianId: 'TCH-004',
+          TechnicianName: 'Anil Shinde',
+          ServiceName: '2 BHK Full Home Deep Cleaning',
+          ScheduledDate: todayDateStr,
+          StartTime: '03:00 PM',
+          EndTime: '05:00 PM',
+          Priority: 'Medium',
           Status: 'Assigned',
+          CreatedAt: new Date().toLocaleString('en-IN')
+        },
+        // Also support static fallback date 2026-08-22
+        {
+          WorkOrderId: 'WO-882901',
+          TenantId: APP_CONFIG.TENANT_ID,
+          RequestId: 'REQ-104928',
+          EstimateId: 'EST-9901',
+          CustomerId: 'CUS-001',
+          CustomerName: 'Suresh Kadam',
+          TechnicianId: 'TCH-001',
+          TechnicianName: 'Mahesh Patil',
+          ServiceName: 'Split AC Power Jet Deep Service',
+          ScheduledDate: '2026-08-22',
+          StartTime: '09:00 AM',
+          EndTime: '11:00 AM',
+          Priority: 'High',
+          Status: 'Completed',
           CreatedAt: '2026-08-21 11:30:00'
         }
       ];
-      localStorage.setItem('ssh_work_orders', JSON.stringify(workOrders));
+
+      // Merge or initialize
+      const mergedWos = existingWos.length === 0 ? workOrders : [...existingWos, ...workOrders.filter(nw => !existingWos.some(ew => ew.WorkOrderId === nw.WorkOrderId))];
+      localStorage.setItem('ssh_work_orders', JSON.stringify(mergedWos));
     }
   }
 

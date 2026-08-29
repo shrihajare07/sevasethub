@@ -402,31 +402,75 @@
   background: rgba(8, 145, 178, 0.02);
 }
 
-/* ─── Dispatch Board Grid Layout ─────────────────────────── */
+/* ─── Dispatch Board Grid Layout & Controls ──────────────── */
 .dispatch-board-container {
   overflow-x: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.dispatch-controls-bar {
+  background: var(--neutral-50);
+  border-bottom: 1px solid var(--border);
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.dispatch-kpi-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  background: #fff;
+  border-bottom: 1px solid var(--neutral-200);
+}
+
+.dispatch-kpi-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--neutral-50);
+  border: 1px solid var(--neutral-200);
+}
+
+.dispatch-kpi-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
 }
 
 .dispatch-table {
   width: 100%;
-  min-width: 880px;
-  border-collapse: collapse;
+  min-width: 960px;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .dispatch-table th {
   background: var(--neutral-50);
-  padding: 0.9rem;
-  font-weight: 600;
+  padding: 0.9rem 1rem;
+  font-weight: 700;
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-secondary);
   border-bottom: 2px solid var(--border);
+  border-right: 1px solid var(--neutral-200);
   text-align: center;
+  vertical-align: middle;
 }
 
 .dispatch-table th:first-child {
@@ -434,18 +478,21 @@
   position: sticky;
   left: 0;
   background: var(--neutral-50);
-  z-index: 2;
-  width: 190px;
+  z-index: 3;
+  width: 240px;
+  min-width: 240px;
   border-right: 2px solid var(--border);
 }
 
 .dispatch-table td {
-  padding: 0.75rem;
+  padding: 0.65rem;
   border-bottom: 1px solid var(--neutral-100);
   border-right: 1px solid var(--neutral-100);
-  height: 76px;
+  height: 90px;
+  min-width: 165px;
   vertical-align: top;
   position: relative;
+  background: #ffffff;
 }
 
 .dispatch-table td:first-child {
@@ -454,24 +501,148 @@
   background: var(--surface);
   z-index: 2;
   border-right: 2px solid var(--border);
+  vertical-align: middle;
+  padding: 0.75rem 1rem;
+  box-shadow: 2px 0 6px rgba(0,0,0,0.02);
 }
 
-.dispatch-slot-card {
-  background: var(--primary-muted);
-  border-left: 3px solid var(--primary);
-  padding: 0.45rem 0.6rem;
-  border-radius: var(--radius-xs);
-  font-size: 0.75rem;
-  color: var(--text-primary);
+.dispatch-table tbody tr:hover td {
+  background: #fbfcfe;
+}
+.dispatch-table tbody tr:hover td:first-child {
+  background: var(--surface);
+}
+
+/* Dispatch Tech Avatar Cell */
+.dispatch-tech-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dispatch-tech-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--gradient-brand);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
   box-shadow: var(--shadow-xs);
+}
+
+/* Status-Coded Dispatch Slot Card */
+.dispatch-slot-card {
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.65rem;
+  font-size: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   cursor: pointer;
-  transition: all 0.2s var(--easing-spring);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  border-left: 3.5px solid var(--primary);
+  background: #f0f9ff;
+  border-top: 1px solid rgba(8, 145, 178, 0.15);
+  border-right: 1px solid rgba(8, 145, 178, 0.15);
+  border-bottom: 1px solid rgba(8, 145, 178, 0.15);
+  position: relative;
+  overflow: hidden;
 }
 
 .dispatch-slot-card:hover {
-  transform: scale(1.03);
-  background: var(--primary-light);
-  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.dispatch-slot-card.status-Assigned {
+  background: #f0f9ff;
+  border-left-color: #0284c7;
+}
+
+.dispatch-slot-card.status-En-Route {
+  background: #f5f3ff;
+  border-left-color: #7c3aed;
+}
+
+.dispatch-slot-card.status-In-Progress {
+  background: #fffbeb;
+  border-left-color: #d97706;
+}
+
+.dispatch-slot-card.status-Completed {
+  background: #f0fdf4;
+  border-left-color: #16a34a;
+}
+
+.dispatch-slot-card .slot-service-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dispatch-slot-card .slot-customer-info {
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.dispatch-slot-card .slot-time-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Empty Available Slot */
+.dispatch-slot-empty {
+  height: 100%;
+  min-height: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--neutral-200);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.72rem;
+  padding: 0.25rem;
+}
+
+.dispatch-slot-empty:hover {
+  border-color: var(--primary);
+  background: var(--primary-muted);
+  color: var(--primary-dark);
+}
+
+.dispatch-slot-empty .btn-quick-slot-assign {
+  display: none;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.dispatch-slot-empty:hover .btn-quick-slot-assign {
+  display: inline-block;
+}
+
+.dispatch-slot-empty:hover .empty-label {
+  display: none;
 }
 
 /* ─── Responsive Adjustments ─────────────────────────────── */
