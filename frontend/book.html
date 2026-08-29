@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book a Trusted Service – SevaSetuHub</title>
+  <meta name="description" content="Book certified on-demand home & technical services with instant doorstep technician assignment on SevaSetuHub.">
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- Design System CSS -->
+  <link rel="stylesheet" href="../assets/css/variables.css">
+  <link rel="stylesheet" href="../assets/css/reset.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/responsive.css">
+
+  <style>
+    body {
+      background-color: var(--surface-subtle, #f8fafc);
+      color: var(--text-primary, #0f172a);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .booking-topbar {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border, #e2e8f0);
+      padding: 0.85rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .brand-logo-img {
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+    }
+
+    .booking-hero-banner {
+      background: var(--gradient-hero, linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%));
+      border-bottom: 1px solid var(--border, #e2e8f0);
+      padding: 2.5rem 0 2rem;
+      position: relative;
+    }
+
+    .booking-card-main {
+      background: #ffffff;
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: var(--radius-xl, 1.25rem);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      overflow: hidden;
+      margin-top: -1.5rem;
+      margin-bottom: 3.5rem;
+    }
+
+    /* Stepper Styling */
+    .wizard-stepper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem 2rem;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border, #e2e8f0);
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex: 1;
+      position: relative;
+    }
+
+    .step-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      background: #e2e8f0;
+      color: #64748b;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .step-item.active .step-number {
+      background: var(--gradient-brand, linear-gradient(135deg, #0891b2, #0284c7));
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(8, 145, 178, 0.35);
+    }
+
+    .step-item.completed .step-number {
+      background: var(--success, #10b981);
+      color: #ffffff;
+    }
+
+    .step-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .step-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #334155;
+      margin: 0;
+    }
+
+    .step-item.active .step-title {
+      color: var(--primary, #0891b2);
+    }
+
+    .step-subtitle {
+      font-size: 0.72rem;
+      color: #64748b;
+    }
+
+    .step-divider {
+      flex: 1;
+      height: 2px;
+      background: #e2e8f0;
+      margin: 0 1rem;
+    }
+
+    .step-item.completed + .step-divider {
+      background: var(--success, #10b981);
+    }
+
+    .category-card-pill {
+      border: 1.5px solid var(--border, #e2e8f0);
+      border-radius: var(--radius-lg, 0.75rem);
+      padding: 0.9rem 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .category-card-pill:hover {
+      border-color: var(--primary, #0891b2);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(8, 145, 178, 0.08);
+    }
+
+    .category-card-pill.selected {
+      border-color: var(--primary, #0891b2);
+      background: rgba(8, 145, 178, 0.06);
+      font-weight: 600;
+    }
+
+    .category-icon-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--primary-muted, rgba(8, 145, 178, 0.1));
+      color: var(--primary, #0891b2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .time-slot-btn {
+      border: 1.5px solid var(--border, #e2e8f0);
+      background: #ffffff;
+      border-radius: var(--radius-md, 0.5rem);
+      padding: 0.6rem 0.85rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .time-slot-btn:hover {
+      border-color: var(--primary, #0891b2);
+      color: var(--primary, #0891b2);
+    }
+
+    .time-slot-btn.active {
+      background: var(--gradient-brand, linear-gradient(135deg, #0891b2, #0284c7));
+      color: #ffffff;
+      border-color: transparent;
+      box-shadow: 0 4px 10px rgba(8, 145, 178, 0.25);
+    }
+
+    .order-summary-box {
+      background: #f8fafc;
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: var(--radius-lg, 0.75rem);
+      padding: 1.25rem;
+    }
+
+    .trust-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.65rem;
+      background: #ffffff;
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    @media (max-width: 768px) {
+      .wizard-stepper {
+        padding: 1rem;
+      }
+      .step-subtitle {
+        display: none;
+      }
+      .step-divider {
+        margin: 0 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="booking-topbar">
+    <div class="container d-flex justify-content-between align-items-center">
+      <a href="../index.html" class="d-flex align-items-center gap-2 text-decoration-none">
+        <img src="../assets/images/logo.png" alt="SevaSetuHub Logo" class="brand-logo-img" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 32 32\'%3E%3Crect width=\'32\' height=\'32\' rx=\'8\' fill=\'%230891b2\'/%3E%3Ctext x=\'50%25\' y=\'55%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-size=\'18\' font-family=\'Arial\' fill=\'white\'%3ES%3C/text%3E%3C/svg%3E'">
+        <span class="fs-5 fw-bold">
+          <span style="color:var(--primary,#0891b2)">Seva</span><span style="color:var(--primary-dark,#0e7490)">Setu</span><span style="color:#0284c7">Hub</span>
+        </span>
+      </a>
+      
+      <div class="d-flex align-items-center gap-3">
+        <a href="services.html" class="text-decoration-none text-muted small d-none d-md-inline fw-semibold">Services Catalog</a>
+        <a href="offers.html" class="text-decoration-none text-muted small d-none d-md-inline fw-semibold">Offers</a>
+        <div id="user-auth-status">
+          <a href="login.html" class="btn btn-sm btn-outline-primary fw-semibold px-3"><i class="bi bi-box-arrow-in-right me-1"></i> Sign In</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Header -->
+  <section class="booking-hero-banner">
+    <div class="container text-center">
+      <div class="d-inline-flex align-items-center gap-2 px-3 py-1 bg-white rounded-pill border shadow-sm mb-2" style="font-size:0.8rem;">
+        <i class="bi bi-patch-check-fill text-primary"></i>
+        <span class="fw-semibold text-dark">Certified &amp; Background Verified Doorstep Professionals</span>
+      </div>
+      <h1 class="fw-bold mb-2" style="font-size: clamp(1.5rem, 3vw, 2.2rem);">Book a Trusted Service Near You</h1>
+      <p class="text-muted mx-auto mb-3" style="max-width: 620px; font-size: 0.95rem;">
+        Select your required service, choose your preferred doorstep appointment time, and enter your details to confirm your certified technician dispatch.
+      </p>
+
+      <div class="d-flex flex-wrap justify-content-center gap-2">
+        <span class="trust-chip"><i class="bi bi-shield-check text-success"></i> 100% Quality Guaranteed</span>
+        <span class="trust-chip"><i class="bi bi-receipt text-primary"></i> 18% GST Transparent Billing</span>
+        <span class="trust-chip"><i class="bi bi-geo-alt-fill text-danger"></i> Live GPS Technician Tracker</span>
+        <span class="trust-chip"><i class="bi bi-clock-history text-warning"></i> Same-Day Service Available</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Booking Wizard Container -->
+  <main class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-xl-9">
+        
+        <div class="booking-card-main">
+          
+          <!-- Stepper Navigation -->
+          <div class="wizard-stepper">
+            <div class="step-item active" id="step-nav-1">
+              <div class="step-number">1</div>
+              <div class="step-text">
+                <span class="step-title">Select Service</span>
+                <span class="step-subtitle">Category &amp; Issue</span>
+              </div>
+            </div>
+            <div class="step-divider" id="divider-1"></div>
+            <div class="step-item" id="step-nav-2">
+              <div class="step-number">2</div>
+              <div class="step-text">
+                <span class="step-title">Location &amp; Slot</span>
+                <span class="step-subtitle">Address &amp; Time</span>
+              </div>
+            </div>
+            <div class="step-divider" id="divider-2"></div>
+            <div class="step-item" id="step-nav-3">
+              <div class="step-number">3</div>
+              <div class="step-text">
+                <span class="step-title">Details &amp; Confirm</span>
+                <span class="step-subtitle">Contact &amp; Account</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wizard Body Form -->
+          <div class="p-4 p-md-5">
+            <form id="form-direct-booking" novalidate>
+              
+              <!-- STEP 1: SERVICE SELECTION -->
+              <div class="booking-step-pane" id="pane-step-1">
+                <h5 class="fw-bold text-dark mb-1"><i class="bi bi-tools text-primary me-2"></i>Choose Service Category</h5>
+                <p class="text-muted small mb-4">Pick the service category that matches your requirements.</p>
+
+                <!-- Category Pills Grid -->
+                <div class="row g-3 mb-4" id="category-pills-grid">
+                  <!-- Dynamically populated or fallback -->
+                </div>
+
+                <div class="row g-3 mb-4">
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="select-category">Category <span class="text-danger">*</span></label>
+                    <select class="form-select form-select-lg" id="select-category" required>
+                      <option value="">-- Choose Category --</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="select-service">Specific Service Package <span class="text-danger">*</span></label>
+                    <select class="form-select form-select-lg" id="select-service" required>
+                      <option value="">-- Select Category First --</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-semibold" for="text-issue">Describe the Problem or Special Instructions (Optional)</label>
+                  <textarea class="form-control" id="text-issue" rows="3" placeholder="e.g., AC cooling is low and making rattling sound, indoor unit water leakage..."></textarea>
+                  <small class="text-muted">Providing detailed notes helps our technician carry the exact spares &amp; tooling.</small>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                  <button type="button" class="btn btn-primary px-4 py-2 fw-semibold btn-step-next" data-next="2" style="background:var(--gradient-brand);border:none;">
+                    Next: Location &amp; Time Slot <i class="bi bi-arrow-right ms-1"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- STEP 2: LOCATION & TIME SLOT -->
+              <div class="booking-step-pane d-none" id="pane-step-2">
+                <h5 class="fw-bold text-dark mb-1"><i class="bi bi-geo-alt-fill text-danger me-2"></i>Service Location &amp; Appointment Schedule</h5>
+                <p class="text-muted small mb-4">Tell us where and when our certified technician should arrive.</p>
+
+                <div class="mb-3">
+                  <label class="form-label fw-semibold" for="input-address">Doorstep Address <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="input-address" placeholder="Flat No / House No, Apartment Name, Street, Landmark" required>
+                </div>
+
+                <div class="row g-3 mb-4">
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="select-city">City / Region <span class="text-danger">*</span></label>
+                    <select class="form-select" id="select-city" required>
+                      <option value="Kolhapur" selected>Kolhapur</option>
+                      <option value="Sangli">Sangli</option>
+                      <option value="Satara">Satara</option>
+                      <option value="Solapur">Solapur</option>
+                      <option value="Pune">Pune</option>
+                      <option value="Miraj">Miraj</option>
+                      <option value="Ichalkaranji">Ichalkaranji</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="input-pincode">Pincode <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="input-pincode" placeholder="e.g. 416003" maxlength="6" required>
+                  </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                  <div class="col-md-5">
+                    <label class="form-label fw-semibold" for="input-date">Preferred Service Date <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="input-date" required>
+                  </div>
+                  <div class="col-md-7">
+                    <label class="form-label fw-semibold mb-2">Preferred 2-Hour Arrival Window <span class="text-danger">*</span></label>
+                    <div class="d-flex flex-wrap gap-2" id="time-slot-container">
+                      <div class="time-slot-btn active" data-slot="09:00 AM - 11:00 AM">09:00 AM – 11:00 AM</div>
+                      <div class="time-slot-btn" data-slot="11:00 AM - 01:00 PM">11:00 AM – 01:00 PM</div>
+                      <div class="time-slot-btn" data-slot="01:00 PM - 03:00 PM">01:00 PM – 03:00 PM</div>
+                      <div class="time-slot-btn" data-slot="03:00 PM - 05:00 PM">03:00 PM – 05:00 PM</div>
+                      <div class="time-slot-btn" data-slot="05:00 PM - 07:00 PM">05:00 PM – 07:00 PM</div>
+                    </div>
+                    <input type="hidden" id="input-timeslot" value="09:00 AM - 11:00 AM">
+                  </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                  <button type="button" class="btn btn-outline-secondary px-4 btn-step-prev" data-prev="1">
+                    <i class="bi bi-arrow-left me-1"></i> Back
+                  </button>
+                  <button type="button" class="btn btn-primary px-4 py-2 fw-semibold btn-step-next" data-next="3" style="background:var(--gradient-brand);border:none;">
+                    Next: Contact Details &amp; Review <i class="bi bi-arrow-right ms-1"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- STEP 3: CUSTOMER REGISTRATION DETAILS & CONFIRMATION -->
+              <div class="booking-step-pane d-none" id="pane-step-3">
+                <h5 class="fw-bold text-dark mb-1"><i class="bi bi-person-check-fill text-success me-2"></i>Customer Registration &amp; Order Review</h5>
+                <p class="text-muted small mb-4">Provide your contact details. An account will be automatically created so you can track your job in real time.</p>
+
+                <div class="row g-4">
+                  <!-- Left: Registration Fields -->
+                  <div class="col-lg-7">
+                    <div class="p-3 border rounded-3 bg-light mb-3">
+                      <div class="fw-bold text-dark mb-3"><i class="bi bi-person-vcard text-primary me-2"></i>Customer Information</div>
+
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold" for="cust-fullname">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control bg-white" id="cust-fullname" placeholder="e.g. Rahul Deshmukh" required>
+                      </div>
+
+                      <div class="row g-2 mb-3">
+                        <div class="col-6">
+                          <label class="form-label fw-semibold" for="cust-mobile">Mobile Number <span class="text-danger">*</span></label>
+                          <div class="input-group">
+                            <span class="input-group-text bg-white">+91</span>
+                            <input type="tel" class="form-control bg-white" id="cust-mobile" placeholder="10-digit mobile" maxlength="10" required>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <label class="form-label fw-semibold" for="cust-email">Email Address <span class="text-danger">*</span></label>
+                          <input type="email" class="form-control bg-white" id="cust-email" placeholder="e.g. rahul@gmail.com" required>
+                        </div>
+                      </div>
+
+                      <div class="mb-2">
+                        <label class="form-label fw-semibold" for="cust-password">Account Password <span class="text-muted small">(For Customer Portal Login)</span></label>
+                        <input type="text" class="form-control bg-white" id="cust-password" value="Customer@2026">
+                        <small class="text-muted" style="font-size:0.75rem;">Use this password to log in later and view digital estimates &amp; receipts.</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Right: Transparent Price & Coupon Summary -->
+                  <div class="col-lg-5">
+                    <div class="order-summary-box">
+                      <div class="fw-bold text-dark mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-receipt-cutoff text-primary me-1"></i> Bill Summary</span>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2">Verified Rate</span>
+                      </div>
+
+                      <div class="d-flex justify-content-between text-muted small mb-1.5">
+                        <span>Selected Service:</span>
+                        <strong class="text-dark text-end" id="summary-service-name">Split AC Power Jet Deep Service</strong>
+                      </div>
+                      <div class="d-flex justify-content-between text-muted small mb-1.5">
+                        <span>Inspection &amp; Base Labour:</span>
+                        <span id="summary-base-price">₹599</span>
+                      </div>
+                      <div class="d-flex justify-content-between text-muted small mb-1.5">
+                        <span>GST (18% Service Tax):</span>
+                        <span id="summary-tax-price">₹108</span>
+                      </div>
+                      <div class="d-flex justify-content-between text-success small mb-2" id="summary-discount-row" style="display:none !important;">
+                        <span>Promotional Discount:</span>
+                        <span class="fw-bold" id="summary-discount-price">-₹0</span>
+                      </div>
+
+                      <!-- Coupon Input -->
+                      <div class="my-3 pt-2 border-top">
+                        <label class="form-label small fw-semibold text-dark mb-1">Have a Discount Coupon?</label>
+                        <div class="input-group input-group-sm">
+                          <input type="text" class="form-control text-uppercase" id="input-coupon" placeholder="WELCOME100 / SEVASETU20">
+                          <button class="btn btn-dark fw-semibold" type="button" id="btn-apply-booking-coupon">Apply</button>
+                        </div>
+                        <div id="booking-coupon-status" class="small mt-1"></div>
+                      </div>
+
+                      <div class="pt-2 border-top d-flex justify-content-between align-items-center">
+                        <div>
+                          <strong class="text-dark d-block">Estimated Total</strong>
+                          <small class="text-muted" style="font-size:0.7rem;">Pay after job completion</small>
+                        </div>
+                        <h4 class="fw-bold text-primary mb-0" id="summary-grand-total">₹707</h4>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                  <button type="button" class="btn btn-outline-secondary px-4 btn-step-prev" data-prev="2">
+                    <i class="bi bi-arrow-left me-1"></i> Back
+                  </button>
+                  <button type="submit" class="btn btn-success px-5 py-2.5 fw-bold fs-6" id="btn-submit-booking" style="box-shadow: 0 4px 14px rgba(16,185,129,0.35);">
+                    <i class="bi bi-check-circle-fill me-1"></i> Confirm Booking &amp; Register
+                  </button>
+                </div>
+              </div>
+
+            </form>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Success Confirmation Modal -->
+  <div class="modal fade" id="modalBookingSuccess" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg text-center p-4" style="border-radius:var(--radius-xl);">
+        <div class="mb-3">
+          <div style="width:72px;height:72px;background:rgba(16,185,129,0.12);color:var(--success,#10b981);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:2.2rem;">
+            <i class="bi bi-patch-check-fill"></i>
+          </div>
+        </div>
+        <h4 class="fw-bold text-dark mb-1">Booking Confirmed!</h4>
+        <p class="text-muted small mb-3">Your doorstep service request and customer account have been created successfully.</p>
+
+        <div class="p-3 bg-light rounded-3 text-start mb-4 border">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">Request ID:</span>
+            <span class="badge bg-primary px-2 py-1 font-monospace" id="success-req-id">#REQ-000000</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">Service:</span>
+            <strong class="text-dark small" id="success-service-name">Service Name</strong>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">Scheduled Appointment:</span>
+            <span class="text-dark small fw-semibold" id="success-schedule">Date &amp; Time</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="text-muted small">Customer Account:</span>
+            <span class="text-success small fw-semibold" id="success-account">Logged In</span>
+          </div>
+        </div>
+
+        <div class="d-grid gap-2">
+          <a href="customer/index.html" class="btn btn-primary py-2.5 fw-bold" style="background:var(--gradient-brand);border:none;">
+            <i class="bi bi-geo-alt-fill me-1"></i> Track Live Status in Customer Portal
+          </a>
+          <a href="../index.html" class="btn btn-outline-secondary btn-sm py-2">
+            <i class="bi bi-house-door me-1"></i> Back to Homepage
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/book.js"></script>
+</body>
+</html>

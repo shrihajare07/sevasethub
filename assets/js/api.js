@@ -278,21 +278,86 @@ const api = (function () {
 
       case 'createServiceRequest': {
         const reqs = JSON.parse(localStorage.getItem('ssh_requests') || '[]');
-        const user = getStoredUser() || {};
+        const users = JSON.parse(localStorage.getItem('ssh_users') || '[]');
+        let user = getStoredUser();
+
+        let custId = user ? (user.customerId || user.userId) : null;
+        let custName = payload.customerName || (user ? user.fullName : '');
+        let custMobile = payload.customerMobile || (user ? user.mobile : '');
+        let custEmail = payload.customerEmail || (user ? user.email : '');
+
+        // If user is not logged in as Customer, find existing or auto-register in ssh_users
+        if (!user || user.role !== 'Customer') {
+          const emailLower = (custEmail || '').trim().toLowerCase();
+          const mobileTrim = (custMobile || '').trim();
+
+          let existingUser = users.find(u => (emailLower && u.Email && u.Email.toLowerCase() === emailLower) || (mobileTrim && String(u.Mobile) === mobileTrim));
+
+          if (!existingUser) {
+            const userId = 'USR-' + Math.floor(100000 + Math.random() * 900000);
+            custId = 'CUS-' + Math.floor(100000 + Math.random() * 900000);
+            const nameParts = (custName || 'Valued Customer').trim().split(' ');
+            const firstName = nameParts[0] || 'Valued';
+            const lastName = nameParts.slice(1).join(' ') || 'Customer';
+
+            existingUser = {
+              UserId: userId,
+              CustomerId: custId,
+              Email: custEmail || `${mobileTrim}@sevasetuhub.in`,
+              Mobile: mobileTrim || '9890123456',
+              FirstName: firstName,
+              LastName: lastName,
+              Role: 'Customer',
+              Status: 'Active',
+              Password: payload.password || 'Customer@2026',
+              Address: payload.address || '',
+              City: payload.city || 'Kolhapur',
+              Pincode: payload.pincode || '416001',
+              TenantId: APP_CONFIG.TENANT_ID,
+              CreatedAt: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+            };
+            users.push(existingUser);
+            localStorage.setItem('ssh_users', JSON.stringify(users));
+            appendAuditLog('USER_REGISTERED', 'Users', `Customer account auto-registered via booking: ${existingUser.Email}.`);
+          } else {
+            custId = existingUser.CustomerId || existingUser.UserId;
+            custName = `${existingUser.FirstName} ${existingUser.LastName}`.trim();
+            custMobile = existingUser.Mobile;
+            custEmail = existingUser.Email;
+          }
+
+          // Auto-login session
+          const token = 'SES-LOCAL-' + Math.random().toString(36).substring(2, 12);
+          const userObj = {
+            userId: existingUser.UserId,
+            customerId: custId,
+            firstName: existingUser.FirstName,
+            lastName: existingUser.LastName,
+            fullName: `${existingUser.FirstName} ${existingUser.LastName}`.trim(),
+            email: existingUser.Email,
+            mobile: existingUser.Mobile,
+            role: 'Customer',
+            tenantId: APP_CONFIG.TENANT_ID
+          };
+          setSession(token, userObj);
+          user = userObj;
+        }
+
         const reqId = 'REQ-' + Math.floor(100000 + Math.random() * 900000);
 
         const newReq = {
           RequestId: reqId,
           TenantId: APP_CONFIG.TENANT_ID,
-          CustomerId: user.customerId || 'CUS-GUEST',
-          CustomerName: payload.customerName || user.fullName || 'Guest Customer',
-          CustomerMobile: payload.customerMobile || user.mobile || '9999999999',
-          CustomerEmail: payload.customerEmail || user.email || 'guest@sevasetuhub.in',
-          CategoryId: payload.categoryId,
-          ServiceId: payload.serviceId,
+          CustomerId: custId || 'CUS-001',
+          CustomerName: custName || 'Valued Customer',
+          CustomerMobile: custMobile || '9890123456',
+          CustomerEmail: custEmail || 'customer@sevasetuhub.in',
+          CategoryId: payload.categoryId || 'CAT-AC',
+          ServiceId: payload.serviceId || 'SRV-AC-01',
           ServiceName: payload.serviceName || 'Standard Service',
+          BasePrice: Number(payload.basePrice) || 599,
           IssueDescription: payload.issueDescription || '',
-          Address: payload.address || 'Sample Address, Kolhapur',
+          Address: payload.address || 'Kolhapur, Maharashtra',
           City: payload.city || 'Kolhapur',
           Pincode: payload.pincode || '416001',
           PreferredDate: payload.preferredDate || new Date().toISOString().slice(0, 10),
@@ -307,8 +372,8 @@ const api = (function () {
 
         reqs.unshift(newReq);
         localStorage.setItem('ssh_requests', JSON.stringify(reqs));
-        appendAuditLog('REQUEST_CREATED', 'ServiceRequests', `New service request #${reqId} submitted for ${newReq.ServiceName} in ${newReq.City}.`);
-        return newReq;
+        appendAuditLog('REQUEST_CREATED', 'ServiceRequests', `New service request #${reqId} submitted for ${newReq.ServiceName} in ${newReq.City} by ${newReq.CustomerName}.`);
+        return { success: true, RequestId: reqId, request: newReq, user: user };
       }
 
       case 'getServiceRequests': {

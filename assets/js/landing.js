@@ -318,7 +318,17 @@ function _escapeAttr(str) {
  * @param {string} categoryName
  */
 function handleCategoryClick(categoryId, categoryName) {
-    window.location.href = 'frontend/services.html';
+    const catMap = {
+        'ac': 'CAT-AC',
+        'cleaning': 'CAT-CLN',
+        'plumbing': 'CAT-PLM',
+        'electrical': 'CAT-ELE',
+        'pest': 'CAT-PST',
+        'fabrication': 'CAT-FAB',
+        'maintenance': 'CAT-MNT'
+    };
+    const targetCat = catMap[categoryId] || categoryId;
+    window.location.href = 'frontend/book.html?category=' + encodeURIComponent(targetCat);
 }
 
 /**
@@ -327,12 +337,7 @@ function handleCategoryClick(categoryId, categoryName) {
  * @param {string} serviceName
  */
 function handleBookService(serviceId, serviceName) {
-    const user = localStorage.getItem('ssh_user_session');
-    if (user) {
-        window.location.href = 'frontend/customer/index.html';
-    } else {
-        window.location.href = 'frontend/login.html';
-    }
+    window.location.href = 'frontend/book.html?service=' + encodeURIComponent(serviceName || '');
 }
 
 /**
@@ -394,18 +399,8 @@ function handleServiceSearch() {
             return;
         }
 
-        // TODO: Replace with actual API call
-        // Future: fetchServices(selectedService, selectedLocation).then(renderResults);
-        SevaToast.show(
-            `Searching for <strong>${_escapeHtml(selectedService)}</strong> in <strong>${_escapeHtml(selectedLocation)}</strong>…`,
-            'info',
-            4000
-        );
-
-        // Scroll to services section as visual feedback
-        setTimeout(() => {
-            SevaScroll.scrollToSection('services');
-        }, 600);
+        // Direct navigate to booking page with selected service and location pre-filled
+        window.location.href = 'frontend/book.html?service=' + encodeURIComponent(selectedService) + '&location=' + encodeURIComponent(selectedLocation);
     });
 }
 

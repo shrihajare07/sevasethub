@@ -213,7 +213,7 @@
                     <span>${o.OfferCode}</span>
                     <i class="bi bi-copy"></i>
                   </div>
-                  <a href="login.html" class="btn btn-primary btn-sm px-3 fw-semibold">Book with Offer</a>
+                  <a href="book.html?coupon=${o.OfferCode}" class="btn btn-primary btn-sm px-3 fw-semibold" style="background:var(--gradient-brand);border:none;">Book with Offer</a>
                 </div>
               </div>
             </div>
@@ -240,7 +240,7 @@
                     <span>${c.CouponCode}</span>
                     <i class="bi bi-copy"></i>
                   </div>
-                  <a href="login.html" class="btn btn-primary btn-sm px-3 fw-semibold">Apply Coupon</a>
+                  <a href="book.html?coupon=${c.CouponCode}" class="btn btn-primary btn-sm px-3 fw-semibold" style="background:var(--gradient-brand);border:none;">Apply &amp; Book</a>
                 </div>
               </div>
             </div>
