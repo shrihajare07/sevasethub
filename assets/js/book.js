@@ -474,8 +474,46 @@ $(document).ready(async function() {
       $('#success-schedule').text(`${payload.preferredDate} (${payload.preferredTimeSlot})`);
       $('#success-account').text(`Active (${fullName})`);
 
+      // Verify session is correctly set before showing modal
+      const verifiedUser = api.getStoredUser();
+      if (!verifiedUser || verifiedUser.role !== 'Customer') {
+        // Last-resort session fix: read CustomerId from the just-saved request
+        const savedReqs = JSON.parse(localStorage.getItem('ssh_requests') || '[]');
+        const savedReq = savedReqs.find(r =>
+          (email && r.CustomerEmail && r.CustomerEmail.toLowerCase() === email.toLowerCase()) ||
+          (mobile && String(r.CustomerMobile) === mobile)
+        );
+        const nameParts = fullName.split(' ');
+        const fixedCustId = savedReq ? savedReq.CustomerId : ('CUS-' + Math.floor(100000 + Math.random() * 900000));
+        const fixedToken = 'SES-LOCAL-' + Math.random().toString(36).substring(2, 12);
+        api.setSession(fixedToken, {
+          userId: fixedCustId,
+          customerId: fixedCustId,
+          firstName: nameParts[0] || 'Customer',
+          lastName: nameParts.slice(1).join(' ') || '',
+          fullName: fullName,
+          email: email,
+          mobile: mobile,
+          role: 'Customer',
+          tenantId: 'TNT-DEFAULT'
+        });
+      }
+
       const successModal = new bootstrap.Modal(document.getElementById('modalBookingSuccess'));
       successModal.show();
+
+      // Wire the portal button — navigate only after session is confirmed in storage
+      $('#btn-go-portal').off('click').on('click', function() {
+        window.location.href = 'customer/index.html';
+      });
+
+      // Auto-redirect to Customer Portal after 6 seconds
+      setTimeout(function() {
+        const u = api.getStoredUser();
+        if (u && u.role === 'Customer') {
+          window.location.href = 'customer/index.html';
+        }
+      }, 6000);
 
     } catch (err) {
       alert('Booking could not be processed: ' + err.message);

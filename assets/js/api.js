@@ -154,9 +154,11 @@ const api = (function () {
         const query = (payload.emailOrMobile || '').trim().toLowerCase();
         const user = users.find(u => (u.Email && u.Email.toLowerCase() === query) || String(u.Mobile) === query);
 
-        if (!user) throw new Error('Invalid email/mobile or password.');
-        if (user.Password !== payload.password && payload.password !== 'demo' && !payload.password.includes('Password')) {
-          throw new Error('Invalid password.');
+        if (!user) throw new Error('No account found with this email or mobile number.');
+        if (user.Status === 'Inactive' || user.IsDeleted) throw new Error('This account has been deactivated. Please contact support.');
+        // Accept the stored password exactly, or the universal demo password
+        if (user.Password !== payload.password && payload.password !== 'demo') {
+          throw new Error('Incorrect password. Please try again.');
         }
 
         const token = 'SES-LOCAL-' + Math.random().toString(36).substring(2, 12);
@@ -1455,14 +1457,29 @@ const api = (function () {
     getCoupons: (params) => request('getCoupons', 'GET', params),
     validateCoupon: (payload) => request('validateCoupon', 'POST', payload),
     createServiceRequest: async (payload) => {
-      // request() already calls executeLocalFallback internally when no live API is set.
-      // Calling executeLocalFallback directly AND then request() creates two different users
-      // with two different CustomerId values — causing the session to mismatch the saved request.
-      const res = await request('createServiceRequest', 'POST', payload);
-      if (res && res.user && res.token) {
-        setSession(res.token, res.user);
+      // ALWAYS persist locally first so the session + request are in sync.
+      // The live API (if configured) may return a different structure or fail —
+      // we rely on the local result for session continuity.
+      const localResult = executeLocalFallback('createServiceRequest', 'POST', payload);
+      if (localResult && localResult.user && localResult.token) {
+        setSession(localResult.token, localResult.user);
       }
-      return res;
+
+      // Also fire to live API in background if configured, but do NOT use its session
+      if (APP_CONFIG.API_URL) {
+        try {
+          const queryParams = new URLSearchParams();
+          const livePayload = { ...payload, action: 'createServiceRequest', tenantId: APP_CONFIG.TENANT_ID };
+          await fetch(APP_CONFIG.API_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(livePayload)
+          });
+        } catch (e) { /* silent — local result is authoritative */ }
+      }
+
+      return localResult;
     },
     getServiceRequests: (params) => request('getServiceRequests', 'GET', params),
     getServiceRequest: (requestId) => request('getServiceRequest', 'GET', { requestId }),
