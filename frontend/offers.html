@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Special Offers & Coupons â€“ SevaSetuHub</title>
+  <title>Special Offers &amp; Coupons – SevaSetuHub</title>
   <meta name="description" content="Unlock discount coupons and special seasonal deals on AC maintenance, cleaning, electrical and plumbing on SevaSetuHub.">
   
   <!-- Fonts & Icons -->
@@ -226,13 +226,13 @@
       // Render Coupons
       if (coupons && coupons.length > 0) {
         coupons.forEach(c => {
-          const discountLabel = c.DiscountType === 'Percentage' ? c.DiscountValue + '% OFF' : 'Flat â‚¹' + c.DiscountValue + ' OFF';
+          const discountLabel = c.DiscountType === 'Percentage' ? c.DiscountValue + '% OFF' : 'Flat ₹' + c.DiscountValue + ' OFF';
           const card = `
             <div class="col-md-6">
               <div class="promo-card">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                   <span class="badge-brand badge-success"><i class="bi bi-percent"></i> DISCOUNT COUPON</span>
-                  <span class="text-muted small"><i class="bi bi-cart-check me-1"></i>Min Order: â‚¹${c.MinimumOrderValue || 0}</span>
+                  <span class="text-muted small"><i class="bi bi-cart-check me-1"></i>Min Order: ₹${c.MinimumOrderValue || 0}</span>
                 </div>
                 <h4 class="fw-bold text-dark mt-2 mb-2" style="letter-spacing: -0.01em;">${discountLabel}</h4>
                 <p class="text-muted small flex-grow-1 line-clamp-3">${c.Description || 'Apply this instant coupon code at checkout to claim your verified service discount.'}</p>
