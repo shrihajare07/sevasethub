@@ -426,7 +426,97 @@ const api = (function () {
       }
 
       case 'getWorkOrders': {
-        const wos = JSON.parse(localStorage.getItem('ssh_work_orders') || '[]');
+        let wos = JSON.parse(localStorage.getItem('ssh_work_orders') || '[]');
+        const todayStr = new Date().toISOString().slice(0, 10);
+
+        // Auto-seed active schedules for today if missing or empty
+        if (wos.length === 0 || !wos.some(w => w.ScheduledDate === todayStr)) {
+          const sampleJobs = [
+            {
+              WorkOrderId: 'WO-882910',
+              TenantId: APP_CONFIG.TENANT_ID,
+              RequestId: 'REQ-104928',
+              CustomerId: 'CUS-001',
+              CustomerName: 'Suresh Kadam',
+              TechnicianId: 'TCH-001',
+              TechnicianName: 'Mahesh Patil',
+              ServiceName: 'Split AC Power Jet Deep Service',
+              ScheduledDate: todayStr,
+              StartTime: '09:00 AM - 11:00 AM',
+              EndTime: '11:00 AM',
+              Priority: 'High',
+              Status: 'In Progress',
+              CreatedAt: new Date().toLocaleString('en-IN')
+            },
+            {
+              WorkOrderId: 'WO-882911',
+              TenantId: APP_CONFIG.TENANT_ID,
+              RequestId: 'REQ-104929',
+              CustomerId: 'CUS-002',
+              CustomerName: 'Pooja Sawant',
+              TechnicianId: 'TCH-001',
+              TechnicianName: 'Mahesh Patil',
+              ServiceName: 'AC Refrigerant Gas Refilling',
+              ScheduledDate: todayStr,
+              StartTime: '01:00 PM - 03:00 PM',
+              EndTime: '03:00 PM',
+              Priority: 'Medium',
+              Status: 'Assigned',
+              CreatedAt: new Date().toLocaleString('en-IN')
+            },
+            {
+              WorkOrderId: 'WO-882912',
+              TenantId: APP_CONFIG.TENANT_ID,
+              RequestId: 'REQ-104930',
+              CustomerId: 'CUS-003',
+              CustomerName: 'Amol Deshmukh',
+              TechnicianId: 'TCH-003',
+              TechnicianName: 'Ramesh Jadhav',
+              ServiceName: 'Water Leakage & Concealed Pipe Repair',
+              ScheduledDate: todayStr,
+              StartTime: '11:00 AM - 01:00 PM',
+              EndTime: '01:00 PM',
+              Priority: 'High',
+              Status: 'En Route',
+              CreatedAt: new Date().toLocaleString('en-IN')
+            },
+            {
+              WorkOrderId: 'WO-882913',
+              TenantId: APP_CONFIG.TENANT_ID,
+              RequestId: 'REQ-104931',
+              CustomerId: 'CUS-004',
+              CustomerName: 'Sunita Joshi',
+              TechnicianId: 'TCH-004',
+              TechnicianName: 'Anil Shinde',
+              ServiceName: '2 BHK Full Home Deep Cleaning',
+              ScheduledDate: todayStr,
+              StartTime: '03:00 PM - 05:00 PM',
+              EndTime: '05:00 PM',
+              Priority: 'Medium',
+              Status: 'Assigned',
+              CreatedAt: new Date().toLocaleString('en-IN')
+            },
+            {
+              WorkOrderId: 'WO-882914',
+              TenantId: APP_CONFIG.TENANT_ID,
+              RequestId: 'REQ-104932',
+              CustomerId: 'CUS-005',
+              CustomerName: 'Vikram Shinde',
+              TechnicianId: 'TCH-002',
+              TechnicianName: 'Sachin Kulkarni',
+              ServiceName: 'Home Electrical Inspection & MCB Repair',
+              ScheduledDate: todayStr,
+              StartTime: '09:00 AM - 11:00 AM',
+              EndTime: '11:00 AM',
+              Priority: 'Medium',
+              Status: 'Completed',
+              CreatedAt: new Date().toLocaleString('en-IN')
+            }
+          ];
+          wos = [...sampleJobs, ...wos.filter(w => !sampleJobs.some(sj => sj.WorkOrderId === w.WorkOrderId))];
+          localStorage.setItem('ssh_work_orders', JSON.stringify(wos));
+        }
+
         const reqs = JSON.parse(localStorage.getItem('ssh_requests') || '[]');
         const user = getStoredUser();
 
