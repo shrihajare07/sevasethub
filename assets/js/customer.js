@@ -316,15 +316,29 @@ $(document).ready(function() {
       $invContainer.empty();
 
       if (req.Status === 'Completed' || (details.invoices && details.invoices.length > 0)) {
+        const labourAmt = Number(req.BasePrice || 599);
+        const discAmt = Number(req.CouponDiscount || 0);
+        const subtotal = Math.max(0, labourAmt - discAmt);
+        const taxCalc = api.calculateBillGST ? api.calculateBillGST(subtotal, req.City || '') : { taxTotal: Math.round(subtotal * 0.18), grandTotal: Math.round(subtotal * 1.18), cgstRate: 9, sgstRate: 9, igstRate: 0, sacCode: '998714', gstin: '27AABCS1429B1Z5' };
+
         const inv = (details.invoices && details.invoices.length > 0) ? details.invoices[0] : {
           InvoiceId: 'INV-AUTO-' + req.RequestId,
           InvoiceNumber: 'INV-2026-' + Math.floor(1000 + Math.random() * 9000),
           RequestId: req.RequestId,
-          LabourTotal: Number(req.BasePrice || 599),
+          LabourTotal: labourAmt,
           MaterialTotal: 0,
-          DiscountTotal: Number(req.CouponDiscount || 0),
-          TaxTotal: Math.round((Math.max(0, Number(req.BasePrice || 599) - Number(req.CouponDiscount || 0))) * 0.18),
-          GrandTotal: Math.round((Math.max(0, Number(req.BasePrice || 599) - Number(req.CouponDiscount || 0))) * 1.18),
+          DiscountTotal: discAmt,
+          TaxableTotal: subtotal,
+          TaxTotal: taxCalc.taxTotal,
+          GrandTotal: taxCalc.grandTotal,
+          CGSTRate: taxCalc.cgstRate,
+          CGSTAmount: taxCalc.cgstAmount,
+          SGSTRate: taxCalc.sgstRate,
+          SGSTAmount: taxCalc.sgstAmount,
+          IGSTRate: taxCalc.igstRate,
+          IGSTAmount: taxCalc.igstAmount,
+          SACCode: taxCalc.sacCode,
+          GSTIN: taxCalc.gstin,
           PaymentStatus: req.PaymentStatus === 'Paid' ? 'Paid' : 'Pending'
         };
 
@@ -332,6 +346,8 @@ $(document).ready(function() {
         if (isPaid && inv) {
           inv.PaymentStatus = 'Paid';
         }
+
+        const taxRateLabel = inv.IGSTRate ? `IGST (${inv.IGSTRate}%)` : `GST (${(inv.CGSTRate || 9) + (inv.SGSTRate || 9)}% CGST+SGST)`;
 
         $invContainer.html(`
           <div class="card p-3 border-2 ${isPaid ? 'border-success' : 'border-warning'}" style="background: ${isPaid ? 'rgba(16,185,129,0.04)' : 'rgba(245,158,11,0.04)'}; border-radius: var(--radius-lg);">
@@ -341,6 +357,7 @@ $(document).ready(function() {
                   <i class="bi ${isPaid ? 'bi-check-circle-fill' : 'bi-clock-history'} me-1"></i> ${isPaid ? 'Paid' : 'Payment Due'}
                 </span>
                 <span class="fw-bold text-dark font-monospace">${inv.InvoiceNumber || 'INV-2026'}</span>
+                <span class="badge bg-light text-muted border ms-1" style="font-size:0.7rem;">SAC: ${inv.SACCode || '998714'}</span>
               </div>
               <h5 class="fw-bold text-primary mb-0">₹${inv.GrandTotal}</h5>
             </div>
@@ -363,8 +380,8 @@ $(document).ready(function() {
                 </div>
               ` : ''}
               <div class="d-flex justify-content-between text-muted">
-                <span>GST (18% Service Tax):</span>
-                <span>₹${inv.TaxTotal || 90}</span>
+                <span>${taxRateLabel}:</span>
+                <span>₹${inv.TaxTotal || Math.round(Number(inv.GrandTotal || 0) * 0.18 / 1.18)}</span>
               </div>
               <hr class="my-1">
               <div class="d-flex justify-content-between fw-bold text-dark">
@@ -797,21 +814,13 @@ $(document).ready(function() {
             ${n.unread ? '<span class="badge bg-primary rounded-pill">New</span>' : ''}
           </div>
         </div>
-        const inv = myInvoices.find(i => i.InvoiceId === invId);
-        if (inv) openReceiptModal(inv);
-      });
-    } catch (e) {
-      $tbody.html(`<tr><td colspan="6" class="text-center py-4 text-danger">Failed to load invoices.</td></tr>`);
-    }
+      `);
+    });
   }
 
   /**
    * 9. Service Booking Wizard in Customer Portal
    */
-  let allCategories = [];
-  let allServices = [];
-  let selectedService = null;
-  let activeCoupon = null;
 
   async function initBookingWizard() {
     try {

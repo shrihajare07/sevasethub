@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin SaaS Suite – SevaSetuHub</title>
+  <title>Admin SaaS Suite â€“ SevaSetuHub</title>
   <meta name="description" content="Manage service requests, dispatch technicians, track revenue and run marketing from the SevaSetuHub admin suite.">
 
   <!-- Google Fonts -->
@@ -151,6 +151,9 @@
       <a href="#" class="nav-link-custom admin-nav-link" data-target="invoices">
         <i class="bi bi-receipt-cutoff"></i> <span>Invoices & Payments</span>
       </a>
+      <a href="#" class="nav-link-custom admin-nav-link admin-only-section" data-target="gst">
+        <i class="bi bi-percent text-success"></i> <span>GST & Tax Config</span>
+      </a>
       <a href="#" class="nav-link-custom admin-nav-link admin-only-section" data-target="audit">
         <i class="bi bi-journal-text"></i> <span>Security Audit Logs</span>
       </a>
@@ -215,7 +218,7 @@
           </div>
           <div class="col-6 col-md-3">
             <div class="stat-card">
-              <div><div class="stat-label">Total Revenue</div><div class="stat-value" id="stat-admin-revenue">₹0</div></div>
+              <div><div class="stat-label">Total Revenue</div><div class="stat-value" id="stat-admin-revenue">â‚¹0</div></div>
               <div class="stat-icon-wrapper stat-icon-emerald"><i class="bi bi-currency-rupee"></i></div>
             </div>
           </div>
@@ -224,7 +227,7 @@
         <!-- Revenue Chart Card -->
         <div class="chart-card">
           <div class="d-flex align-items-center justify-content-between mb-3">
-            <div class="chart-card-title"><i class="bi bi-graph-up text-primary me-2"></i>Monthly Revenue &amp; Growth (₹)</div>
+            <div class="chart-card-title"><i class="bi bi-graph-up text-primary me-2"></i>Monthly Revenue &amp; Growth (â‚¹)</div>
             <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">Last 6 Months</span>
           </div>
           <div style="height: 260px;">
@@ -354,11 +357,11 @@
                 <thead>
                   <tr>
                     <th>Certified Technician</th>
-                    <th>09:00 AM – 11:00 AM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 1</small></th>
-                    <th>11:00 AM – 01:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 2</small></th>
-                    <th>01:00 PM – 03:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 3</small></th>
-                    <th>03:00 PM – 05:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 4</small></th>
-                    <th>05:00 PM – 07:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 5</small></th>
+                    <th>09:00 AM â€“ 11:00 AM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 1</small></th>
+                    <th>11:00 AM â€“ 01:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 2</small></th>
+                    <th>01:00 PM â€“ 03:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 3</small></th>
+                    <th>03:00 PM â€“ 05:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 4</small></th>
+                    <th>05:00 PM â€“ 07:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 5</small></th>
                   </tr>
                 </thead>
                 <tbody id="dispatch-board-body"></tbody>
@@ -504,9 +507,12 @@
                   <th>Invoice #</th>
                   <th>Customer</th>
                   <th>Service</th>
+                  <th>Taxable Base</th>
+                  <th>GST Tax</th>
                   <th>Grand Total</th>
                   <th>Status</th>
                   <th>Created At</th>
+                  <th class="text-end">Actions</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -541,6 +547,469 @@
         </div>
       </section>
 
+      <!-- SECTION: GST & Tax Configuration -->
+      <section id="section-gst" class="admin-section d-none">
+
+        <!-- Header Bar -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+          <div>
+            <h5 class="fw-bold text-dark mb-1">
+              <i class="bi bi-patch-check-fill text-success me-2"></i>GST &amp; Tax Configuration
+            </h5>
+            <p class="text-muted small mb-0">
+              Manage your business GSTIN, SAC service codes, tax slabs, and statutory billing rules.
+              All invoices &amp; estimates calculate taxes dynamically from this active profile.
+            </p>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold fs-6">
+              <i class="bi bi-check-circle-fill me-1"></i> Active: <span id="gst-badge-rate">18% (9% CGST + 9% SGST)</span>
+            </span>
+            <button class="btn btn-primary fw-semibold px-4" id="btn-edit-gst-config" style="background:var(--gradient-brand);border:none;">
+              <i class="bi bi-pencil-square me-1"></i> Edit Configuration
+            </button>
+          </div>
+        </div>
+
+        <!-- Active GST Identity Card (Read-Only Overview) -->
+        <div class="row g-4 mb-4">
+          <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100" style="border-radius:var(--radius-xl);">
+              <div class="portal-card-header" style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);border-radius:var(--radius-xl) var(--radius-xl) 0 0;">
+                <h6 class="portal-card-header-title text-white">
+                  <i class="bi bi-building me-2"></i>Active GST Business Identity
+                </h6>
+                <span class="badge bg-white text-dark fw-semibold font-monospace small" id="gst-active-version-pill">GST-V1 Active</span>
+              </div>
+              <div class="p-4">
+                <!-- GSTIN Hero -->
+                <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-3" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:2px solid #bbf7d0;">
+                  <div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#16a34a,#166534);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="bi bi-building text-white fs-4"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="text-muted small fw-semibold mb-1">GSTIN (Goods &amp; Services Tax Identification Number)</div>
+                    <div class="font-monospace fw-bold fs-5 text-dark letter-spacing-wide" id="gst-view-gstin">27AABCS1429B1Z5</div>
+                  </div>
+                  <span class="badge bg-success rounded-pill px-3 py-2">
+                    <i class="bi bi-patch-check-fill me-1"></i>Verified
+                  </span>
+                </div>
+
+                <!-- Business Info Grid -->
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <div class="p-3 bg-light rounded-3 h-100">
+                      <div class="text-muted small fw-semibold mb-1"><i class="bi bi-briefcase me-1"></i>Legal Entity Name</div>
+                      <div class="fw-bold text-dark small" id="gst-view-legal-name">SevaSetuHub Multi-Services Private Limited</div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="p-3 bg-light rounded-3 h-100">
+                      <div class="text-muted small fw-semibold mb-1"><i class="bi bi-badge-tm me-1"></i>Trade / Brand Name</div>
+                      <div class="fw-bold text-dark small" id="gst-view-trade-name">SevaSetuHub</div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="p-3 bg-light rounded-3 h-100">
+                      <div class="text-muted small fw-semibold mb-1"><i class="bi bi-geo-alt me-1"></i>Registered State</div>
+                      <div class="fw-bold text-dark small" id="gst-view-state">27 - Maharashtra</div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="p-3 bg-light rounded-3 h-100">
+                      <div class="text-muted small fw-semibold mb-1"><i class="bi bi-house me-1"></i>Registered Address</div>
+                      <div class="fw-semibold text-dark small" id="gst-view-address">Shop No. 12, Kolhapur, MH</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 mt-3 pt-3 border-top">
+                  <i class="bi bi-clock-history text-muted small"></i>
+                  <small class="text-muted">Last updated: <span id="gst-last-updated-text" class="fw-semibold text-dark">2026-08-30</span> by <span id="gst-last-updated-by" class="fw-semibold text-dark">Super Admin</span></small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tax Rules Summary Card -->
+          <div class="col-lg-4">
+            <div class="row g-3 h-100">
+              <!-- GST Rate Pill -->
+              <div class="col-12">
+                <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);background:linear-gradient(135deg,#1e3a5f,#0f172a);">
+                  <div class="p-4 text-center">
+                    <div class="text-white-50 small fw-semibold mb-2">Active GST Rate</div>
+                    <div class="display-4 fw-black text-white mb-0" id="gst-view-rate-big">18%</div>
+                    <div class="text-info small mt-1 fw-semibold" id="gst-view-breakdown-text">9% CGST + 9% SGST</div>
+                    <hr class="border-white-10 my-3" style="border-color:rgba(255,255,255,0.15)!important;">
+                    <div class="d-flex justify-content-between text-white-50 small">
+                      <span>SAC Code</span>
+                      <span class="font-monospace text-white fw-bold" id="gst-view-sac">998714</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-white-50 small mt-1">
+                      <span>Supply Mode</span>
+                      <span class="text-white fw-semibold" id="gst-view-mode">Intra-State</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-white-50 small mt-1">
+                      <span>Invoice Prefix</span>
+                      <span class="font-monospace text-white fw-semibold" id="gst-view-prefix">SSH/26-27/</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Live Simulator Quick Card -->
+              <div class="col-12">
+                <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);">
+                  <div class="p-3">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                      <i class="bi bi-calculator-fill text-success"></i>
+                      <span class="fw-bold small text-dark">Quick Tax Simulator</span>
+                      <span class="badge bg-success ms-auto">Live</span>
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                      <span class="input-group-text fw-bold">â‚¹</span>
+                      <input type="number" class="form-control fw-bold" id="sim-input-taxable" value="1000" min="0" step="10" placeholder="Taxable Amount">
+                    </div>
+                    <div class="small" id="sim-result-panel">
+                      <div class="d-flex justify-content-between text-muted mb-1">
+                        <span>Base Amount:</span><span class="fw-semibold text-dark" id="sim-disp-taxable">â‚¹1,000.00</span>
+                      </div>
+                      <div class="d-flex justify-content-between text-muted mb-1" id="sim-row-cgst">
+                        <span id="sim-lbl-cgst">CGST (9%):</span><span class="fw-semibold text-dark" id="sim-disp-cgst">â‚¹90.00</span>
+                      </div>
+                      <div class="d-flex justify-content-between text-muted mb-1" id="sim-row-sgst">
+                        <span id="sim-lbl-sgst">SGST (9%):</span><span class="fw-semibold text-dark" id="sim-disp-sgst">â‚¹90.00</span>
+                      </div>
+                      <div class="d-flex justify-content-between text-muted mb-1 d-none" id="sim-row-igst">
+                        <span id="sim-lbl-igst">IGST (18%):</span><span class="fw-semibold text-dark" id="sim-disp-igst">â‚¹180.00</span>
+                      </div>
+                      <hr class="my-2">
+                      <div class="d-flex justify-content-between fw-bold">
+                        <span class="text-dark">Customer Pays:</span>
+                        <span class="text-primary fs-6" id="sim-disp-grand-total">â‚¹1,180.00</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GST Configuration Version Audit Trail -->
+        <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);">
+          <div class="portal-card-header">
+            <h6 class="portal-card-header-title">
+              <i class="bi bi-journal-bookmark-fill text-primary me-2"></i>GST Configuration Version Audit Trail
+            </h6>
+            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="btn-refresh-gst-history">
+              <i class="bi bi-arrow-repeat me-1"></i> Refresh
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="table-gst-history">
+              <thead class="table-light">
+                <tr>
+                  <th>Version</th>
+                  <th>Effective From</th>
+                  <th>GSTIN</th>
+                  <th>GST Rate</th>
+                  <th>Tax Breakdown</th>
+                  <th>SAC Code</th>
+                  <th>Supply Mode</th>
+                  <th>Change Reason</th>
+                  <th>Updated By</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           MODAL: Edit GST Configuration (Super Admin Only)
+           ===================================================================== -->
+      <div class="modal fade" id="modalEditGSTConfig" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+          <div class="modal-content border-0" style="border-radius:var(--radius-xl);overflow:hidden;">
+
+            <!-- Modal Header -->
+            <div class="modal-header border-0 px-4 pt-4 pb-3" style="background:linear-gradient(135deg,#0f172a,#1e3a5f);">
+              <div>
+                <h5 class="modal-title text-white fw-bold mb-1">
+                  <i class="bi bi-sliders text-info me-2"></i>Edit GST &amp; Tax Configuration
+                </h5>
+                <p class="text-white-50 small mb-0">Update your business GST profile, tax slabs, and invoice settings. Each save creates a versioned audit record.</p>
+              </div>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body p-4">
+              <form id="form-gst-config">
+                <div class="row g-4">
+
+                  <!-- Left Column: Identity & Tax Rules -->
+                  <div class="col-lg-7">
+
+                    <!-- GST Identity Card -->
+                    <div class="card border-0 bg-light rounded-3 mb-4">
+                      <div class="px-4 pt-4 pb-2">
+                        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-building text-primary me-2"></i>GST Business Identity</h6>
+                        <div class="row g-3">
+                          <div class="col-md-6">
+                            <label class="form-label fw-semibold small" for="gst-input-gstin">Business GSTIN <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                              <span class="input-group-text bg-white"><i class="bi bi-building"></i></span>
+                              <input type="text" class="form-control text-uppercase font-monospace fw-bold" id="gst-input-gstin"
+                                placeholder="27AABCS1429B1Z5" maxlength="15" pattern="[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}" required>
+                            </div>
+                            <div class="form-text">15-digit alphanumeric Indian GSTIN</div>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label fw-semibold small" for="gst-input-legal-name">Legal Entity Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control fw-semibold" id="gst-input-legal-name"
+                              placeholder="SevaSetuHub Multi-Services Pvt. Ltd." required>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label fw-semibold small" for="gst-input-trade-name">Trade / Brand Name</label>
+                            <input type="text" class="form-control" id="gst-input-trade-name" placeholder="SevaSetuHub">
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label fw-semibold small" for="gst-input-state">Registered State / Territory <span class="text-danger">*</span></label>
+                            <select class="form-select" id="gst-input-state">
+                              <option value="27 - Maharashtra">27 - Maharashtra</option>
+                              <option value="29 - Karnataka">29 - Karnataka</option>
+                              <option value="24 - Gujarat">24 - Gujarat</option>
+                              <option value="07 - Delhi">07 - Delhi</option>
+                              <option value="33 - Tamil Nadu">33 - Tamil Nadu</option>
+                              <option value="36 - Telangana">36 - Telangana</option>
+                              <option value="19 - West Bengal">19 - West Bengal</option>
+                              <option value="09 - Uttar Pradesh">09 - Uttar Pradesh</option>
+                              <option value="23 - Madhya Pradesh">23 - Madhya Pradesh</option>
+                              <option value="08 - Rajasthan">08 - Rajasthan</option>
+                              <option value="32 - Kerala">32 - Kerala</option>
+                              <option value="03 - Punjab">03 - Punjab</option>
+                              <option value="06 - Haryana">06 - Haryana</option>
+                              <option value="30 - Goa">30 - Goa</option>
+                            </select>
+                          </div>
+                          <div class="col-12">
+                            <label class="form-label fw-semibold small" for="gst-input-address">Registered Office Address</label>
+                            <textarea class="form-control" id="gst-input-address" rows="2"
+                              placeholder="Shop No. 12, Commerce Plaza, Station Road, Kolhapur, Maharashtra - 416001"></textarea>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Tax Rules Card -->
+                    <div class="card border-0 bg-light rounded-3 mb-4">
+                      <div class="px-4 pt-4 pb-2">
+                        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-percent text-success me-2"></i>Tax Rate &amp; Calculation Rules</h6>
+                        <div class="row g-3">
+                          <div class="col-md-4">
+                            <label class="form-label fw-semibold small" for="gst-input-sac">SAC Code <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control font-monospace fw-bold" id="gst-input-sac" value="998714" placeholder="998714">
+                            <div class="form-text">SAC 998714: Maintenance &amp; Repair Services</div>
+                          </div>
+                          <div class="col-md-4">
+                            <label class="form-label fw-semibold small" for="gst-input-rate">GST Tax Rate <span class="text-danger">*</span></label>
+                            <select class="form-select fw-bold text-primary fs-6" id="gst-input-rate">
+                              <option value="18">18% â€” Standard Slab</option>
+                              <option value="12">12% â€” Concessional</option>
+                              <option value="5">5% â€” Essential Services</option>
+                              <option value="28">28% â€” Luxury Slab</option>
+                              <option value="0">0% â€” Exempt</option>
+                            </select>
+                          </div>
+                          <div class="col-md-4">
+                            <label class="form-label fw-semibold small" for="gst-input-tax-mode">Supply Mode <span class="text-danger">*</span></label>
+                            <select class="form-select" id="gst-input-tax-mode">
+                              <option value="Intra-State">Intra-State (CGST + SGST)</option>
+                              <option value="Inter-State">Inter-State (IGST)</option>
+                              <option value="Auto">Auto-Detect by Customer State</option>
+                            </select>
+                          </div>
+
+                          <!-- Live Inline Preview -->
+                          <div class="col-12">
+                            <div class="p-3 rounded-3 border border-success-subtle" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);">
+                              <div class="d-flex align-items-center gap-2 mb-2">
+                                <i class="bi bi-calculator-fill text-success"></i>
+                                <span class="fw-bold small text-success">Live Rate Preview (â‚¹1,000 base)</span>
+                              </div>
+                              <div class="row text-center g-2">
+                                <div class="col-3">
+                                  <div class="bg-white rounded-2 py-2 px-1">
+                                    <div class="text-muted" style="font-size:0.7rem;">CGST</div>
+                                    <div class="fw-bold text-dark small" id="modal-preview-cgst">â‚¹90</div>
+                                  </div>
+                                </div>
+                                <div class="col-3">
+                                  <div class="bg-white rounded-2 py-2 px-1">
+                                    <div class="text-muted" style="font-size:0.7rem;">SGST</div>
+                                    <div class="fw-bold text-dark small" id="modal-preview-sgst">â‚¹90</div>
+                                  </div>
+                                </div>
+                                <div class="col-3">
+                                  <div class="bg-white rounded-2 py-2 px-1">
+                                    <div class="text-muted" style="font-size:0.7rem;">Total Tax</div>
+                                    <div class="fw-bold text-success small" id="modal-preview-tax">â‚¹180</div>
+                                  </div>
+                                </div>
+                                <div class="col-3">
+                                  <div class="bg-white rounded-2 py-2 px-1 border border-primary-subtle">
+                                    <div class="text-muted" style="font-size:0.7rem;">Customer Pays</div>
+                                    <div class="fw-bold text-primary small" id="modal-preview-total">â‚¹1,180</div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Invoice Settings Card -->
+                    <div class="card border-0 bg-light rounded-3">
+                      <div class="px-4 pt-4 pb-2">
+                        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-receipt text-primary me-2"></i>Invoice Settings &amp; Statutory Text</h6>
+                        <div class="row g-3">
+                          <div class="col-md-6">
+                            <label class="form-label fw-semibold small" for="gst-input-prefix">Invoice Number Prefix</label>
+                            <input type="text" class="form-control font-monospace" id="gst-input-prefix" value="SSH/26-27/" placeholder="SSH/26-27/">
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Price Display Model</label>
+                            <div class="form-check mt-2">
+                              <input class="form-check-input" type="checkbox" id="gst-input-inclusive">
+                              <label class="form-check-label small" for="gst-input-inclusive">
+                                Prices are <strong>Tax Inclusive</strong> (GST already included)
+                              </label>
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label fw-semibold small" for="gst-input-terms">Invoice Terms &amp; Notes</label>
+                            <textarea class="form-control" id="gst-input-terms" rows="3"
+                              placeholder="Payment due upon service completion. All repairs carry a 6-month warranty."></textarea>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label fw-semibold small" for="gst-input-declaration">Statutory Declaration</label>
+                            <textarea class="form-control" id="gst-input-declaration" rows="3"
+                              placeholder="We declare that this invoice shows the actual price of services described..."></textarea>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Right Column: Simulator + Audit Reason -->
+                  <div class="col-lg-5">
+
+                    <!-- Full Tax Simulator -->
+                    <div class="card border-0 shadow-sm mb-4" style="border-radius:var(--radius-xl);background:linear-gradient(145deg,#ffffff,#f8fafc);">
+                      <div class="portal-card-header bg-transparent border-bottom">
+                        <h6 class="portal-card-header-title text-dark"><i class="bi bi-calculator-fill text-success me-2"></i>Live Tax Bill Simulator</h6>
+                        <span class="badge bg-success">Real-Time</span>
+                      </div>
+                      <div class="p-4">
+                        <div class="mb-3">
+                          <label class="form-label fw-semibold small" for="sim-input-taxable-modal">Test Subtotal / Taxable Amount (â‚¹)</label>
+                          <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-white fw-bold">â‚¹</span>
+                            <input type="number" class="form-control fw-bold fs-5 text-dark" id="sim-input-taxable-modal" value="1000" min="0" step="10">
+                          </div>
+                        </div>
+                        <div class="p-3 bg-white rounded-3 border shadow-sm mb-3">
+                          <div class="d-flex justify-content-between text-muted small mb-2">
+                            <span>Taxable Service Base:</span>
+                            <span class="fw-semibold text-dark" id="modal-sim-disp-taxable">â‚¹1,000.00</span>
+                          </div>
+                          <div class="d-flex justify-content-between text-muted small mb-2" id="modal-sim-row-cgst">
+                            <span id="modal-sim-lbl-cgst">CGST (9.0%):</span>
+                            <span class="fw-semibold text-dark" id="modal-sim-disp-cgst">â‚¹90.00</span>
+                          </div>
+                          <div class="d-flex justify-content-between text-muted small mb-2" id="modal-sim-row-sgst">
+                            <span id="modal-sim-lbl-sgst">SGST (9.0%):</span>
+                            <span class="fw-semibold text-dark" id="modal-sim-disp-sgst">â‚¹90.00</span>
+                          </div>
+                          <div class="d-flex justify-content-between text-muted small mb-2 d-none" id="modal-sim-row-igst">
+                            <span id="modal-sim-lbl-igst">IGST (18.0%):</span>
+                            <span class="fw-semibold text-dark" id="modal-sim-disp-igst">â‚¹180.00</span>
+                          </div>
+                          <div class="d-flex justify-content-between text-muted small mb-2 pt-2 border-top">
+                            <span class="fw-semibold text-dark">Total GST Tax:</span>
+                            <span class="fw-bold text-success" id="modal-sim-disp-total-tax">â‚¹180.00</span>
+                          </div>
+                          <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <strong class="text-dark">Customer Payable:</strong>
+                            <strong class="text-primary fs-5" id="modal-sim-disp-grand-total">â‚¹1,180.00</span>
+                          </div>
+                        </div>
+                        <div class="alert alert-success py-2 px-3 rounded-3 mb-0" style="font-size:0.77rem;background:#f0fdf4;border-color:#bbf7d0;">
+                          <i class="bi bi-patch-check-fill text-success me-1"></i>
+                          <strong>Statutory Compliance:</strong> Invoices auto-comply with Section 31 of CGST Act, 2017.
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Effective Date & Audit Reason -->
+                    <div class="card border-0 bg-warning-subtle rounded-3 border border-warning-subtle mb-4">
+                      <div class="p-4">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                          <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
+                          <h6 class="fw-bold text-dark mb-0">Change Authorization</h6>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label fw-semibold small" for="gst-input-effective-date">Effective From Date <span class="text-danger">*</span></label>
+                          <input type="date" class="form-control" id="gst-input-effective-date" required>
+                        </div>
+                        <div>
+                          <label class="form-label fw-semibold small" for="gst-input-reason">Reason for Change <span class="text-danger">*</span>
+                            <span class="text-muted fw-normal">(logged in audit trail)</span>
+                          </label>
+                          <textarea class="form-control" id="gst-input-reason" rows="3"
+                            placeholder="e.g. FY 2026-27 statutory GST rate alignment as per GST Council Circular No. XY/2026" required></textarea>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Compliance Notice -->
+                    <div class="card border-0 rounded-3" style="background:linear-gradient(135deg,#0f172a,#1e3a5f);">
+                      <div class="p-4 text-center text-white">
+                        <i class="bi bi-shield-check fs-2 text-info d-block mb-2"></i>
+                        <div class="fw-bold mb-1">Immutable Version History</div>
+                        <div class="text-white-50 small">Every configuration change creates a permanent, tamper-proof audit version. Historical invoices retain their original locked tax rates for legal compliance.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer border-0 px-4 pb-4 bg-light">
+              <div class="d-flex justify-content-between align-items-center w-100 flex-wrap gap-2">
+                <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Only Super Admin accounts can modify GST Configuration. All changes are permanently audit-logged.</small>
+                <div class="d-flex gap-2">
+                  <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                  <button type="button" class="btn btn-primary fw-bold px-5" id="btn-save-gst-config" style="background:var(--gradient-brand);border:none;">
+                    <i class="bi bi-check2-circle me-1"></i> Save &amp; Deploy GST Configuration
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 8: Settings & Apps Script Connection -->
+
       <!-- SECTION 8: Settings & Apps Script Connection -->
       <section id="section-settings" class="admin-section d-none">
         <div class="card border-0 shadow-sm" style="border-radius:var(--radius-xl);">
@@ -570,33 +1039,68 @@
      ============================================================ -->
 <div class="modal fade" id="modalCreateEstimate" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow">
+    <div class="modal-content border-0 shadow" style="border-radius:var(--radius-xl);">
       <div class="modal-header bg-light">
-        <h5 class="modal-title fw-bold"><i class="bi bi-calculator text-primary me-2"></i>Generate Transparent Estimate</h5>
+        <h5 class="modal-title fw-bold"><i class="bi bi-calculator text-primary me-2"></i>Generate Transparent GST Estimate</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body p-4">
         <input type="hidden" id="est-modal-req-id">
-        <p class="small text-muted mb-3" id="est-modal-customer-info"></p>
+        <div class="p-2 mb-3 bg-light rounded small text-muted border" id="est-modal-customer-info"></div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold" for="est-modal-labour">Labour &amp; Service Charge (â‚¹)</label>
+            <input type="number" class="form-control fw-bold" id="est-modal-labour" value="599" min="0">
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold" for="est-modal-material">Materials / Spare Parts (â‚¹)</label>
+            <input type="number" class="form-control fw-bold" id="est-modal-material" value="0" min="0">
+          </div>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold" for="est-modal-discount">Goodwill Discount (â‚¹)</label>
+            <input type="number" class="form-control text-success fw-bold" id="est-modal-discount" value="0" min="0">
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold" for="est-modal-validity">Validity Date</label>
+            <input type="date" class="form-control" id="est-modal-validity">
+          </div>
+        </div>
+
+        <!-- Live GST Tax Calculation Snapshot -->
+        <div class="p-3 mb-3 bg-light rounded-3 border">
+          <div class="d-flex justify-content-between text-muted small mb-1">
+            <span>Taxable Amount (Subtotal):</span>
+            <span class="fw-semibold text-dark" id="est-preview-subtotal">â‚¹599.00</span>
+          </div>
+          <div class="d-flex justify-content-between text-muted small mb-1" id="est-preview-cgst-row">
+            <span id="est-preview-cgst-label">CGST (9%):</span>
+            <span class="fw-semibold text-dark" id="est-preview-cgst-val">â‚¹53.91</span>
+          </div>
+          <div class="d-flex justify-content-between text-muted small mb-1" id="est-preview-sgst-row">
+            <span id="est-preview-sgst-label">SGST (9%):</span>
+            <span class="fw-semibold text-dark" id="est-preview-sgst-val">â‚¹53.91</span>
+          </div>
+          <div class="d-flex justify-content-between text-muted small mb-1 d-none" id="est-preview-igst-row">
+            <span id="est-preview-igst-label">IGST (18%):</span>
+            <span class="fw-semibold text-dark" id="est-preview-igst-val">â‚¹107.82</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+            <strong class="text-dark">Estimated Grand Total:</strong>
+            <strong class="text-primary fs-5" id="est-preview-grand-total">â‚¹707.00</strong>
+          </div>
+        </div>
 
         <div class="mb-3">
-          <label class="form-label fw-semibold">Labour & Service Charge (₹)</label>
-          <input type="number" class="form-control" id="est-modal-labour" value="599">
-        </div>
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Materials / Spare Parts (₹)</label>
-          <input type="number" class="form-control" id="est-modal-material" value="0">
-        </div>
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Special Goodwill Discount (₹)</label>
-          <input type="number" class="form-control" id="est-modal-discount" value="0">
-        </div>
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Technical Notes</label>
-          <textarea class="form-control" id="est-modal-notes" rows="2">Includes 6-month warranty on workmanship & parts.</textarea>
+          <label class="form-label fw-semibold" for="est-modal-notes">Technical Notes &amp; Warranty</label>
+          <textarea class="form-control" id="est-modal-notes" rows="2">Includes 6-month warranty on workmanship &amp; parts. SAC: 998714.</textarea>
         </div>
 
-        <button class="btn btn-primary w-100 py-2 fw-bold" id="btn-save-estimate">Generate & Send Estimate</button>
+        <button class="btn btn-primary w-100 py-2 fw-bold" id="btn-save-estimate" style="background:var(--gradient-brand);border:none;">
+          <i class="bi bi-send-fill me-1"></i> Generate &amp; Send Estimate
+        </button>
       </div>
     </div>
   </div>
@@ -628,11 +1132,11 @@
           <div class="col-6">
             <label class="form-label fw-semibold">Time Slot</label>
             <select class="form-select" id="assign-modal-time">
-              <option value="09:00 AM - 11:00 AM">09:00 AM – 11:00 AM (Slot 1)</option>
-              <option value="11:00 AM - 01:00 PM">11:00 AM – 01:00 PM (Slot 2)</option>
-              <option value="01:00 PM - 03:00 PM">01:00 PM – 03:00 PM (Slot 3)</option>
-              <option value="03:00 PM - 05:00 PM">03:00 PM – 05:00 PM (Slot 4)</option>
-              <option value="05:00 PM - 07:00 PM">05:00 PM – 07:00 PM (Slot 5)</option>
+              <option value="09:00 AM - 11:00 AM">09:00 AM â€“ 11:00 AM (Slot 1)</option>
+              <option value="11:00 AM - 01:00 PM">11:00 AM â€“ 01:00 PM (Slot 2)</option>
+              <option value="01:00 PM - 03:00 PM">01:00 PM â€“ 03:00 PM (Slot 3)</option>
+              <option value="03:00 PM - 05:00 PM">03:00 PM â€“ 05:00 PM (Slot 4)</option>
+              <option value="05:00 PM - 07:00 PM">05:00 PM â€“ 07:00 PM (Slot 5)</option>
             </select>
           </div>
         </div>
@@ -749,11 +1253,11 @@
           <div class="col-6">
             <label class="form-label fw-semibold">Time Slot</label>
             <select class="form-select" id="quick-dispatch-time">
-              <option value="09:00 AM - 11:00 AM">09:00 AM – 11:00 AM</option>
-              <option value="11:00 AM - 01:00 PM">11:00 AM – 01:00 PM</option>
-              <option value="01:00 PM - 03:00 PM">01:00 PM – 03:00 PM</option>
-              <option value="03:00 PM - 05:00 PM">03:00 PM – 05:00 PM</option>
-              <option value="05:00 PM - 07:00 PM">05:00 PM – 07:00 PM</option>
+              <option value="09:00 AM - 11:00 AM">09:00 AM â€“ 11:00 AM</option>
+              <option value="11:00 AM - 01:00 PM">11:00 AM â€“ 01:00 PM</option>
+              <option value="01:00 PM - 03:00 PM">01:00 PM â€“ 03:00 PM</option>
+              <option value="03:00 PM - 05:00 PM">03:00 PM â€“ 05:00 PM</option>
+              <option value="05:00 PM - 07:00 PM">05:00 PM â€“ 07:00 PM</option>
             </select>
           </div>
         </div>
@@ -789,7 +1293,7 @@
             <label class="form-label fw-semibold">Discount Type</label>
             <select class="form-select" id="offer-type">
               <option value="Percentage">Percentage (%)</option>
-              <option value="FixedAmount">Fixed Amount (₹)</option>
+              <option value="FixedAmount">Fixed Amount (â‚¹)</option>
             </select>
           </div>
           <div class="col-6">
@@ -846,7 +1350,7 @@
             <label class="form-label fw-semibold">Discount Type</label>
             <select class="form-select" id="edit-offer-type">
               <option value="Percentage">Percentage (%)</option>
-              <option value="FixedAmount">Fixed Amount (₹)</option>
+              <option value="FixedAmount">Fixed Amount (â‚¹)</option>
             </select>
           </div>
           <div class="col-6">
@@ -895,13 +1399,13 @@
         </div>
         <div class="mb-3">
           <label class="form-label fw-semibold">Description</label>
-          <input type="text" class="form-control" id="coupon-desc" placeholder="Flat ₹250 discount on booking">
+          <input type="text" class="form-control" id="coupon-desc" placeholder="Flat â‚¹250 discount on booking">
         </div>
         <div class="row g-2 mb-3">
           <div class="col-6">
             <label class="form-label fw-semibold">Discount Type</label>
             <select class="form-select" id="coupon-type">
-              <option value="FixedAmount">Fixed Amount (₹)</option>
+              <option value="FixedAmount">Fixed Amount (â‚¹)</option>
               <option value="Percentage">Percentage (%)</option>
             </select>
           </div>
@@ -912,11 +1416,11 @@
         </div>
         <div class="row g-2 mb-3">
           <div class="col-6">
-            <label class="form-label fw-semibold">Min Order (₹)</label>
+            <label class="form-label fw-semibold">Min Order (â‚¹)</label>
             <input type="number" class="form-control" id="coupon-min-order" value="500">
           </div>
           <div class="col-6">
-            <label class="form-label fw-semibold">Max Discount (₹)</label>
+            <label class="form-label fw-semibold">Max Discount (â‚¹)</label>
             <input type="number" class="form-control" id="coupon-max-disc" value="500">
           </div>
         </div>
@@ -944,13 +1448,13 @@
         </div>
         <div class="mb-3">
           <label class="form-label fw-semibold">Description</label>
-          <input type="text" class="form-control" id="edit-coupon-desc" placeholder="Flat ₹250 discount on booking">
+          <input type="text" class="form-control" id="edit-coupon-desc" placeholder="Flat â‚¹250 discount on booking">
         </div>
         <div class="row g-2 mb-3">
           <div class="col-6">
             <label class="form-label fw-semibold">Discount Type</label>
             <select class="form-select" id="edit-coupon-type">
-              <option value="FixedAmount">Fixed Amount (₹)</option>
+              <option value="FixedAmount">Fixed Amount (â‚¹)</option>
               <option value="Percentage">Percentage (%)</option>
             </select>
           </div>
@@ -961,11 +1465,11 @@
         </div>
         <div class="row g-2 mb-3">
           <div class="col-6">
-            <label class="form-label fw-semibold">Min Order (₹)</label>
+            <label class="form-label fw-semibold">Min Order (â‚¹)</label>
             <input type="number" class="form-control" id="edit-coupon-min-order" value="500">
           </div>
           <div class="col-6">
-            <label class="form-label fw-semibold">Max Discount (₹)</label>
+            <label class="form-label fw-semibold">Max Discount (â‚¹)</label>
             <input type="number" class="form-control" id="edit-coupon-max-disc" value="500">
           </div>
         </div>
@@ -1213,6 +1717,135 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Professional GST Tax Invoice Viewer & Print
+     ============================================================ -->
+<div class="modal fade" id="modalViewInvoice" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:var(--radius-xl);">
+      <div class="modal-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="modal-title fw-bold text-dark"><i class="bi bi-receipt-cutoff text-primary me-2"></i>Official GST Tax Invoice</h5>
+        <div class="d-flex gap-2 align-items-center">
+          <button class="btn btn-sm btn-outline-primary" id="btn-print-invoice" onclick="window.print();"><i class="bi bi-printer me-1"></i>Print / PDF</button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+      </div>
+      <div class="modal-body p-4" id="invoice-printable-area">
+        <!-- Invoice Header -->
+        <div class="border-bottom pb-3 mb-3 d-flex justify-content-between align-items-start flex-wrap gap-2">
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="fs-4 fw-black text-primary" style="letter-spacing:-0.5px;">SevaSetu<span class="text-warning">Hub</span></span>
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 small fw-semibold">TAX INVOICE</span>
+            </div>
+            <p class="text-muted small mb-0" id="inv-modal-supplier-legal">SevaSetuHub Multi-Services Private Limited</p>
+            <p class="text-muted small mb-0" id="inv-modal-supplier-addr">Shop No. 12, Commerce Plaza, Station Road, Kolhapur, Maharashtra - 416001</p>
+            <p class="text-dark small mb-0 fw-semibold">GSTIN: <span class="font-monospace text-primary" id="inv-modal-supplier-gstin">27AABCS1429B1Z5</span> | State: <span id="inv-modal-supplier-state">27 - Maharashtra</span></p>
+          </div>
+          <div class="text-end">
+            <div class="font-monospace fw-bold fs-6 text-dark" id="inv-modal-number">SSH/26-27/1049</div>
+            <div class="text-muted small">Date: <span class="fw-semibold text-dark" id="inv-modal-date">2026-08-30</span></div>
+            <div class="text-muted small">Due Date: <span class="fw-semibold text-dark" id="inv-modal-due-date">2026-09-06</span></div>
+            <div class="mt-1"><span class="badge bg-success" id="inv-modal-status-badge">PAID</span></div>
+          </div>
+        </div>
+
+        <!-- Bill To Section -->
+        <div class="row g-3 p-3 bg-light rounded-3 mb-3 border">
+          <div class="col-md-6">
+            <div class="text-muted small fw-bold text-uppercase" style="letter-spacing:0.5px;">Billed To (Customer):</div>
+            <div class="fw-bold text-dark fs-6" id="inv-modal-cust-name">Valued Customer</div>
+            <div class="text-muted small" id="inv-modal-cust-phone"><i class="bi bi-telephone me-1"></i>+91 98901 23456</div>
+            <div class="text-muted small" id="inv-modal-cust-email"><i class="bi bi-envelope me-1"></i>customer@domain.com</div>
+            <div class="text-muted small" id="inv-modal-cust-addr"><i class="bi bi-geo-alt me-1"></i>Kolhapur, Maharashtra</div>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <div class="text-muted small fw-bold text-uppercase" style="letter-spacing:0.5px;">Service & Request Reference:</div>
+            <div class="fw-semibold text-dark" id="inv-modal-service-name">AC Deep Clean & Jet Wash</div>
+            <div class="text-muted small">Service Request: <span class="font-monospace fw-semibold" id="inv-modal-req-id">REQ-104928</span></div>
+            <div class="text-muted small">Primary SAC Code: <span class="font-monospace fw-bold text-primary" id="inv-modal-sac">998714</span></div>
+            <div class="text-muted small">Place of Supply: <span class="fw-semibold" id="inv-modal-place-supply">Maharashtra (27)</span></div>
+          </div>
+        </div>
+
+        <!-- Line Items Table -->
+        <div class="table-responsive mb-3">
+          <table class="table table-bordered align-middle mb-0" style="font-size:0.88rem;">
+            <thead class="table-light">
+              <tr>
+                <th style="width:5%;">#</th>
+                <th style="width:45%;">Item / Service Description</th>
+                <th style="width:15%;" class="text-center">SAC Code</th>
+                <th style="width:15%;" class="text-end">Rate / Subtotal</th>
+                <th style="width:20%;" class="text-end">Taxable Value (â‚¹)</th>
+              </tr>
+            </thead>
+            <tbody id="inv-modal-items-tbody">
+              <tr>
+                <td>1</td>
+                <td>
+                  <div class="fw-bold" id="inv-modal-item-title">Standard Service & Labour</div>
+                  <small class="text-muted">Includes verified technician workmanship & warranty</small>
+                </td>
+                <td class="text-center font-monospace" id="inv-modal-item-sac">998714</td>
+                <td class="text-end" id="inv-modal-item-labour">â‚¹599.00</td>
+                <td class="text-end fw-semibold" id="inv-modal-item-taxable">â‚¹599.00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Tax Breakdown & Grand Total -->
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="p-3 border rounded-3 bg-light h-100">
+              <div class="fw-bold text-dark small mb-1"><i class="bi bi-info-circle me-1"></i> Terms & Conditions:</div>
+              <p class="text-muted small mb-2" id="inv-modal-terms-text" style="font-size:0.75rem;">Payment is due upon completion. 6-Month service warranty on workmanship & parts.</p>
+              <div class="fw-bold text-dark small mb-1"><i class="bi bi-shield-check me-1"></i> Statutory Declaration:</div>
+              <p class="text-muted small mb-0" id="inv-modal-declaration-text" style="font-size:0.72rem;">We declare that this invoice shows the actual price of services described and all particulars are true and correct.</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-3 border rounded-3 bg-white shadow-sm">
+              <div class="d-flex justify-content-between text-muted small mb-1">
+                <span>Taxable Amount:</span>
+                <span class="fw-semibold text-dark" id="inv-modal-calc-taxable">â‚¹599.00</span>
+              </div>
+              <div class="d-flex justify-content-between text-muted small mb-1" id="inv-modal-row-cgst">
+                <span id="inv-modal-lbl-cgst">CGST (9.0%):</span>
+                <span class="fw-semibold text-dark" id="inv-modal-calc-cgst">â‚¹53.91</span>
+              </div>
+              <div class="d-flex justify-content-between text-muted small mb-1" id="inv-modal-row-sgst">
+                <span id="inv-modal-lbl-sgst">SGST (9.0%):</span>
+                <span class="fw-semibold text-dark" id="inv-modal-calc-sgst">â‚¹53.91</span>
+              </div>
+              <div class="d-flex justify-content-between text-muted small mb-1 d-none" id="inv-modal-row-igst">
+                <span id="inv-modal-lbl-igst">IGST (18.0%):</span>
+                <span class="fw-semibold text-dark" id="inv-modal-calc-igst">â‚¹107.82</span>
+              </div>
+              <div class="d-flex justify-content-between text-muted small mb-2 pt-2 border-top">
+                <span class="fw-semibold text-dark">Total GST Tax:</span>
+                <span class="fw-bold text-success" id="inv-modal-calc-tax">â‚¹107.82</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                <strong class="text-dark fs-6">Grand Total:</strong>
+                <strong class="text-primary fs-5" id="inv-modal-calc-grand">â‚¹707.00</strong>
+              </div>
+              <div class="mt-3 pt-2 border-top text-end">
+                <div class="small text-muted font-monospace" style="font-size:0.72rem;">Authorized Signatory</div>
+                <div class="fw-bold text-dark" style="font-size:0.85rem;">SevaSetuHub Finance Desk</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>

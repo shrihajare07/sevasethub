@@ -45,6 +45,7 @@ $(document).ready(function() {
     if (target === 'offers') loadAdminOffers();
     if (target === 'coupons') loadAdminCoupons();
     if (target === 'invoices') loadAdminInvoices();
+    if (target === 'gst') { loadGSTConfiguration(); loadGSTHistory(); }
     if (target === 'audit') loadAuditLogs();
   });
 
@@ -315,7 +316,13 @@ $(document).ready(function() {
         const srvName = $(this).data('service');
 
         $('#est-modal-req-id').val(reqId);
-        $('#est-modal-customer-info').text(`${custName} - ${srvName} (#${reqId})`);
+        $('#est-modal-customer-info').html(`<strong>${custName}</strong> &bull; ${srvName} <span class="badge bg-light text-primary border font-monospace ms-1">#${reqId}</span>`);
+        
+        // Default validity: 7 days ahead
+        const validDate = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+        $('#est-modal-validity').val(validDate);
+
+        updateEstimateLiveCalculation();
         const modal = new bootstrap.Modal(document.getElementById('modalCreateEstimate'));
         modal.show();
       });
@@ -334,12 +341,52 @@ $(document).ready(function() {
     }
   }
 
+  // Live Estimate Tax Breakdown Updater
+  function updateEstimateLiveCalculation() {
+    const labour = Number($('#est-modal-labour').val()) || 0;
+    const material = Number($('#est-modal-material').val()) || 0;
+    const discount = Number($('#est-modal-discount').val()) || 0;
+    const subtotal = Math.max(0, labour + material - discount);
+
+    const breakdown = api.calculateBillGST ? api.calculateBillGST(subtotal) : {
+      taxableAmount: subtotal,
+      cgstRate: 9,
+      cgstAmount: Math.round(subtotal * 0.09 * 100) / 100,
+      sgstRate: 9,
+      sgstAmount: Math.round(subtotal * 0.09 * 100) / 100,
+      igstRate: 0,
+      igstAmount: 0,
+      taxTotal: Math.round(subtotal * 0.18 * 100) / 100,
+      grandTotal: Math.round(subtotal * 1.18)
+    };
+
+    $('#est-preview-subtotal').text(`₹${subtotal.toFixed(2)}`);
+    if (breakdown.cgstRate > 0) {
+      $('#est-preview-cgst-row, #est-preview-sgst-row').removeClass('d-none');
+      $('#est-preview-igst-row').addClass('d-none');
+      $('#est-preview-cgst-label').text(`CGST (${breakdown.cgstRate}%):`);
+      $('#est-preview-cgst-val').text(`₹${breakdown.cgstAmount.toFixed(2)}`);
+      $('#est-preview-sgst-label').text(`SGST (${breakdown.sgstRate}%):`);
+      $('#est-preview-sgst-val').text(`₹${breakdown.sgstAmount.toFixed(2)}`);
+    } else {
+      $('#est-preview-cgst-row, #est-preview-sgst-row').addClass('d-none');
+      $('#est-preview-igst-row').removeClass('d-none');
+      $('#est-preview-igst-label').text(`IGST (${breakdown.igstRate}%):`);
+      $('#est-preview-igst-val').text(`₹${breakdown.igstAmount.toFixed(2)}`);
+    }
+    $('#est-preview-grand-total').text(`₹${breakdown.grandTotal.toFixed(2)}`);
+  }
+
+  // Bind live estimate input changes
+  $('#est-modal-labour, #est-modal-material, #est-modal-discount').on('input change', updateEstimateLiveCalculation);
+
   // Submit Estimate
   $('#btn-save-estimate').on('click', async function() {
     const reqId = $('#est-modal-req-id').val();
     const labour = Number($('#est-modal-labour').val()) || 0;
     const material = Number($('#est-modal-material').val()) || 0;
     const discount = Number($('#est-modal-discount').val()) || 0;
+    const validityDate = $('#est-modal-validity').val();
     const notes = $('#est-modal-notes').val();
 
     SevaButton.setLoading(this, true, 'Generating & Sending...');
@@ -350,10 +397,11 @@ $(document).ready(function() {
         labourAmount: labour,
         materialAmount: material,
         discountAmount: discount,
+        validityDate: validityDate,
         notes: notes
       });
 
-      showToast(`Estimate #${res.EstimateNumber} generated for ₹${res.GrandTotal} and sent to customer.`, 'success', 'Estimate Sent');
+      showToast(`GST Estimate #${res.EstimateNumber} generated for ₹${res.GrandTotal} (Tax: ₹${res.TaxAmount}) and sent to customer.`, 'success', 'Estimate Sent');
       bootstrap.Modal.getInstance(document.getElementById('modalCreateEstimate')).hide();
       loadAdminRequests();
     } catch (err) {
@@ -1632,11 +1680,11 @@ $(document).ready(function() {
   });
 
   /**
-   * Load Invoices Ledger
+   * Load Invoices Ledger with Detailed GST Breakdown & Viewer
    */
   async function loadAdminInvoices() {
     const $tbody = $('#table-admin-invoices tbody');
-    $tbody.html(getTableLoaderHtml(6, 'Fetching customer invoices ledger...'));
+    $tbody.html(getTableLoaderHtml(9, 'Fetching customer invoices & tax ledger...'));
     startLoader();
 
     try {
@@ -1644,28 +1692,429 @@ $(document).ready(function() {
       $tbody.empty();
 
       if (!invoices || invoices.length === 0) {
-        $tbody.html('<tr><td colspan="6" class="text-center py-5 text-muted"><i class="bi bi-receipt text-muted fs-3 d-block mb-1"></i>No invoices recorded yet.</td></tr>');
+        $tbody.html('<tr><td colspan="9" class="text-center py-5 text-muted"><i class="bi bi-receipt text-muted fs-3 d-block mb-1"></i>No invoices recorded yet.</td></tr>');
         return;
       }
 
       invoices.forEach(i => {
-        $tbody.append(`
+        const taxable = Number(i.TaxableTotal || i.LabourTotal || (Number(i.GrandTotal) / 1.18)) || 0;
+        const taxTotal = Number(i.TaxTotal) || Math.round(Number(i.GrandTotal || 0) - taxable);
+        const grandTotal = Number(i.GrandTotal) || (taxable + taxTotal);
+        const sac = i.SACCode || '998714';
+        const isPaid = (i.PaymentStatus || '').toLowerCase() === 'paid';
+
+        const row = `
           <tr>
-            <td><strong>#${i.InvoiceNumber}</strong></td>
-            <td>${i.customerName || 'Customer'}</td>
-            <td>${i.serviceName || 'Service'}</td>
-            <td><strong>₹${i.GrandTotal}</strong></td>
-            <td><span class="badge ${i.PaymentStatus === 'Paid' ? 'bg-success' : 'bg-warning text-dark'}">${i.PaymentStatus}</span></td>
-            <td>${i.CreatedAt}</td>
+            <td>
+              <strong class="text-primary font-monospace">#${i.InvoiceNumber}</strong>
+              <small class="d-block text-muted" style="font-size:0.7rem;">SAC: ${sac}</small>
+            </td>
+            <td>
+              <strong class="d-block text-dark">${i.customerName || 'Customer'}</strong>
+              <small class="text-muted"><i class="bi bi-telephone me-1"></i>${i.customerMobile || '9890123456'}</small>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border">${i.serviceName || 'Service Order'}</span>
+              <small class="d-block text-muted" style="font-size:0.7rem;">Req: ${i.RequestId || 'N/A'}</small>
+            </td>
+            <td>
+              <span class="text-dark fw-semibold">₹${taxable.toFixed(2)}</span>
+            </td>
+            <td>
+              <span class="text-success fw-bold">₹${taxTotal.toFixed(2)}</span>
+              <small class="d-block text-muted" style="font-size:0.7rem;">${i.TaxMode || 'GST 18%'}</small>
+            </td>
+            <td>
+              <strong class="text-dark fs-6">₹${grandTotal.toFixed(2)}</strong>
+            </td>
+            <td>
+              <span class="badge ${isPaid ? 'bg-success' : 'bg-warning text-dark'}">${i.PaymentStatus || 'Pending'}</span>
+            </td>
+            <td>
+              <small class="text-muted">${i.CreatedAt || '2026-08-30'}</small>
+            </td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-primary btn-view-invoice px-2 py-1" data-id="${i.InvoiceId || i.InvoiceNumber}" title="View & Print GST Invoice">
+                <i class="bi bi-receipt me-1"></i> View / Print
+              </button>
+            </td>
           </tr>
-        `);
+        `;
+        $tbody.append(row);
       });
+
+      // Bind View Invoice Click
+      $('.btn-view-invoice').off('click').on('click', function(e) {
+        e.preventDefault();
+        const invId = String($(this).data('id'));
+        const inv = invoices.find(item => String(item.InvoiceId) === invId || String(item.InvoiceNumber) === invId);
+        if (inv) {
+          openTaxInvoiceModal(inv);
+        }
+      });
+
     } catch (err) {
-      $tbody.html(`<tr><td colspan="6" class="text-center py-4 text-danger"><i class="bi bi-exclamation-triangle me-1"></i> Error: ${err.message}</td></tr>`);
+      $tbody.html(`<tr><td colspan="9" class="text-center py-4 text-danger"><i class="bi bi-exclamation-triangle me-1"></i> Error: ${err.message}</td></tr>`);
     } finally {
       finishLoader();
     }
   }
+
+  /**
+   * Open Professional GST Tax Invoice Modal
+   */
+  function openTaxInvoiceModal(inv) {
+    const config = api.calculateBillGST ? api.calculateBillGST(100) : {};
+    const taxable = Number(inv.TaxableTotal || inv.LabourTotal || (Number(inv.GrandTotal) / 1.18)) || 0;
+    const taxTotal = Number(inv.TaxTotal) || Math.round(Number(inv.GrandTotal || 0) - taxable);
+    const grandTotal = Number(inv.GrandTotal) || (taxable + taxTotal);
+    const sac = inv.SACCode || config.sacCode || '998714';
+    const gstin = inv.GSTIN || config.gstin || '27AABCS1429B1Z5';
+    const isPaid = (inv.PaymentStatus || '').toLowerCase() === 'paid';
+
+    $('#inv-modal-number').text(inv.InvoiceNumber || 'INV-2026-0001');
+    $('#inv-modal-date').text(String(inv.CreatedAt || new Date().toISOString().slice(0, 10)).slice(0, 10));
+    $('#inv-modal-due-date').text(inv.DueDate || new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10));
+    $('#inv-modal-status-badge').text(isPaid ? 'PAID' : 'PENDING').attr('class', `badge ${isPaid ? 'bg-success' : 'bg-warning text-dark'}`);
+
+    $('#inv-modal-supplier-gstin').text(gstin);
+    $('#inv-modal-cust-name').text(inv.customerName || 'Valued Customer');
+    $('#inv-modal-cust-phone').html(`<i class="bi bi-telephone me-1"></i>+91 ${inv.customerMobile || '9890123456'}`);
+    $('#inv-modal-cust-email').html(`<i class="bi bi-envelope me-1"></i>${inv.customerEmail || 'customer@domain.com'}`);
+    $('#inv-modal-cust-addr').html(`<i class="bi bi-geo-alt me-1"></i>${inv.customerAddress || 'Kolhapur, Maharashtra'}`);
+
+    $('#inv-modal-service-name').text(inv.serviceName || 'Professional On-Demand Service');
+    $('#inv-modal-req-id').text(inv.RequestId || 'REQ-00000');
+    $('#inv-modal-sac').text(sac);
+    $('#inv-modal-item-sac').text(sac);
+    $('#inv-modal-item-title').text(inv.serviceName || 'Verified Repair & Maintenance Service');
+    $('#inv-modal-item-labour').text(`₹${taxable.toFixed(2)}`);
+    $('#inv-modal-item-taxable').text(`₹${taxable.toFixed(2)}`);
+
+    $('#inv-modal-calc-taxable').text(`₹${taxable.toFixed(2)}`);
+    
+    // Tax breakdown
+    const cgst = inv.CGSTAmount !== undefined ? Number(inv.CGSTAmount) : (taxTotal / 2);
+    const sgst = inv.SGSTAmount !== undefined ? Number(inv.SGSTAmount) : (taxTotal / 2);
+    const igst = inv.IGSTAmount !== undefined ? Number(inv.IGSTAmount) : 0;
+
+    if (igst > 0) {
+      $('#inv-modal-row-cgst, #inv-modal-row-sgst').addClass('d-none');
+      $('#inv-modal-row-igst').removeClass('d-none');
+      $('#inv-modal-lbl-igst').text(`IGST (${inv.IGSTRate || 18}%):`);
+      $('#inv-modal-calc-igst').text(`₹${igst.toFixed(2)}`);
+    } else {
+      $('#inv-modal-row-cgst, #inv-modal-row-sgst').removeClass('d-none');
+      $('#inv-modal-row-igst').addClass('d-none');
+      $('#inv-modal-lbl-cgst').text(`CGST (${inv.CGSTRate || 9}%):`);
+      $('#inv-modal-calc-cgst').text(`₹${cgst.toFixed(2)}`);
+      $('#inv-modal-lbl-sgst').text(`SGST (${inv.SGSTRate || 9}%):`);
+      $('#inv-modal-calc-sgst').text(`₹${sgst.toFixed(2)}`);
+    }
+
+    $('#inv-modal-calc-tax').text(`₹${taxTotal.toFixed(2)}`);
+    $('#inv-modal-calc-grand').text(`₹${grandTotal.toFixed(2)}`);
+
+    const modal = new bootstrap.Modal(document.getElementById('modalViewInvoice'));
+    modal.show();
+  }
+
+  /**
+   * Load Active GST Configuration Profile into both View panels and Edit Form
+   */
+  async function loadGSTConfiguration() {
+    startLoader();
+    try {
+      const config = await api.getGSTConfig();
+      if (!config) return;
+
+      const rateNum = Number(config.defaultGstRate) || 18;
+      const isIntra = (config.taxMode || 'Intra-State') === 'Intra-State';
+
+      // ── Update read-only Identity Overview panels ─────────────────────────
+      $('#gst-view-gstin').text(config.gstin || '27AABCS1429B1Z5');
+      $('#gst-view-legal-name').text(config.legalName || 'SevaSetuHub Multi-Services Private Limited');
+      $('#gst-view-trade-name').text(config.tradeName || 'SevaSetuHub');
+      $('#gst-view-state').text(config.state || '27 - Maharashtra');
+      $('#gst-view-address').text(config.registeredAddress || 'Kolhapur, Maharashtra');
+      $('#gst-view-sac').text(config.sacCode || '998714');
+      $('#gst-view-mode').text(config.taxMode || 'Intra-State');
+      $('#gst-view-prefix').text(config.invoicePrefix || 'SSH/26-27/');
+      $('#gst-view-rate-big').text(rateNum + '%');
+      $('#gst-view-breakdown-text').text(
+        isIntra ? `${rateNum/2}% CGST + ${rateNum/2}% SGST` : `${rateNum}% IGST`
+      );
+      $('#gst-last-updated-text').text(String(config.updatedAt || '').slice(0, 10) || '2026-08-30');
+      $('#gst-last-updated-by').text(config.updatedBy || 'Super Admin');
+
+      // ── Active badge in header ─────────────────────────────────────────────
+      const breakdownText = isIntra
+        ? `${rateNum}% (${rateNum/2}% CGST + ${rateNum/2}% SGST)`
+        : `${rateNum}% (IGST Inter-State)`;
+      $('#gst-badge-rate').text(breakdownText);
+
+      // ── Version badge ──────────────────────────────────────────────────────
+      try {
+        const hist = await api.getGSTConfigHistory();
+        if (hist && hist.length > 0) {
+          $('#gst-active-version-pill').text((hist[0].VersionId || 'GST-V1') + ' Active');
+        }
+      } catch(e) {}
+
+      // ── Pre-fill Edit Modal form fields ───────────────────────────────────
+      $('#gst-input-gstin').val((config.gstin || '').toUpperCase());
+      $('#gst-input-legal-name').val(config.legalName || '');
+      $('#gst-input-trade-name').val(config.tradeName || '');
+      $('#gst-input-state').val(config.state || '27 - Maharashtra');
+      $('#gst-input-address').val(config.registeredAddress || '');
+      $('#gst-input-sac').val(config.sacCode || '998714');
+      $('#gst-input-rate').val(String(rateNum));
+      $('#gst-input-tax-mode').val(config.taxMode || 'Intra-State');
+      $('#gst-input-prefix').val(config.invoicePrefix || 'SSH/26-27/');
+      $('#gst-input-inclusive').prop('checked', !!config.isTaxInclusive);
+      $('#gst-input-terms').val(config.invoiceTerms || '');
+      $('#gst-input-declaration').val(config.declaration || '');
+      $('#gst-input-reason').val('');
+      // Set effective date to today by default
+      const today = new Date().toISOString().slice(0, 10);
+      $('#gst-input-effective-date').val(today);
+
+      // ── Update both simulators ─────────────────────────────────────────────
+      updateGSTSimulator();
+      updateModalGSTSimulator();
+    } catch (err) {
+      showToast('Error loading GST Configuration: ' + err.message, 'danger', 'GST Config Error');
+    } finally {
+      finishLoader();
+    }
+  }
+
+  /**
+   * Update Quick Simulator on the GST Overview page
+   */
+  function updateGSTSimulator() {
+    const testAmount = Math.max(0, Number($('#sim-input-taxable').val()) || 0);
+    // Use active config from localStorage for the quick overview simulator
+    const activeCfg = api.calculateBillGST ? api.calculateBillGST(testAmount) : { taxableAmount: testAmount, cgstRate: 9, cgstAmount: testAmount*0.09, sgstRate: 9, sgstAmount: testAmount*0.09, igstRate: 0, igstAmount: 0, taxTotal: testAmount*0.18, grandTotal: testAmount*1.18 };
+    const isIntra = !activeCfg.igstAmount || activeCfg.igstAmount === 0;
+
+    $('#sim-disp-taxable').text(`₹${testAmount.toFixed(2)}`);
+    if (isIntra) {
+      $('#sim-row-cgst, #sim-row-sgst').removeClass('d-none');
+      $('#sim-row-igst').addClass('d-none');
+      $('#sim-lbl-cgst').text(`CGST (${activeCfg.cgstRate}%):`);
+      $('#sim-disp-cgst').text(`₹${Number(activeCfg.cgstAmount).toFixed(2)}`);
+      $('#sim-lbl-sgst').text(`SGST (${activeCfg.sgstRate}%):`);
+      $('#sim-disp-sgst').text(`₹${Number(activeCfg.sgstAmount).toFixed(2)}`);
+    } else {
+      $('#sim-row-cgst, #sim-row-sgst').addClass('d-none');
+      $('#sim-row-igst').removeClass('d-none');
+      $('#sim-lbl-igst').text(`IGST (${activeCfg.igstRate}%):`);
+      $('#sim-disp-igst').text(`₹${Number(activeCfg.igstAmount).toFixed(2)}`);
+    }
+    $('#sim-disp-grand-total').text(`₹${Number(activeCfg.grandTotal).toFixed(2)}`);
+  }
+
+  /**
+   * Update the Edit Modal simulators (uses form's current rate/mode, not stored config)
+   */
+  function updateModalGSTSimulator() {
+    const rate = Number($('#gst-input-rate').val()) || 18;
+    const taxMode = $('#gst-input-tax-mode').val() || 'Intra-State';
+    const isIntra = taxMode === 'Intra-State';
+    const base = 1000; // Inline preview always uses ₹1,000
+    const full = Math.max(0, Number($('#sim-input-taxable-modal').val()) || 0);
+
+    // Inline mini preview (₹1,000 base)
+    if (isIntra) {
+      const c = Math.round(base * rate / 2 / 100); const s = c;
+      $('#modal-preview-cgst').text('₹' + c);
+      $('#modal-preview-sgst').text('₹' + s);
+      $('#modal-preview-tax').text('₹' + (c + s));
+      $('#modal-preview-total').text('₹' + (base + c + s));
+    } else {
+      const ig = Math.round(base * rate / 100);
+      $('#modal-preview-cgst').text('₹0');
+      $('#modal-preview-sgst').text('₹0');
+      $('#modal-preview-tax').text('₹' + ig);
+      $('#modal-preview-total').text('₹' + (base + ig));
+    }
+
+    // Full simulator panel inside modal
+    let cgstAmt = 0, sgstAmt = 0, igstAmt = 0;
+    let cgstRate = 0, sgstRate = 0, igstRate = 0;
+    if (isIntra) {
+      cgstRate = rate / 2; sgstRate = rate / 2;
+      cgstAmt = Math.round(full * cgstRate / 100 * 100) / 100;
+      sgstAmt = Math.round(full * sgstRate / 100 * 100) / 100;
+      $('#modal-sim-row-cgst, #modal-sim-row-sgst').removeClass('d-none');
+      $('#modal-sim-row-igst').addClass('d-none');
+      $('#modal-sim-lbl-cgst').text(`CGST (${cgstRate.toFixed(1)}%):`);
+      $('#modal-sim-disp-cgst').text(`₹${cgstAmt.toFixed(2)}`);
+      $('#modal-sim-lbl-sgst').text(`SGST (${sgstRate.toFixed(1)}%):`);
+      $('#modal-sim-disp-sgst').text(`₹${sgstAmt.toFixed(2)}`);
+    } else {
+      igstRate = rate;
+      igstAmt = Math.round(full * igstRate / 100 * 100) / 100;
+      $('#modal-sim-row-cgst, #modal-sim-row-sgst').addClass('d-none');
+      $('#modal-sim-row-igst').removeClass('d-none');
+      $('#modal-sim-lbl-igst').text(`IGST (${igstRate.toFixed(1)}%):`);
+      $('#modal-sim-disp-igst').text(`₹${igstAmt.toFixed(2)}`);
+    }
+    const totalTax = Math.round((cgstAmt + sgstAmt + igstAmt) * 100) / 100;
+    const grandTotal = Math.round(full + totalTax);
+    $('#modal-sim-disp-taxable').text(`₹${full.toFixed(2)}`);
+    $('#modal-sim-disp-total-tax').text(`₹${totalTax.toFixed(2)}`);
+    $('#modal-sim-disp-grand-total').text(`₹${grandTotal.toFixed(2)}`);
+  }
+
+  /**
+   * Load GST Version History & Audit Trail
+   */
+  async function loadGSTHistory() {
+    const $tbody = $('#table-gst-history tbody');
+    $tbody.html(getTableLoaderHtml(10, 'Fetching GST version history...'));
+
+    try {
+      const history = await api.getGSTConfigHistory();
+      $tbody.empty();
+
+      if (!history || history.length === 0) {
+        $tbody.html('<tr><td colspan="10" class="text-center py-4 text-muted"><i class="bi bi-clock-history fs-4 d-block mb-1"></i>No previous configuration versions recorded yet.</td></tr>');
+        return;
+      }
+
+      history.forEach((h, idx) => {
+        const isLatest = idx === 0;
+        const totalGst = Number(h.DefaultGSTRate || 18);
+        const cgst = Number(h.CGSTRate || totalGst / 2);
+        const sgst = Number(h.SGSTRate || totalGst / 2);
+        const igst = Number(h.IGSTRate || 0);
+        const isIntra = (h.TaxMode || '').toLowerCase().includes('intra') || igst === 0;
+
+        const breakdownPill = isIntra
+          ? `<span class="badge bg-success-subtle text-success border border-success-subtle font-monospace">${cgst}% CGST + ${sgst}% SGST</span>`
+          : `<span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace">${igst}% IGST</span>`;
+
+        $tbody.append(`
+          <tr>
+            <td>
+              <span class="badge ${isLatest ? 'bg-primary' : 'bg-light text-dark border'} font-monospace">
+                ${h.VersionId || ('GST-V' + (history.length - idx))} ${isLatest ? '(Active)' : ''}
+              </span>
+            </td>
+            <td><small class="text-dark fw-semibold">${h.EffectiveFrom || '2026-04-01'}</small></td>
+            <td><span class="font-monospace text-dark fw-bold">${h.GSTIN || '27AABCS1429B1Z5'}</span></td>
+            <td><span class="fw-bold text-primary">${totalGst}%</span></td>
+            <td>${breakdownPill}</td>
+            <td><span class="badge bg-light text-dark border font-monospace">${h.SACCode || '998714'}</span></td>
+            <td><small class="text-muted">${h.TaxMode || 'Intra-State'}</small></td>
+            <td><span class="text-dark small">${h.ChangeReason || 'GST configuration update'}</span></td>
+            <td><small class="text-muted">${h.ChangedBy || 'Super Admin'}</small></td>
+            <td><small class="text-muted"><i class="bi bi-clock me-1"></i>${h.Timestamp || ''}</small></td>
+          </tr>
+        `);
+      });
+    } catch (err) {
+      $tbody.html(`<tr><td colspan="10" class="text-center py-4 text-danger"><i class="bi bi-exclamation-triangle me-1"></i> Error loading GST history: ${err.message}</td></tr>`);
+    }
+  }
+
+  // Initialize GST Config module listeners
+  function initGSTModule() {
+    // Quick simulator on overview page
+    $('#sim-input-taxable').on('input change', updateGSTSimulator);
+
+    // Edit modal simulators — respond to rate/mode/amount changes
+    $('#gst-input-rate, #gst-input-tax-mode').on('change', updateModalGSTSimulator);
+    $('#sim-input-taxable-modal').on('input change', updateModalGSTSimulator);
+
+    // "Edit Configuration" button opens modal pre-filled
+    $('#btn-edit-gst-config').on('click', function() {
+      updateModalGSTSimulator();
+      const gstModal = new bootstrap.Modal(document.getElementById('modalEditGSTConfig'));
+      gstModal.show();
+    });
+
+    $('#btn-refresh-gst-history').on('click', function(e) {
+      e.preventDefault();
+      loadGSTHistory();
+    });
+
+    $('#btn-save-gst-config').on('click', async function(e) {
+      e.preventDefault();
+      const $btn = $(this);
+      const gstin = $('#gst-input-gstin').val().trim().toUpperCase();
+      const legalName = $('#gst-input-legal-name').val().trim();
+      const tradeName = $('#gst-input-trade-name').val().trim();
+      const state = $('#gst-input-state').val();
+      const address = $('#gst-input-address').val().trim();
+      const sac = $('#gst-input-sac').val().trim();
+      const rate = Number($('#gst-input-rate').val()) || 18;
+      const taxMode = $('#gst-input-tax-mode').val();
+      const prefix = $('#gst-input-prefix').val().trim();
+      const isInclusive = $('#gst-input-inclusive').is(':checked');
+      const terms = $('#gst-input-terms').val().trim();
+      const declaration = $('#gst-input-declaration').val().trim();
+      const reason = $('#gst-input-reason').val().trim();
+
+      if (!gstin || gstin.length !== 15) {
+        showToast('Please enter a valid 15-digit Indian GSTIN (e.g. 27AABCS1429B1Z5).', 'warning', 'Invalid GSTIN');
+        $('#gst-input-gstin').focus();
+        return;
+      }
+      if (!legalName) {
+        showToast('Legal Entity Name is mandatory for GST invoices.', 'warning', 'Required Field');
+        $('#gst-input-legal-name').focus();
+        return;
+      }
+      if (!reason) {
+        showToast('Please provide a brief reason for this configuration update for audit compliance.', 'warning', 'Reason Required');
+        $('#gst-input-reason').focus();
+        return;
+      }
+
+      SevaButton.setLoading($btn, true, 'Saving GST Configuration...');
+
+      try {
+        const payload = {
+          gstin,
+          legalName,
+          tradeName,
+          state,
+          stateCode: String(state).slice(0, 2),
+          registeredAddress: address,
+          sacCode: sac,
+          defaultGstRate: rate,
+          taxMode,
+          invoicePrefix: prefix,
+          isTaxInclusive: isInclusive,
+          invoiceTerms: terms,
+          declaration,
+          changeReason: reason,
+          effectiveFrom: new Date().toISOString().slice(0, 10)
+        };
+
+        await api.saveGSTConfig(payload);
+        showToast(`✅ GST Configuration deployed! Active rate: ${rate}% (${taxMode}).`, 'success', 'GST Profile Deployed');
+
+        // Close modal
+        const gstModal = bootstrap.Modal.getInstance(document.getElementById('modalEditGSTConfig'));
+        if (gstModal) gstModal.hide();
+
+        $('#gst-input-reason').val('');
+        await loadGSTConfiguration();
+        await loadGSTHistory();
+      } catch (err) {
+        showToast('Failed to save GST Configuration: ' + err.message, 'danger', 'Configuration Error');
+      } finally {
+        SevaButton.setLoading($btn, false);
+      }
+    });
+  }
+
+  // Initialize GST Module bindings
+  initGSTModule();
 
   /**
    * Load Audit Logs (Real-time)

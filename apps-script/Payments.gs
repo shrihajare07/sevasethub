@@ -18,8 +18,10 @@ const PaymentsModule = {
     const materialTotal = est ? Number(est.MaterialAmount) : 0;
     const discountTotal = (est ? Number(est.DiscountAmount) : 0) + (req ? Number(req.CouponDiscount || 0) : 0);
     const subtotal = Math.max(0, labourTotal + materialTotal - discountTotal);
-    const taxTotal = Math.round(subtotal * 0.18);
-    const grandTotal = subtotal + taxTotal;
+    
+    const gstCalc = SettingsModule.calculateTax(subtotal, tenantId, req ? (req.City || '') : '');
+    const taxTotal = gstCalc.taxTotal;
+    const grandTotal = gstCalc.grandTotal;
 
     const invoiceObj = {
       InvoiceId: invoiceId,
@@ -30,9 +32,19 @@ const PaymentsModule = {
       CustomerId: customerId,
       LabourTotal: labourTotal,
       MaterialTotal: materialTotal,
+      TaxableTotal: subtotal,
+      GSTRate: gstCalc.gstRate,
+      CGSTRate: gstCalc.cgstRate,
+      CGSTAmount: gstCalc.cgstAmount,
+      SGSTRate: gstCalc.sgstRate,
+      SGSTAmount: gstCalc.sgstAmount,
+      IGSTRate: gstCalc.igstRate,
+      IGSTAmount: gstCalc.igstAmount,
       TaxTotal: taxTotal,
       DiscountTotal: discountTotal,
       GrandTotal: grandTotal,
+      SACCode: gstCalc.sacCode,
+      GSTIN: gstCalc.gstin,
       PaymentStatus: 'Pending', // Pending, Paid, Partially Paid, Refunded
       DueDate: Utilities.formatDate(new Date(Date.now() + 3 * 86400000), CONFIG.TIMEZONE, 'yyyy-MM-dd'),
       CreatedAt: Utils.nowFormatted()

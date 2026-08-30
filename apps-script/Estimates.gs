@@ -24,15 +24,17 @@ const EstimatesModule = {
     const discount = Number(payload.discountAmount) || 0;
     const couponDiscount = Number(req.CouponDiscount) || 0;
     const subtotal = Math.max(0, labour + material - discount - couponDiscount);
-    const taxRate = 0.18; // 18% GST standard
-    const tax = Math.round(subtotal * taxRate);
-    const grandTotal = subtotal + tax;
+    const tenantId = req.TenantId || session.tenantId;
+
+    const gstCalc = SettingsModule.calculateTax(subtotal, tenantId, req.City || '');
+    const tax = gstCalc.taxTotal;
+    const grandTotal = gstCalc.grandTotal;
 
     const validity = payload.validityDate || Utilities.formatDate(new Date(Date.now() + 7 * 86400000), CONFIG.TIMEZONE, 'yyyy-MM-dd');
 
     const estimateObj = {
       EstimateId: estimateId,
-      TenantId: req.TenantId || session.tenantId,
+      TenantId: tenantId,
       RequestId: requestId,
       CustomerId: req.CustomerId,
       EstimateNumber: estimateNumber,
@@ -40,8 +42,18 @@ const EstimatesModule = {
       MaterialAmount: material,
       DiscountAmount: discount,
       CouponDiscount: couponDiscount,
+      TaxableAmount: subtotal,
+      GSTRate: gstCalc.gstRate,
+      CGSTRate: gstCalc.cgstRate,
+      CGSTAmount: gstCalc.cgstAmount,
+      SGSTRate: gstCalc.sgstRate,
+      SGSTAmount: gstCalc.sgstAmount,
+      IGSTRate: gstCalc.igstRate,
+      IGSTAmount: gstCalc.igstAmount,
       TaxAmount: tax,
       GrandTotal: grandTotal,
+      SACCode: gstCalc.sacCode,
+      GSTIN: gstCalc.gstin,
       ValidityDate: validity,
       Notes: payload.notes || 'Includes standard manufacturer warranty for replaced parts.',
       Status: 'Pending', // Pending, Approved, Rejected

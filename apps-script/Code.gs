@@ -58,7 +58,9 @@ const SHEETS = {
   AMC: 'AMC',
   EQUIPMENT: 'Equipment',
   AUDIT_LOGS: 'AuditLogs',
-  SETTINGS: 'Settings'
+  SETTINGS: 'Settings',
+  GST_CONFIG: 'GSTConfig',
+  GST_HISTORY: 'GSTHistory'
 };
 
 // ----------------------------------------------------------------------------
@@ -150,6 +152,14 @@ function doGet(e) {
 
       case 'getServiceHistory':
         responseData = WorkOrdersModule.getServiceHistory(params);
+        break;
+
+      case 'getGSTConfig':
+        responseData = SettingsModule.getGSTConfig(params);
+        break;
+
+      case 'getGSTConfigHistory':
+        responseData = SettingsModule.getGSTConfigHistory(params);
         break;
 
       default:
@@ -347,6 +357,11 @@ function doPost(e) {
       // Notifications
       case 'markNotificationRead':
         responseData = NotificationsModule.markAsRead(payload.notificationId, payload.token);
+        break;
+
+      // Settings & GST Tax Config
+      case 'saveGSTConfig':
+        responseData = SettingsModule.saveGSTConfig(payload);
         break;
 
       // Database Setup

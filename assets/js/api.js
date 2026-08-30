@@ -191,6 +191,88 @@ const api = (function () {
     } catch (e) { /* silent */ }
   }
 
+  // --------------------------------------------------------------------------
+  // GST Tax Profile & Dynamic Calculation Engine
+  // --------------------------------------------------------------------------
+  const DEFAULT_GST_CONFIG = {
+    gstin: '27AABCS1429B1Z5',
+    legalName: 'SevaSetuHub Multi-Services Private Limited',
+    tradeName: 'SevaSetuHub',
+    panNumber: 'AABCS1429B',
+    state: '27 - Maharashtra',
+    stateCode: '27',
+    registeredAddress: 'Shop No. 12, Commerce Plaza, Station Road, Kolhapur, Maharashtra - 416001',
+    sacCode: '998714',
+    defaultGstRate: 18,
+    cgstRate: 9,
+    sgstRate: 9,
+    igstRate: 18,
+    taxMode: 'Intra-State', // Intra-State / Inter-State / Auto
+    isTaxInclusive: false,
+    invoicePrefix: 'SSH/26-27/',
+    invoiceTerms: 'Payment due upon service completion. All repairs carry a 6-month warranty on workmanship & parts.',
+    declaration: 'We declare that this invoice shows the actual price of services described and all particulars are true and correct.',
+    reverseCharge: 'No',
+    updatedBy: 'Super Admin',
+    updatedAt: '2026-08-30 12:00:00'
+  };
+
+  function getLocalGSTConfig() {
+    try {
+      const cfg = localStorage.getItem('ssh_gst_config');
+      if (cfg) return JSON.parse(cfg);
+    } catch (e) {}
+    localStorage.setItem('ssh_gst_config', JSON.stringify(DEFAULT_GST_CONFIG));
+    return DEFAULT_GST_CONFIG;
+  }
+
+  function calculateTaxBreakdown(taxableAmount, overrideState) {
+    const config = getLocalGSTConfig();
+    const amount = Math.max(0, Number(taxableAmount) || 0);
+    const rate = Number(config.defaultGstRate) || 18;
+
+    let isIntra = config.taxMode === 'Intra-State';
+    if (config.taxMode === 'Auto' && overrideState) {
+      isIntra = String(overrideState).includes(config.stateCode) || String(overrideState).toLowerCase().includes('maharashtra');
+    }
+
+    let cgstRate = 0, cgstAmount = 0;
+    let sgstRate = 0, sgstAmount = 0;
+    let igstRate = 0, igstAmount = 0;
+
+    if (isIntra) {
+      cgstRate = rate / 2;
+      sgstRate = rate / 2;
+      cgstAmount = Math.round(amount * (cgstRate / 100) * 100) / 100;
+      sgstAmount = Math.round(amount * (sgstRate / 100) * 100) / 100;
+    } else {
+      igstRate = rate;
+      igstAmount = Math.round(amount * (igstRate / 100) * 100) / 100;
+    }
+
+    const taxTotal = Math.round((cgstAmount + sgstAmount + igstAmount) * 100) / 100;
+    const grandTotal = Math.round(amount + taxTotal);
+
+    return {
+      taxableAmount: amount,
+      gstRate: rate,
+      cgstRate: cgstRate,
+      cgstAmount: cgstAmount,
+      sgstRate: sgstRate,
+      sgstAmount: sgstAmount,
+      igstRate: igstRate,
+      igstAmount: igstAmount,
+      taxTotal: taxTotal,
+      grandTotal: grandTotal,
+      sacCode: config.sacCode,
+      gstin: config.gstin,
+      legalName: config.legalName,
+      tradeName: config.tradeName,
+      invoicePrefix: config.invoicePrefix,
+      taxMode: isIntra ? 'Intra-State (CGST + SGST)' : 'Inter-State (IGST)'
+    };
+  }
+
   /**
    * High-Fidelity In-Browser Local Mock Engine for Instant GitHub Pages Execution
    */
@@ -539,27 +621,40 @@ const api = (function () {
         const ests = JSON.parse(localStorage.getItem('ssh_estimates') || '[]');
         const reqs = JSON.parse(localStorage.getItem('ssh_requests') || '[]');
         const estId = 'EST-' + Math.floor(100000 + Math.random() * 900000);
+        const targetReq = reqs.find(r => r.RequestId === payload.requestId) || {};
 
         const labour = Number(payload.labourAmount) || 0;
         const material = Number(payload.materialAmount) || 0;
         const discount = Number(payload.discountAmount) || 0;
         const subtotal = Math.max(0, labour + material - discount);
-        const tax = Math.round(subtotal * 0.18);
-        const grandTotal = subtotal + tax;
+        
+        const taxBreakdown = calculateTaxBreakdown(subtotal, targetReq.City || '');
+        const tax = taxBreakdown.taxTotal;
+        const grandTotal = taxBreakdown.grandTotal;
 
         const newEst = {
           EstimateId: estId,
           TenantId: APP_CONFIG.TENANT_ID,
           RequestId: payload.requestId,
-          EstimateNumber: 'EST-2026-' + Math.floor(1000 + Math.random() * 9000),
+          EstimateNumber: (taxBreakdown.invoicePrefix || 'EST-') + Math.floor(1000 + Math.random() * 9000),
           LabourAmount: labour,
           MaterialAmount: material,
           DiscountAmount: discount,
           CouponDiscount: 0,
+          TaxableAmount: subtotal,
+          GSTRate: taxBreakdown.gstRate,
+          CGSTRate: taxBreakdown.cgstRate,
+          CGSTAmount: taxBreakdown.cgstAmount,
+          SGSTRate: taxBreakdown.sgstRate,
+          SGSTAmount: taxBreakdown.sgstAmount,
+          IGSTRate: taxBreakdown.igstRate,
+          IGSTAmount: taxBreakdown.igstAmount,
           TaxAmount: tax,
           GrandTotal: grandTotal,
+          SACCode: taxBreakdown.sacCode,
+          GSTIN: taxBreakdown.gstin,
           ValidityDate: payload.validityDate || '2026-12-31',
-          Notes: payload.notes || 'Official Service Estimate with 6-month warranty.',
+          Notes: payload.notes || 'Official GST Service Estimate with 6-month warranty.',
           Status: 'Pending',
           CreatedAt: new Date().toLocaleString('en-IN')
         };
@@ -568,13 +663,12 @@ const api = (function () {
         localStorage.setItem('ssh_estimates', JSON.stringify(ests));
 
         // Update Request status
-        const targetReq = reqs.find(r => r.RequestId === payload.requestId);
-        if (targetReq) {
+        if (targetReq.RequestId) {
           targetReq.Status = 'Estimate Sent';
           localStorage.setItem('ssh_requests', JSON.stringify(reqs));
         }
 
-        appendAuditLog('ESTIMATE_CREATED', 'Estimates', `Estimate #${newEst.EstimateNumber} created for ₹${grandTotal} on request ${payload.requestId}.`);
+        appendAuditLog('ESTIMATE_CREATED', 'Estimates', `Estimate #${newEst.EstimateNumber} created for ₹${grandTotal} (Tax: ₹${tax}) on request ${payload.requestId}.`);
         return newEst;
       }
 
@@ -855,7 +949,7 @@ const api = (function () {
           }
         }
 
-        // Generate Report & Invoice
+        // Generate Report & Invoice with dynamic GST calculation
         const repId = 'REP-' + Math.floor(100000 + Math.random() * 900000);
         const invId = 'INV-' + Math.floor(100000 + Math.random() * 900000);
 
@@ -870,13 +964,29 @@ const api = (function () {
         reps.unshift(newRep);
         localStorage.setItem('ssh_reports', JSON.stringify(reps));
 
+        const baseLabor = 999;
+        const taxBreakdown = calculateTaxBreakdown(baseLabor);
         const newInv = {
           InvoiceId: invId,
-          InvoiceNumber: 'INV-2026-' + Math.floor(1000 + Math.random() * 9000),
+          InvoiceNumber: (taxBreakdown.invoicePrefix || 'INV-') + Math.floor(1000 + Math.random() * 9000),
           RequestId: targetWo ? targetWo.RequestId : '',
           WorkOrderId: payload.workOrderId,
           CustomerId: targetWo ? targetWo.CustomerId : 'CUS-001',
-          GrandTotal: 1179,
+          LabourTotal: baseLabor,
+          MaterialTotal: 0,
+          DiscountTotal: 0,
+          TaxableTotal: baseLabor,
+          GSTRate: taxBreakdown.gstRate,
+          CGSTRate: taxBreakdown.cgstRate,
+          CGSTAmount: taxBreakdown.cgstAmount,
+          SGSTRate: taxBreakdown.sgstRate,
+          SGSTAmount: taxBreakdown.sgstAmount,
+          IGSTRate: taxBreakdown.igstRate,
+          IGSTAmount: taxBreakdown.igstAmount,
+          TaxTotal: taxBreakdown.taxTotal,
+          GrandTotal: taxBreakdown.grandTotal,
+          SACCode: taxBreakdown.sacCode,
+          GSTIN: taxBreakdown.gstin,
           PaymentStatus: 'Pending',
           CreatedAt: new Date().toLocaleString('en-IN')
         };
@@ -900,18 +1010,28 @@ const api = (function () {
               const base = Number(r.BasePrice) || 599;
               const disc = Number(r.CouponDiscount) || 0;
               const sub = Math.max(0, base - disc);
-              const tax = Math.round(sub * 0.18);
+              const taxBreakdown = calculateTaxBreakdown(sub, r.City || '');
               invs.unshift({
                 InvoiceId: 'INV-' + Math.floor(100000 + Math.random() * 900000),
-                InvoiceNumber: 'INV-2026-' + Math.floor(1000 + Math.random() * 9000),
+                InvoiceNumber: (taxBreakdown.invoicePrefix || 'INV-') + Math.floor(1000 + Math.random() * 9000),
                 RequestId: r.RequestId,
                 WorkOrderId: '',
                 CustomerId: r.CustomerId || 'CUS-001',
                 LabourTotal: base,
                 MaterialTotal: 0,
-                TaxTotal: tax,
+                TaxableTotal: sub,
+                GSTRate: taxBreakdown.gstRate,
+                CGSTRate: taxBreakdown.cgstRate,
+                CGSTAmount: taxBreakdown.cgstAmount,
+                SGSTRate: taxBreakdown.sgstRate,
+                SGSTAmount: taxBreakdown.sgstAmount,
+                IGSTRate: taxBreakdown.igstRate,
+                IGSTAmount: taxBreakdown.igstAmount,
+                TaxTotal: taxBreakdown.taxTotal,
                 DiscountTotal: disc,
-                GrandTotal: sub + tax,
+                GrandTotal: taxBreakdown.grandTotal,
+                SACCode: taxBreakdown.sacCode,
+                GSTIN: taxBreakdown.gstin,
                 PaymentStatus: 'Pending',
                 CreatedAt: r.UpdatedAt || new Date().toLocaleString('en-IN')
               });
@@ -1339,6 +1459,72 @@ const api = (function () {
         return { success: true };
       }
 
+      case 'getGSTConfig':
+        return getLocalGSTConfig();
+
+      case 'getGSTConfigHistory': {
+        ensureLocalSeedData();
+        return JSON.parse(localStorage.getItem('ssh_gst_history') || '[]');
+      }
+
+      case 'saveGSTConfig': {
+        const current = getLocalGSTConfig();
+        const rate = Number(payload.defaultGstRate) || 18;
+        const isIntra = (payload.taxMode || current.taxMode) === 'Intra-State';
+        const user = getStoredUser();
+
+        const updated = {
+          gstin: (payload.gstin || current.gstin || '').toUpperCase().trim(),
+          legalName: payload.legalName || current.legalName,
+          tradeName: payload.tradeName || current.tradeName,
+          panNumber: (payload.panNumber || (payload.gstin ? payload.gstin.slice(2, 12) : current.panNumber)).toUpperCase(),
+          state: payload.state || current.state,
+          stateCode: payload.stateCode || (payload.state ? String(payload.state).slice(0, 2) : '27'),
+          registeredAddress: payload.registeredAddress || current.registeredAddress,
+          sacCode: payload.sacCode || current.sacCode,
+          defaultGstRate: rate,
+          cgstRate: isIntra ? rate / 2 : 0,
+          sgstRate: isIntra ? rate / 2 : 0,
+          igstRate: isIntra ? 0 : rate,
+          taxMode: payload.taxMode || current.taxMode,
+          isTaxInclusive: !!payload.isTaxInclusive,
+          invoicePrefix: payload.invoicePrefix || current.invoicePrefix,
+          invoiceTerms: payload.invoiceTerms || current.invoiceTerms,
+          declaration: payload.declaration || current.declaration,
+          reverseCharge: payload.reverseCharge || 'No',
+          updatedBy: user ? (user.fullName || user.email) : 'Super Admin',
+          updatedAt: new Date().toLocaleString('en-IN')
+        };
+
+        localStorage.setItem('ssh_gst_config', JSON.stringify(updated));
+
+        // Version History
+        const histories = JSON.parse(localStorage.getItem('ssh_gst_history') || '[]');
+        const versionId = 'GST-V' + (histories.length + 1);
+        const historyRecord = {
+          VersionId: versionId,
+          TenantId: APP_CONFIG.TENANT_ID,
+          EffectiveFrom: payload.effectiveFrom || new Date().toISOString().slice(0, 10),
+          GSTIN: updated.gstin,
+          LegalName: updated.legalName,
+          DefaultGSTRate: updated.defaultGstRate,
+          CGSTRate: updated.cgstRate,
+          SGSTRate: updated.sgstRate,
+          IGSTRate: updated.igstRate,
+          SACCode: updated.sacCode,
+          TaxMode: updated.taxMode,
+          IsTaxInclusive: updated.isTaxInclusive ? 'Yes' : 'No',
+          ChangeReason: payload.changeReason || 'Updated GST tax configuration & rates',
+          ChangedBy: updated.updatedBy,
+          Timestamp: new Date().toLocaleString('en-IN')
+        };
+        histories.unshift(historyRecord);
+        localStorage.setItem('ssh_gst_history', JSON.stringify(histories));
+
+        appendAuditLog('GST_CONFIG_UPDATED', 'Settings', `GST Tax Profile updated to ${rate}% (${updated.taxMode}) by ${updated.updatedBy}.`);
+        return { success: true, config: updated, historyRecord: historyRecord };
+      }
+
       default:
         return { success: true };
     }
@@ -1488,6 +1674,31 @@ const api = (function () {
     if (!localStorage.getItem('ssh_requests'))    localStorage.setItem('ssh_requests',    '[]');
     if (!localStorage.getItem('ssh_technicians')) localStorage.setItem('ssh_technicians', '[]');
     if (!localStorage.getItem('ssh_work_orders')) localStorage.setItem('ssh_work_orders', '[]');
+    if (!localStorage.getItem('ssh_gst_config')) {
+      localStorage.setItem('ssh_gst_config', JSON.stringify(DEFAULT_GST_CONFIG));
+    }
+    if (!localStorage.getItem('ssh_gst_history')) {
+      const initialHistory = [
+        {
+          VersionId: 'GST-V1',
+          TenantId: APP_CONFIG.TENANT_ID,
+          EffectiveFrom: '2026-04-01',
+          GSTIN: '27AABCS1429B1Z5',
+          LegalName: 'SevaSetuHub Multi-Services Private Limited',
+          DefaultGSTRate: 18,
+          CGSTRate: 9,
+          SGSTRate: 9,
+          IGSTRate: 18,
+          SACCode: '998714',
+          TaxMode: 'Intra-State',
+          IsTaxInclusive: 'No',
+          ChangeReason: 'Initial GST statutory registration and rate setup (FY 2026-27)',
+          ChangedBy: 'Super Admin (Shri Hajare)',
+          Timestamp: '2026-04-01 09:00:00'
+        }
+      ];
+      localStorage.setItem('ssh_gst_history', JSON.stringify(initialHistory));
+    }
   }
 
   // Public API methods
@@ -1586,6 +1797,10 @@ const api = (function () {
     createCoupon: (payload) => request('createCoupon', 'POST', payload),
     updateCoupon: (payload) => request('updateCoupon', 'POST', payload),
     deleteCoupon: (payload) => request('deleteCoupon', 'POST', payload),
+    getGSTConfig: (params) => request('getGSTConfig', 'GET', params),
+    saveGSTConfig: (payload) => request('saveGSTConfig', 'POST', payload),
+    getGSTConfigHistory: (params) => request('getGSTConfigHistory', 'GET', params),
+    calculateBillGST: (taxableAmount, state) => calculateTaxBreakdown(taxableAmount, state),
     initializeDatabase: () => request('initializeDatabase', 'POST')
   };
 })();
