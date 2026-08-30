@@ -101,7 +101,35 @@ const PaymentsModule = {
     const method = payload.paymentMethod || 'UPI'; // UPI, Card, NetBanking, Cash
     const transactionId = payload.transactionId || 'TXN-' + Utilities.getUuid().substring(0, 8).toUpperCase();
 
-    const inv = Utils.findOne(SHEETS.INVOICES, 'InvoiceId', invoiceId);
+    let inv = Utils.findOne(SHEETS.INVOICES, 'InvoiceId', invoiceId);
+    if (!inv && payload.requestId) {
+      inv = Utils.findOne(SHEETS.INVOICES, 'RequestId', payload.requestId);
+    }
+    if (!inv && payload.requestId) {
+      const req = Utils.findOne(SHEETS.SERVICE_REQUESTS, 'RequestId', payload.requestId);
+      if (req) {
+        const base = Number(req.BasePrice || 599);
+        const disc = Number(req.CouponDiscount || 0);
+        const sub = Math.max(0, base - disc);
+        const tax = Math.round(sub * 0.18);
+        inv = {
+          InvoiceId: invoiceId || Utils.generateId('INV'),
+          TenantId: session.tenantId,
+          InvoiceNumber: 'INV-2026-' + Math.floor(1000 + Math.random() * 9000),
+          RequestId: req.RequestId,
+          WorkOrderId: '',
+          CustomerId: req.CustomerId || session.userId,
+          LabourTotal: base,
+          MaterialTotal: 0,
+          DiscountTotal: disc,
+          TaxTotal: tax,
+          GrandTotal: sub + tax,
+          PaymentStatus: 'Paid',
+          CreatedAt: Utils.nowFormatted()
+        };
+        Utils.insertRow(SHEETS.INVOICES, inv);
+      }
+    }
     if (!inv) throw new Error('Invoice not found.');
 
     const paymentId = Utils.generateId('PAY');
@@ -110,7 +138,7 @@ const PaymentsModule = {
     const paymentObj = {
       PaymentId: paymentId,
       TenantId: inv.TenantId,
-      InvoiceId: invoiceId,
+      InvoiceId: inv.InvoiceId,
       CustomerId: inv.CustomerId,
       Amount: amount || inv.GrandTotal,
       PaymentMethod: method,
@@ -123,18 +151,31 @@ const PaymentsModule = {
     Utils.insertRow(SHEETS.PAYMENTS, paymentObj);
 
     // Update Invoice Status
-    Utils.updateRow(SHEETS.INVOICES, 'InvoiceId', invoiceId, {
+    Utils.updateRow(SHEETS.INVOICES, 'InvoiceId', inv.InvoiceId, {
       PaymentStatus: 'Paid'
     });
 
+    if (payload.requestId) {
+      Utils.updateRow(SHEETS.SERVICE_REQUESTS, 'RequestId', payload.requestId, {
+        PaymentStatus: 'Paid'
+      });
+    }
+
     // Notify Customer & Accountant
-    NotificationsModule.createNotification(session.userId, session.tenantId, 'Customer', 'Payment Successful', `Payment of ₹${paymentObj.Amount} for Invoice #${inv.InvoiceNumber} received. Thank you!`, `#/customer/invoices/${invoiceId}`);
+    NotificationsModule.createNotification(session.userId, session.tenantId, 'Customer', 'Payment Successful', `Payment of ₹${paymentObj.Amount} for Invoice #${inv.InvoiceNumber} received. Thank you!`, `#/customer/invoices/${inv.InvoiceId}`);
     NotificationsModule.createRoleNotification(inv.TenantId, 'Accountant', 'Payment Received', `Received ₹${paymentObj.Amount} for Invoice #${inv.InvoiceNumber} via ${method}.`, `#/admin/invoices`);
 
     NotificationsModule.logAudit(session.userId, session.tenantId, 'PAYMENT_RECEIVED', 'Payments', paymentId, `₹${paymentObj.Amount} paid via ${method} (${transactionId})`);
+    
+    inv.PaymentStatus = 'Paid';
+    inv.PaymentMethod = method;
+    inv.TransactionId = transactionId;
+    inv.PaidAt = now;
+
     return {
       success: true,
       payment: paymentObj,
+      invoice: inv,
       message: 'Payment completed successfully. Receipt generated.'
     };
   },

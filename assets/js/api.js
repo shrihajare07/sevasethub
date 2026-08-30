@@ -1074,18 +1074,30 @@ const api = (function () {
           const base = Number(targetReq.BasePrice) || 599;
           const disc = Number(targetReq.CouponDiscount) || 0;
           const sub = Math.max(0, base - disc);
-          const tax = Math.round(sub * 0.18);
+          const taxCalc = calculateTaxBreakdown(sub, targetReq.City || '');
           targetInv = {
             InvoiceId: payload.invoiceId || ('INV-' + Math.floor(100000 + Math.random() * 900000)),
             InvoiceNumber: 'INV-2026-' + Math.floor(1000 + Math.random() * 9000),
             RequestId: targetReq.RequestId,
             WorkOrderId: '',
             CustomerId: targetReq.CustomerId || 'CUS-001',
+            serviceName: targetReq.ServiceName || 'Service Execution',
+            customerName: targetReq.CustomerName || 'Pradeep Patil',
+            customerMobile: targetReq.Mobile || '',
+            address: targetReq.Address || '',
             LabourTotal: base,
             MaterialTotal: 0,
-            TaxTotal: tax,
+            TaxTotal: taxCalc.taxTotal,
             DiscountTotal: disc,
-            GrandTotal: sub + tax,
+            GrandTotal: taxCalc.grandTotal,
+            CGSTRate: taxCalc.cgstRate,
+            CGSTAmount: taxCalc.cgstAmount,
+            SGSTRate: taxCalc.sgstRate,
+            SGSTAmount: taxCalc.sgstAmount,
+            IGSTRate: taxCalc.igstRate,
+            IGSTAmount: taxCalc.igstAmount,
+            SACCode: taxCalc.sacCode,
+            GSTIN: taxCalc.gstin,
             PaymentStatus: 'Pending',
             CreatedAt: targetReq.UpdatedAt || new Date().toLocaleString('en-IN')
           };
@@ -1097,6 +1109,12 @@ const api = (function () {
           targetInv.PaidAt = new Date().toLocaleString('en-IN');
           targetInv.PaymentMethod = payload.paymentMethod || 'UPI';
           targetInv.TransactionId = txnId;
+          if (targetReq) {
+            targetInv.serviceName = targetInv.serviceName || targetReq.ServiceName;
+            targetInv.customerName = targetInv.customerName || targetReq.CustomerName;
+            targetInv.customerMobile = targetInv.customerMobile || targetReq.Mobile;
+            targetInv.address = targetInv.address || targetReq.Address;
+          }
           localStorage.setItem('ssh_invoices', JSON.stringify(invs));
           appendAuditLog('PAYMENT_RECEIVED', 'Payments', `Payment of ₹${targetInv.GrandTotal} received for Invoice #${targetInv.InvoiceNumber} via ${targetInv.PaymentMethod}.`);
         }
@@ -1110,7 +1128,7 @@ const api = (function () {
           PaymentId: 'PAY-' + Date.now(),
           InvoiceId: targetInv ? targetInv.InvoiceId : payload.invoiceId,
           RequestId: targetReq ? targetReq.RequestId : (targetInv ? targetInv.RequestId : payload.requestId),
-          Amount: targetInv ? targetInv.GrandTotal : (Number(payload.amount) || 707),
+          Amount: targetInv ? targetInv.GrandTotal : (Number(payload.amount) || 589),
           PaymentMethod: payload.paymentMethod || 'UPI',
           TransactionId: txnId,
           Status: 'Successful',
