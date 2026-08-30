@@ -61,6 +61,82 @@ $(document).ready(function() {
   });
 
   /**
+   * Show a modern floating toast notification
+   * @param {string} message - Message text
+   * @param {'success'|'danger'|'info'|'warning'} type - Toast type
+   * @param {string} title - Optional title
+   */
+  function showToast(message, type = 'success', title = '') {
+    let container = document.getElementById('customer-toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'customer-toast-container';
+      container.style.cssText = 'position:fixed;top:1.5rem;right:1.5rem;z-index:99999;display:flex;flex-direction:column;gap:0.75rem;min-width:320px;max-width:420px;pointer-events:none;';
+      document.body.appendChild(container);
+    }
+
+    const typeConfig = {
+      success: { border: '#10b981', icon: '<i class="bi bi-check-circle-fill text-success" style="font-size:1.25rem;"></i>', defaultTitle: 'Success' },
+      danger: { border: '#ef4444', icon: '<i class="bi bi-x-circle-fill text-danger" style="font-size:1.25rem;"></i>', defaultTitle: 'Error' },
+      warning: { border: '#f59e0b', icon: '<i class="bi bi-exclamation-triangle-fill text-warning" style="font-size:1.25rem;"></i>', defaultTitle: 'Notice' },
+      info: { border: '#0284c7', icon: '<i class="bi bi-info-circle-fill text-primary" style="font-size:1.25rem;"></i>', defaultTitle: 'Information' }
+    };
+
+    const cfg = typeConfig[type] || typeConfig.info;
+    const toastEl = document.createElement('div');
+    toastEl.className = 'custom-toastr-card';
+    toastEl.style.cssText = `
+      background: #ffffff;
+      border-left: 5px solid ${cfg.border};
+      border-radius: 10px;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16), 0 2px 6px rgba(15, 23, 42, 0.08);
+      padding: 12px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      pointer-events: auto;
+      transform: translateX(120%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+      opacity: 0;
+    `;
+
+    toastEl.innerHTML = `
+      <div style="flex-shrink:0;margin-top:1px;">${cfg.icon}</div>
+      <div style="flex-grow:1;min-width:0;">
+        <div style="font-weight:700;font-size:0.88rem;color:#0f172a;line-height:1.2;margin-bottom:2px;">${title || cfg.defaultTitle}</div>
+        <div style="font-size:0.85rem;color:#475569;line-height:1.4;word-break:break-word;">${message}</div>
+      </div>
+      <button type="button" class="btn-close" style="font-size:0.75rem;margin-left:4px;flex-shrink:0;opacity:0.6;" aria-label="Close"></button>
+    `;
+
+    container.appendChild(toastEl);
+
+    requestAnimationFrame(() => {
+      toastEl.style.transform = 'translateX(0)';
+      toastEl.style.opacity = '1';
+    });
+
+    function dismissToast() {
+      toastEl.style.transform = 'translateX(120%)';
+      toastEl.style.opacity = '0';
+      setTimeout(() => toastEl.remove(), 300);
+    }
+
+    toastEl.querySelector('.btn-close').addEventListener('click', dismissToast);
+    setTimeout(dismissToast, 4500);
+  }
+
+  // Safety guard against orphaned Bootstrap modal backdrops and body scroll lock
+  $(document).on('hidden.bs.modal', '.modal', function() {
+    setTimeout(() => {
+      if ($('.modal.show').length === 0) {
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css({ 'overflow': '', 'padding-right': '' });
+      }
+    }, 150);
+  });
+
+  /**
    * 1. Load Dashboard Stats & Overview
    */
   async function loadCustomerDashboard() {
@@ -286,10 +362,10 @@ $(document).ready(function() {
         if (targetInv) {
           openReceiptModal(targetInv);
         } else {
-          alert('Invoice receipt not found.');
+          showToast('Invoice receipt not found.', 'warning');
         }
       } catch (e) {
-        alert('Failed to load receipt: ' + e.message);
+        showToast('Failed to load receipt: ' + e.message, 'danger');
       }
     });
   }
@@ -413,22 +489,49 @@ $(document).ready(function() {
           </div>
         `);
 
-        $('.btn-pay-from-modal').on('click', function() {
-          const trackModal = bootstrap.Modal.getInstance(document.getElementById('modalTrackRequest'));
-          if (trackModal) trackModal.hide();
-          openPaymentModal($(this).data('invid'), $(this).data('reqid'), $(this).data('amount'), $(this).data('service'));
+        $('.btn-pay-from-modal').off('click').on('click', function() {
+          const invId = $(this).data('invid');
+          const reqIdVal = $(this).data('reqid');
+          const amount = $(this).data('amount');
+          const service = $(this).data('service');
+          const trackModalEl = document.getElementById('modalTrackRequest');
+          const trackModal = bootstrap.Modal.getInstance(trackModalEl);
+          if (trackModal && trackModalEl.classList.contains('show')) {
+            $(trackModalEl).one('hidden.bs.modal', function() {
+              openPaymentModal(invId, reqIdVal, amount, service);
+            });
+            trackModal.hide();
+          } else {
+            openPaymentModal(invId, reqIdVal, amount, service);
+          }
         });
 
-        $('.btn-view-receipt-modal').on('click', function() {
-          const trackModal = bootstrap.Modal.getInstance(document.getElementById('modalTrackRequest'));
-          if (trackModal) trackModal.hide();
-          openReceiptModal(inv);
+        $('.btn-view-receipt-modal').off('click').on('click', function() {
+          const trackModalEl = document.getElementById('modalTrackRequest');
+          const trackModal = bootstrap.Modal.getInstance(trackModalEl);
+          if (trackModal && trackModalEl.classList.contains('show')) {
+            $(trackModalEl).one('hidden.bs.modal', function() {
+              openReceiptModal(inv);
+            });
+            trackModal.hide();
+          } else {
+            openReceiptModal(inv);
+          }
         });
 
-        $('.btn-rate-service-modal').on('click', function() {
-          const trackModal = bootstrap.Modal.getInstance(document.getElementById('modalTrackRequest'));
-          if (trackModal) trackModal.hide();
-          openFeedbackModal($(this).data('reqid'), $(this).data('service'));
+        $('.btn-rate-service-modal').off('click').on('click', function() {
+          const reqIdVal = $(this).data('reqid');
+          const service = $(this).data('service');
+          const trackModalEl = document.getElementById('modalTrackRequest');
+          const trackModal = bootstrap.Modal.getInstance(trackModalEl);
+          if (trackModal && trackModalEl.classList.contains('show')) {
+            $(trackModalEl).one('hidden.bs.modal', function() {
+              openFeedbackModal(reqIdVal, service);
+            });
+            trackModal.hide();
+          } else {
+            openFeedbackModal(reqIdVal, service);
+          }
         });
       }
 
@@ -458,30 +561,31 @@ $(document).ready(function() {
           `);
         });
 
-        $('.btn-approve-est').on('click', async function() {
+        $('.btn-approve-est').off('click').on('click', async function() {
           const estId = $(this).data('id');
           SevaButton.setLoading(this, true, 'Approving...');
           try {
             await api.approveEstimate({ estimateId: estId });
-            alert('Estimate approved! Technician dispatch scheduled.');
-            viewRequestDetails(reqId);
+            showToast('Estimate approved! Technician dispatch scheduled.', 'success', 'Estimate Approved');
+            await viewRequestDetails(reqId);
             loadCustomerDashboard();
           } catch (err) {
-            alert('Error approving estimate: ' + err.message);
+            showToast('Error approving estimate: ' + err.message, 'danger');
           } finally {
             SevaButton.setLoading(this, false);
           }
         });
 
-        $('.btn-reject-est').on('click', async function() {
+        $('.btn-reject-est').off('click').on('click', async function() {
           const estId = $(this).data('id');
           SevaButton.setLoading(this, true, 'Rejecting...');
           try {
             await api.rejectEstimate({ estimateId: estId });
-            alert('Estimate rejected.');
-            viewRequestDetails(reqId);
+            showToast('Estimate rejected.', 'info', 'Estimate Rejected');
+            await viewRequestDetails(reqId);
+            loadCustomerDashboard();
           } catch (err) {
-            alert('Error rejecting estimate: ' + err.message);
+            showToast('Error rejecting estimate: ' + err.message, 'danger');
           } finally {
             SevaButton.setLoading(this, false);
           }
@@ -495,10 +599,13 @@ $(document).ready(function() {
         }
       }
 
-      const modal = new bootstrap.Modal(document.getElementById('modalTrackRequest'));
-      modal.show();
+      const modalEl = document.getElementById('modalTrackRequest');
+      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      if (!modalEl.classList.contains('show')) {
+        modal.show();
+      }
     } catch (err) {
-      alert('Failed to fetch request details: ' + err.message);
+      showToast('Failed to fetch request details: ' + err.message, 'danger');
     }
   }
 
@@ -532,7 +639,7 @@ $(document).ready(function() {
     // Reset tabs
     $('#tab-upi-btn').tab('show');
 
-    const payModal = new bootstrap.Modal(document.getElementById('modalPayment'));
+    const payModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPayment'));
     payModal.show();
   }
 
@@ -567,9 +674,9 @@ $(document).ready(function() {
         amount: 0 // Pay full
       });
 
-      // Hide payment modal
-      const payModal = bootstrap.Modal.getInstance(document.getElementById('modalPayment'));
-      if (payModal) payModal.hide();
+      // Hide payment modal cleanly
+      const payModalEl = document.getElementById('modalPayment');
+      const payModal = bootstrap.Modal.getInstance(payModalEl);
 
       // Refresh background data across views
       await loadCustomerDashboard();
@@ -583,12 +690,20 @@ $(document).ready(function() {
 
       // Open tax receipt modal
       if (res && res.invoice) {
-        openReceiptModal(res.invoice);
+        if (payModal && payModalEl.classList.contains('show')) {
+          $(payModalEl).one('hidden.bs.modal', function() {
+            openReceiptModal(res.invoice);
+          });
+          payModal.hide();
+        } else {
+          openReceiptModal(res.invoice);
+        }
       } else {
-        alert('Payment Successful! Thank you for choosing SevaSetuHub.');
+        if (payModal) payModal.hide();
+        showToast('Payment Successful! Thank you for choosing SevaSetuHub.', 'success', 'Payment Received');
       }
     } catch (err) {
-      alert('Payment failed: ' + err.message);
+      showToast('Payment failed: ' + err.message, 'danger');
     } finally {
       SevaButton.setLoading($btn, false);
     }
@@ -624,7 +739,7 @@ $(document).ready(function() {
 
     $('#btn-give-feedback-from-receipt').data('reqid', inv.RequestId).data('service', inv.serviceName);
 
-    const receiptModal = new bootstrap.Modal(document.getElementById('modalReceipt'));
+    const receiptModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalReceipt'));
     receiptModal.show();
   }
 
@@ -635,9 +750,18 @@ $(document).ready(function() {
 
   // Give Feedback from Receipt
   $('#btn-give-feedback-from-receipt').on('click', function() {
-    const receiptModal = bootstrap.Modal.getInstance(document.getElementById('modalReceipt'));
-    if (receiptModal) receiptModal.hide();
-    openFeedbackModal($(this).data('reqid'), $(this).data('service'));
+    const receiptModalEl = document.getElementById('modalReceipt');
+    const receiptModal = bootstrap.Modal.getInstance(receiptModalEl);
+    const reqIdVal = $(this).data('reqid');
+    const srvVal = $(this).data('service');
+    if (receiptModal && receiptModalEl.classList.contains('show')) {
+      $(receiptModalEl).one('hidden.bs.modal', function() {
+        openFeedbackModal(reqIdVal, srvVal);
+      });
+      receiptModal.hide();
+    } else {
+      openFeedbackModal(reqIdVal, srvVal);
+    }
   });
 
   /**
@@ -649,7 +773,7 @@ $(document).ready(function() {
     $('#feedback-comments').val('');
     setStarRating(5);
 
-    const feedbackModal = new bootstrap.Modal(document.getElementById('modalFeedback'));
+    const feedbackModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalFeedback'));
     feedbackModal.show();
   }
 
@@ -694,11 +818,11 @@ $(document).ready(function() {
         comments: comments
       });
 
-      alert('Thank you for rating! Your feedback helps us maintain verified service excellence.');
+      showToast('Thank you for rating! Your feedback helps us maintain verified service excellence.', 'success', 'Review Submitted');
       const feedbackModal = bootstrap.Modal.getInstance(document.getElementById('modalFeedback'));
       if (feedbackModal) feedbackModal.hide();
     } catch (e) {
-      alert('Error submitting feedback: ' + e.message);
+      showToast('Error submitting feedback: ' + e.message, 'danger');
     } finally {
       SevaButton.setLoading($btn, false);
     }
@@ -862,7 +986,7 @@ $(document).ready(function() {
   $('#btn-apply-coupon').on('click', async function() {
     const code = $('#wizard-coupon-input').val().trim();
     if (!code) {
-      alert('Please enter a coupon code.');
+      showToast('Please enter a coupon code.', 'warning');
       return;
     }
 
@@ -880,10 +1004,12 @@ $(document).ready(function() {
       activeCoupon = res;
       $('#coupon-status-msg').html(`<span class="text-success"><i class="bi bi-check-circle-fill"></i> ${res.message}</span>`);
       calculateWizardTotal();
+      showToast(res.message || 'Coupon applied successfully!', 'success', 'Coupon Applied');
     } catch (err) {
       activeCoupon = null;
       $('#coupon-status-msg').html(`<span class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> ${err.message}</span>`);
       calculateWizardTotal();
+      showToast(err.message || 'Invalid coupon code.', 'danger', 'Coupon Error');
     } finally {
       SevaButton.setLoading($btn, false);
     }
@@ -903,13 +1029,13 @@ $(document).ready(function() {
     const currentStep = $(this).closest('.wizard-step-pane').data('step');
     if (currentStep === 1) {
       if (!$('#wizard-service').val()) {
-        alert('Please select a service category and specific service.');
+        showToast('Please select a service category and specific service.', 'warning');
         return;
       }
     }
     if (currentStep === 2) {
       if (!$('#wizard-address').val() || !$('#wizard-pincode').val()) {
-        alert('Please provide your service location address and pincode.');
+        showToast('Please provide your service location address and pincode.', 'warning');
         return;
       }
     }
@@ -956,9 +1082,10 @@ $(document).ready(function() {
       };
 
       const result = await api.createServiceRequest(payload);
-      alert(`Success! Your Service Request #${result.RequestId} has been submitted.`);
+      showToast(`Success! Your Service Request #${result.RequestId} has been submitted.`, 'success', 'Booking Confirmed');
       
-      const modal = bootstrap.Modal.getInstance(document.getElementById('modalBookService'));
+      const modalEl = document.getElementById('modalBookService');
+      const modal = bootstrap.Modal.getInstance(modalEl);
       if (modal) modal.hide();
 
       // Reset form
@@ -966,7 +1093,7 @@ $(document).ready(function() {
       goToStep(1);
       loadCustomerDashboard();
     } catch (err) {
-      alert('Error booking service: ' + err.message);
+      showToast('Error booking service: ' + err.message, 'danger');
     } finally {
       SevaButton.setLoading(submitBtn, false);
     }
