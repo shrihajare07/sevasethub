@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin SaaS Suite â€“ SevaSetuHub</title>
+  <title>Admin SaaS Suite – SevaSetuHub</title>
   <meta name="description" content="Manage service requests, dispatch technicians, track revenue and run marketing from the SevaSetuHub admin suite.">
 
   <!-- Google Fonts -->
@@ -218,7 +218,7 @@
           </div>
           <div class="col-6 col-md-3">
             <div class="stat-card">
-              <div><div class="stat-label">Total Revenue</div><div class="stat-value" id="stat-admin-revenue">â‚¹0</div></div>
+              <div><div class="stat-label">Total Revenue</div><div class="stat-value" id="stat-admin-revenue">₹0</div></div>
               <div class="stat-icon-wrapper stat-icon-emerald"><i class="bi bi-currency-rupee"></i></div>
             </div>
           </div>
@@ -227,7 +227,7 @@
         <!-- Revenue Chart Card -->
         <div class="chart-card">
           <div class="d-flex align-items-center justify-content-between mb-3">
-            <div class="chart-card-title"><i class="bi bi-graph-up text-primary me-2"></i>Monthly Revenue &amp; Growth (â‚¹)</div>
+            <div class="chart-card-title"><i class="bi bi-graph-up text-primary me-2"></i>Monthly Revenue &amp; Growth (₹)</div>
             <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">Last 6 Months</span>
           </div>
           <div style="height: 260px;">
@@ -357,11 +357,11 @@
                 <thead>
                   <tr>
                     <th>Certified Technician</th>
-                    <th>09:00 AM â€“ 11:00 AM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 1</small></th>
-                    <th>11:00 AM â€“ 01:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 2</small></th>
-                    <th>01:00 PM â€“ 03:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 3</small></th>
-                    <th>03:00 PM â€“ 05:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 4</small></th>
-                    <th>05:00 PM â€“ 07:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 5</small></th>
+                    <th>09:00 AM – 11:00 AM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 1</small></th>
+                    <th>11:00 AM – 01:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 2</small></th>
+                    <th>01:00 PM – 03:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 3</small></th>
+                    <th>03:00 PM – 05:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 4</small></th>
+                    <th>05:00 PM – 07:00 PM<br><small class="text-muted fw-normal" style="font-size:0.65rem;">Slot 5</small></th>
                   </tr>
                 </thead>
                 <tbody id="dispatch-board-body"></tbody>
@@ -668,26 +668,26 @@
                       <span class="badge bg-success ms-auto">Live</span>
                     </div>
                     <div class="input-group input-group-sm mb-3">
-                      <span class="input-group-text fw-bold">â‚¹</span>
+                      <span class="input-group-text fw-bold">₹</span>
                       <input type="number" class="form-control fw-bold" id="sim-input-taxable" value="1000" min="0" step="10" placeholder="Taxable Amount">
                     </div>
                     <div class="small" id="sim-result-panel">
                       <div class="d-flex justify-content-between text-muted mb-1">
-                        <span>Base Amount:</span><span class="fw-semibold text-dark" id="sim-disp-taxable">â‚¹1,000.00</span>
+                        <span>Base Amount:</span><span class="fw-semibold text-dark" id="sim-disp-taxable">₹1,000.00</span>
                       </div>
                       <div class="d-flex justify-content-between text-muted mb-1" id="sim-row-cgst">
-                        <span id="sim-lbl-cgst">CGST (9%):</span><span class="fw-semibold text-dark" id="sim-disp-cgst">â‚¹90.00</span>
+                        <span id="sim-lbl-cgst">CGST (9%):</span><span class="fw-semibold text-dark" id="sim-disp-cgst">₹90.00</span>
                       </div>
                       <div class="d-flex justify-content-between text-muted mb-1" id="sim-row-sgst">
-                        <span id="sim-lbl-sgst">SGST (9%):</span><span class="fw-semibold text-dark" id="sim-disp-sgst">â‚¹90.00</span>
+                        <span id="sim-lbl-sgst">SGST (9%):</span><span class="fw-semibold text-dark" id="sim-disp-sgst">₹90.00</span>
                       </div>
                       <div class="d-flex justify-content-between text-muted mb-1 d-none" id="sim-row-igst">
-                        <span id="sim-lbl-igst">IGST (18%):</span><span class="fw-semibold text-dark" id="sim-disp-igst">â‚¹180.00</span>
+                        <span id="sim-lbl-igst">IGST (18%):</span><span class="fw-semibold text-dark" id="sim-disp-igst">₹180.00</span>
                       </div>
                       <hr class="my-2">
                       <div class="d-flex justify-content-between fw-bold">
                         <span class="text-dark">Customer Pays:</span>
-                        <span class="text-primary fs-6" id="sim-disp-grand-total">â‚¹1,180.00</span>
+                        <span class="text-primary fs-6" id="sim-disp-grand-total">₹1₹80.00</span>
                       </div>
                     </div>
                   </div>
@@ -733,7 +733,7 @@
            MODAL: Edit GST Configuration (Super Admin Only)
            ===================================================================== -->
       <div class="modal fade" id="modalEditGSTConfig" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
           <div class="modal-content border-0" style="border-radius:var(--radius-xl);overflow:hidden;">
 
             <!-- Modal Header -->
@@ -819,11 +819,11 @@
                           <div class="col-md-4">
                             <label class="form-label fw-semibold small" for="gst-input-rate">GST Tax Rate <span class="text-danger">*</span></label>
                             <select class="form-select fw-bold text-primary fs-6" id="gst-input-rate">
-                              <option value="18">18% â€” Standard Slab</option>
-                              <option value="12">12% â€” Concessional</option>
-                              <option value="5">5% â€” Essential Services</option>
-                              <option value="28">28% â€” Luxury Slab</option>
-                              <option value="0">0% â€” Exempt</option>
+                              <option value="18">18% — Standard Slab</option>
+                              <option value="12">12% — Concessional</option>
+                              <option value="5">5% — Essential Services</option>
+                              <option value="28">28% — Luxury Slab</option>
+                              <option value="0">0% — Exempt</option>
                             </select>
                           </div>
                           <div class="col-md-4">
@@ -840,31 +840,31 @@
                             <div class="p-3 rounded-3 border border-success-subtle" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);">
                               <div class="d-flex align-items-center gap-2 mb-2">
                                 <i class="bi bi-calculator-fill text-success"></i>
-                                <span class="fw-bold small text-success">Live Rate Preview (â‚¹1,000 base)</span>
+                                <span class="fw-bold small text-success">Live Rate Preview (₹1,000 base)</span>
                               </div>
                               <div class="row text-center g-2">
                                 <div class="col-3">
                                   <div class="bg-white rounded-2 py-2 px-1">
                                     <div class="text-muted" style="font-size:0.7rem;">CGST</div>
-                                    <div class="fw-bold text-dark small" id="modal-preview-cgst">â‚¹90</div>
+                                    <div class="fw-bold text-dark small" id="modal-preview-cgst">₹90</div>
                                   </div>
                                 </div>
                                 <div class="col-3">
                                   <div class="bg-white rounded-2 py-2 px-1">
                                     <div class="text-muted" style="font-size:0.7rem;">SGST</div>
-                                    <div class="fw-bold text-dark small" id="modal-preview-sgst">â‚¹90</div>
+                                    <div class="fw-bold text-dark small" id="modal-preview-sgst">₹90</div>
                                   </div>
                                 </div>
                                 <div class="col-3">
                                   <div class="bg-white rounded-2 py-2 px-1">
                                     <div class="text-muted" style="font-size:0.7rem;">Total Tax</div>
-                                    <div class="fw-bold text-success small" id="modal-preview-tax">â‚¹180</div>
+                                    <div class="fw-bold text-success small" id="modal-preview-tax">₹180</div>
                                   </div>
                                 </div>
                                 <div class="col-3">
                                   <div class="bg-white rounded-2 py-2 px-1 border border-primary-subtle">
                                     <div class="text-muted" style="font-size:0.7rem;">Customer Pays</div>
-                                    <div class="fw-bold text-primary small" id="modal-preview-total">â‚¹1,180</div>
+                                    <div class="fw-bold text-primary small" id="modal-preview-total">₹1₹80</div>
                                   </div>
                                 </div>
                               </div>
@@ -918,36 +918,36 @@
                       </div>
                       <div class="p-4">
                         <div class="mb-3">
-                          <label class="form-label fw-semibold small" for="sim-input-taxable-modal">Test Subtotal / Taxable Amount (â‚¹)</label>
+                          <label class="form-label fw-semibold small" for="sim-input-taxable-modal">Test Subtotal / Taxable Amount (₹)</label>
                           <div class="input-group input-group-lg">
-                            <span class="input-group-text bg-white fw-bold">â‚¹</span>
+                            <span class="input-group-text bg-white fw-bold">₹</span>
                             <input type="number" class="form-control fw-bold fs-5 text-dark" id="sim-input-taxable-modal" value="1000" min="0" step="10">
                           </div>
                         </div>
                         <div class="p-3 bg-white rounded-3 border shadow-sm mb-3">
                           <div class="d-flex justify-content-between text-muted small mb-2">
                             <span>Taxable Service Base:</span>
-                            <span class="fw-semibold text-dark" id="modal-sim-disp-taxable">â‚¹1,000.00</span>
+                            <span class="fw-semibold text-dark" id="modal-sim-disp-taxable">₹1,000.00</span>
                           </div>
                           <div class="d-flex justify-content-between text-muted small mb-2" id="modal-sim-row-cgst">
                             <span id="modal-sim-lbl-cgst">CGST (9.0%):</span>
-                            <span class="fw-semibold text-dark" id="modal-sim-disp-cgst">â‚¹90.00</span>
+                            <span class="fw-semibold text-dark" id="modal-sim-disp-cgst">₹90.00</span>
                           </div>
                           <div class="d-flex justify-content-between text-muted small mb-2" id="modal-sim-row-sgst">
                             <span id="modal-sim-lbl-sgst">SGST (9.0%):</span>
-                            <span class="fw-semibold text-dark" id="modal-sim-disp-sgst">â‚¹90.00</span>
+                            <span class="fw-semibold text-dark" id="modal-sim-disp-sgst">₹90.00</span>
                           </div>
                           <div class="d-flex justify-content-between text-muted small mb-2 d-none" id="modal-sim-row-igst">
                             <span id="modal-sim-lbl-igst">IGST (18.0%):</span>
-                            <span class="fw-semibold text-dark" id="modal-sim-disp-igst">â‚¹180.00</span>
+                            <span class="fw-semibold text-dark" id="modal-sim-disp-igst">₹180.00</span>
                           </div>
                           <div class="d-flex justify-content-between text-muted small mb-2 pt-2 border-top">
                             <span class="fw-semibold text-dark">Total GST Tax:</span>
-                            <span class="fw-bold text-success" id="modal-sim-disp-total-tax">â‚¹180.00</span>
+                            <span class="fw-bold text-success" id="modal-sim-disp-total-tax">₹180.00</span>
                           </div>
                           <div class="d-flex justify-content-between align-items-center pt-2 border-top">
                             <strong class="text-dark">Customer Payable:</strong>
-                            <strong class="text-primary fs-5" id="modal-sim-disp-grand-total">â‚¹1,180.00</span>
+                            <strong class="text-primary fs-5" id="modal-sim-disp-grand-total">₹1₹80.00</span>
                           </div>
                         </div>
                         <div class="alert alert-success py-2 px-3 rounded-3 mb-0" style="font-size:0.77rem;background:#f0fdf4;border-color:#bbf7d0;">
@@ -1050,17 +1050,17 @@
 
         <div class="row g-2 mb-3">
           <div class="col-6">
-            <label class="form-label fw-semibold" for="est-modal-labour">Labour &amp; Service Charge (â‚¹)</label>
+            <label class="form-label fw-semibold" for="est-modal-labour">Labour &amp; Service Charge (₹)</label>
             <input type="number" class="form-control fw-bold" id="est-modal-labour" value="599" min="0">
           </div>
           <div class="col-6">
-            <label class="form-label fw-semibold" for="est-modal-material">Materials / Spare Parts (â‚¹)</label>
+            <label class="form-label fw-semibold" for="est-modal-material">Materials / Spare Parts (₹)</label>
             <input type="number" class="form-control fw-bold" id="est-modal-material" value="0" min="0">
           </div>
         </div>
         <div class="row g-2 mb-3">
           <div class="col-6">
-            <label class="form-label fw-semibold" for="est-modal-discount">Goodwill Discount (â‚¹)</label>
+            <label class="form-label fw-semibold" for="est-modal-discount">Goodwill Discount (₹)</label>
             <input type="number" class="form-control text-success fw-bold" id="est-modal-discount" value="0" min="0">
           </div>
           <div class="col-6">
@@ -1073,23 +1073,23 @@
         <div class="p-3 mb-3 bg-light rounded-3 border">
           <div class="d-flex justify-content-between text-muted small mb-1">
             <span>Taxable Amount (Subtotal):</span>
-            <span class="fw-semibold text-dark" id="est-preview-subtotal">â‚¹599.00</span>
+            <span class="fw-semibold text-dark" id="est-preview-subtotal">₹599.00</span>
           </div>
           <div class="d-flex justify-content-between text-muted small mb-1" id="est-preview-cgst-row">
             <span id="est-preview-cgst-label">CGST (9%):</span>
-            <span class="fw-semibold text-dark" id="est-preview-cgst-val">â‚¹53.91</span>
+            <span class="fw-semibold text-dark" id="est-preview-cgst-val">₹53.91</span>
           </div>
           <div class="d-flex justify-content-between text-muted small mb-1" id="est-preview-sgst-row">
             <span id="est-preview-sgst-label">SGST (9%):</span>
-            <span class="fw-semibold text-dark" id="est-preview-sgst-val">â‚¹53.91</span>
+            <span class="fw-semibold text-dark" id="est-preview-sgst-val">₹53.91</span>
           </div>
           <div class="d-flex justify-content-between text-muted small mb-1 d-none" id="est-preview-igst-row">
             <span id="est-preview-igst-label">IGST (18%):</span>
-            <span class="fw-semibold text-dark" id="est-preview-igst-val">â‚¹107.82</span>
+            <span class="fw-semibold text-dark" id="est-preview-igst-val">₹107.82</span>
           </div>
           <div class="d-flex justify-content-between align-items-center pt-2 border-top">
             <strong class="text-dark">Estimated Grand Total:</strong>
-            <strong class="text-primary fs-5" id="est-preview-grand-total">â‚¹707.00</strong>
+            <strong class="text-primary fs-5" id="est-preview-grand-total">₹707.00</strong>
           </div>
         </div>
 
@@ -1132,11 +1132,11 @@
           <div class="col-6">
             <label class="form-label fw-semibold">Time Slot</label>
             <select class="form-select" id="assign-modal-time">
-              <option value="09:00 AM - 11:00 AM">09:00 AM â€“ 11:00 AM (Slot 1)</option>
-              <option value="11:00 AM - 01:00 PM">11:00 AM â€“ 01:00 PM (Slot 2)</option>
-              <option value="01:00 PM - 03:00 PM">01:00 PM â€“ 03:00 PM (Slot 3)</option>
-              <option value="03:00 PM - 05:00 PM">03:00 PM â€“ 05:00 PM (Slot 4)</option>
-              <option value="05:00 PM - 07:00 PM">05:00 PM â€“ 07:00 PM (Slot 5)</option>
+              <option value="09:00 AM - 11:00 AM">09:00 AM – 11:00 AM (Slot 1)</option>
+              <option value="11:00 AM - 01:00 PM">11:00 AM – 01:00 PM (Slot 2)</option>
+              <option value="01:00 PM - 03:00 PM">01:00 PM – 03:00 PM (Slot 3)</option>
+              <option value="03:00 PM - 05:00 PM">03:00 PM – 05:00 PM (Slot 4)</option>
+              <option value="05:00 PM - 07:00 PM">05:00 PM – 07:00 PM (Slot 5)</option>
             </select>
           </div>
         </div>
@@ -1253,11 +1253,11 @@
           <div class="col-6">
             <label class="form-label fw-semibold">Time Slot</label>
             <select class="form-select" id="quick-dispatch-time">
-              <option value="09:00 AM - 11:00 AM">09:00 AM â€“ 11:00 AM</option>
-              <option value="11:00 AM - 01:00 PM">11:00 AM â€“ 01:00 PM</option>
-              <option value="01:00 PM - 03:00 PM">01:00 PM â€“ 03:00 PM</option>
-              <option value="03:00 PM - 05:00 PM">03:00 PM â€“ 05:00 PM</option>
-              <option value="05:00 PM - 07:00 PM">05:00 PM â€“ 07:00 PM</option>
+              <option value="09:00 AM - 11:00 AM">09:00 AM – 11:00 AM</option>
+              <option value="11:00 AM - 01:00 PM">11:00 AM – 01:00 PM</option>
+              <option value="01:00 PM - 03:00 PM">01:00 PM – 03:00 PM</option>
+              <option value="03:00 PM - 05:00 PM">03:00 PM – 05:00 PM</option>
+              <option value="05:00 PM - 07:00 PM">05:00 PM – 07:00 PM</option>
             </select>
           </div>
         </div>
@@ -1293,7 +1293,7 @@
             <label class="form-label fw-semibold">Discount Type</label>
             <select class="form-select" id="offer-type">
               <option value="Percentage">Percentage (%)</option>
-              <option value="FixedAmount">Fixed Amount (â‚¹)</option>
+              <option value="FixedAmount">Fixed Amount (₹)</option>
             </select>
           </div>
           <div class="col-6">
@@ -1350,7 +1350,7 @@
             <label class="form-label fw-semibold">Discount Type</label>
             <select class="form-select" id="edit-offer-type">
               <option value="Percentage">Percentage (%)</option>
-              <option value="FixedAmount">Fixed Amount (â‚¹)</option>
+              <option value="FixedAmount">Fixed Amount (₹)</option>
             </select>
           </div>
           <div class="col-6">
@@ -1399,13 +1399,13 @@
         </div>
         <div class="mb-3">
           <label class="form-label fw-semibold">Description</label>
-          <input type="text" class="form-control" id="coupon-desc" placeholder="Flat â‚¹250 discount on booking">
+          <input type="text" class="form-control" id="coupon-desc" placeholder="Flat ₹250 discount on booking">
         </div>
         <div class="row g-2 mb-3">
           <div class="col-6">
             <label class="form-label fw-semibold">Discount Type</label>
             <select class="form-select" id="coupon-type">
-              <option value="FixedAmount">Fixed Amount (â‚¹)</option>
+              <option value="FixedAmount">Fixed Amount (₹)</option>
               <option value="Percentage">Percentage (%)</option>
             </select>
           </div>
@@ -1416,11 +1416,11 @@
         </div>
         <div class="row g-2 mb-3">
           <div class="col-6">
-            <label class="form-label fw-semibold">Min Order (â‚¹)</label>
+            <label class="form-label fw-semibold">Min Order (₹)</label>
             <input type="number" class="form-control" id="coupon-min-order" value="500">
           </div>
           <div class="col-6">
-            <label class="form-label fw-semibold">Max Discount (â‚¹)</label>
+            <label class="form-label fw-semibold">Max Discount (₹)</label>
             <input type="number" class="form-control" id="coupon-max-disc" value="500">
           </div>
         </div>
@@ -1448,13 +1448,13 @@
         </div>
         <div class="mb-3">
           <label class="form-label fw-semibold">Description</label>
-          <input type="text" class="form-control" id="edit-coupon-desc" placeholder="Flat â‚¹250 discount on booking">
+          <input type="text" class="form-control" id="edit-coupon-desc" placeholder="Flat ₹250 discount on booking">
         </div>
         <div class="row g-2 mb-3">
           <div class="col-6">
             <label class="form-label fw-semibold">Discount Type</label>
             <select class="form-select" id="edit-coupon-type">
-              <option value="FixedAmount">Fixed Amount (â‚¹)</option>
+              <option value="FixedAmount">Fixed Amount (₹)</option>
               <option value="Percentage">Percentage (%)</option>
             </select>
           </div>
@@ -1465,11 +1465,11 @@
         </div>
         <div class="row g-2 mb-3">
           <div class="col-6">
-            <label class="form-label fw-semibold">Min Order (â‚¹)</label>
+            <label class="form-label fw-semibold">Min Order (₹)</label>
             <input type="number" class="form-control" id="edit-coupon-min-order" value="500">
           </div>
           <div class="col-6">
-            <label class="form-label fw-semibold">Max Discount (â‚¹)</label>
+            <label class="form-label fw-semibold">Max Discount (₹)</label>
             <input type="number" class="form-control" id="edit-coupon-max-disc" value="500">
           </div>
         </div>
@@ -1782,7 +1782,7 @@
                 <th style="width:45%;">Item / Service Description</th>
                 <th style="width:15%;" class="text-center">SAC Code</th>
                 <th style="width:15%;" class="text-end">Rate / Subtotal</th>
-                <th style="width:20%;" class="text-end">Taxable Value (â‚¹)</th>
+                <th style="width:20%;" class="text-end">Taxable Value (₹)</th>
               </tr>
             </thead>
             <tbody id="inv-modal-items-tbody">
@@ -1793,8 +1793,8 @@
                   <small class="text-muted">Includes verified technician workmanship & warranty</small>
                 </td>
                 <td class="text-center font-monospace" id="inv-modal-item-sac">998714</td>
-                <td class="text-end" id="inv-modal-item-labour">â‚¹599.00</td>
-                <td class="text-end fw-semibold" id="inv-modal-item-taxable">â‚¹599.00</td>
+                <td class="text-end" id="inv-modal-item-labour">₹599.00</td>
+                <td class="text-end fw-semibold" id="inv-modal-item-taxable">₹599.00</td>
               </tr>
             </tbody>
           </table>
@@ -1814,27 +1814,27 @@
             <div class="p-3 border rounded-3 bg-white shadow-sm">
               <div class="d-flex justify-content-between text-muted small mb-1">
                 <span>Taxable Amount:</span>
-                <span class="fw-semibold text-dark" id="inv-modal-calc-taxable">â‚¹599.00</span>
+                <span class="fw-semibold text-dark" id="inv-modal-calc-taxable">₹599.00</span>
               </div>
               <div class="d-flex justify-content-between text-muted small mb-1" id="inv-modal-row-cgst">
                 <span id="inv-modal-lbl-cgst">CGST (9.0%):</span>
-                <span class="fw-semibold text-dark" id="inv-modal-calc-cgst">â‚¹53.91</span>
+                <span class="fw-semibold text-dark" id="inv-modal-calc-cgst">₹53.91</span>
               </div>
               <div class="d-flex justify-content-between text-muted small mb-1" id="inv-modal-row-sgst">
                 <span id="inv-modal-lbl-sgst">SGST (9.0%):</span>
-                <span class="fw-semibold text-dark" id="inv-modal-calc-sgst">â‚¹53.91</span>
+                <span class="fw-semibold text-dark" id="inv-modal-calc-sgst">₹53.91</span>
               </div>
               <div class="d-flex justify-content-between text-muted small mb-1 d-none" id="inv-modal-row-igst">
                 <span id="inv-modal-lbl-igst">IGST (18.0%):</span>
-                <span class="fw-semibold text-dark" id="inv-modal-calc-igst">â‚¹107.82</span>
+                <span class="fw-semibold text-dark" id="inv-modal-calc-igst">₹107.82</span>
               </div>
               <div class="d-flex justify-content-between text-muted small mb-2 pt-2 border-top">
                 <span class="fw-semibold text-dark">Total GST Tax:</span>
-                <span class="fw-bold text-success" id="inv-modal-calc-tax">â‚¹107.82</span>
+                <span class="fw-bold text-success" id="inv-modal-calc-tax">₹107.82</span>
               </div>
               <div class="d-flex justify-content-between align-items-center pt-2 border-top">
                 <strong class="text-dark fs-6">Grand Total:</strong>
-                <strong class="text-primary fs-5" id="inv-modal-calc-grand">â‚¹707.00</strong>
+                <strong class="text-primary fs-5" id="inv-modal-calc-grand">₹707.00</strong>
               </div>
               <div class="mt-3 pt-2 border-top text-end">
                 <div class="small text-muted font-monospace" style="font-size:0.72rem;">Authorized Signatory</div>
