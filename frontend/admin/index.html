@@ -797,6 +797,10 @@
             <input type="number" class="form-control" id="offer-val" placeholder="20">
           </div>
         </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Description</label>
+          <input type="text" class="form-control" id="offer-desc" placeholder="e.g. Special promotional discount on verified home services.">
+        </div>
         <div class="row g-2 mb-3">
           <div class="col-6">
             <label class="form-label fw-semibold">Start Date</label>
@@ -808,6 +812,67 @@
           </div>
         </div>
         <button class="btn btn-primary w-100 py-2 fw-bold" id="btn-save-offer">Create & Publish Offer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Edit Promotional Offer Modal (SuperAdmin)
+     ============================================================ -->
+<div class="modal fade" id="modalEditOffer" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square text-primary me-2"></i>Edit Promotional Offer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="edit-offer-id">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Offer Code</label>
+          <input type="text" class="form-control text-uppercase" id="edit-offer-code" placeholder="e.g. MONSOON20">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Title</label>
+          <input type="text" class="form-control" id="edit-offer-title" placeholder="e.g. Monsoon Special 20% OFF">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Description</label>
+          <input type="text" class="form-control" id="edit-offer-desc" placeholder="Offer description details">
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold">Discount Type</label>
+            <select class="form-select" id="edit-offer-type">
+              <option value="Percentage">Percentage (%)</option>
+              <option value="FixedAmount">Fixed Amount (₹)</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">Discount Value</label>
+            <input type="number" class="form-control" id="edit-offer-val" placeholder="20">
+          </div>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold">Start Date</label>
+            <input type="date" class="form-control" id="edit-offer-start">
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">End Date</label>
+            <input type="date" class="form-control" id="edit-offer-end">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Status</label>
+          <select class="form-select" id="edit-offer-status">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="Expired">Expired</option>
+          </select>
+        </div>
+        <button class="btn btn-primary w-100 py-2 fw-bold" id="btn-update-offer">Save Changes</button>
       </div>
     </div>
   </div>
@@ -856,6 +921,73 @@
           </div>
         </div>
         <button class="btn btn-primary w-100 py-2 fw-bold" id="btn-save-coupon">Publish Coupon</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Edit Discount Coupon Modal (SuperAdmin)
+     ============================================================ -->
+<div class="modal fade" id="modalEditCoupon" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square text-primary me-2"></i>Edit Discount Coupon</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="edit-coupon-id">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Coupon Code</label>
+          <input type="text" class="form-control text-uppercase" id="edit-coupon-code" placeholder="e.g. SAVE250">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Description</label>
+          <input type="text" class="form-control" id="edit-coupon-desc" placeholder="Flat ₹250 discount on booking">
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold">Discount Type</label>
+            <select class="form-select" id="edit-coupon-type">
+              <option value="FixedAmount">Fixed Amount (₹)</option>
+              <option value="Percentage">Percentage (%)</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">Value</label>
+            <input type="number" class="form-control" id="edit-coupon-val" placeholder="250">
+          </div>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold">Min Order (₹)</label>
+            <input type="number" class="form-control" id="edit-coupon-min-order" value="500">
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">Max Discount (₹)</label>
+            <input type="number" class="form-control" id="edit-coupon-max-disc" value="500">
+          </div>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold">Start Date</label>
+            <input type="date" class="form-control" id="edit-coupon-start">
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">End Date</label>
+            <input type="date" class="form-control" id="edit-coupon-end">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Status</label>
+          <select class="form-select" id="edit-coupon-status">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="Expired">Expired</option>
+          </select>
+        </div>
+        <button class="btn btn-primary w-100 py-2 fw-bold" id="btn-update-coupon">Save Changes</button>
       </div>
     </div>
   </div>

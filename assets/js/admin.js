@@ -1244,14 +1244,45 @@ $(document).ready(function() {
             <td>
               <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>${start} to ${end}</small>
             </td>
-            <td><span class="badge ${String(status).toLowerCase() === 'active' ? 'bg-success' : 'bg-secondary'}"><i class="bi bi-check-circle me-1"></i>${status}</span></td>
+            <td><span class="badge ${String(status).toLowerCase() === 'active' ? 'bg-success' : (String(status).toLowerCase() === 'expired' ? 'bg-danger' : 'bg-secondary')}"><i class="bi bi-check-circle me-1"></i>${status}</span></td>
             <td>
+              <button class="btn btn-sm btn-outline-primary btn-edit-offer rounded-pill px-2.5 me-1" 
+                data-id="${offerId}" 
+                data-code="${code}" 
+                data-title="${encodeURIComponent(title)}"
+                data-desc="${encodeURIComponent(desc)}"
+                data-type="${discType}"
+                data-val="${discVal}"
+                data-start="${start === 'Active' ? '' : start}"
+                data-end="${end === 'Ongoing' ? '' : end}"
+                data-status="${status}"
+                title="Edit Offer">
+                <i class="bi bi-pencil-square me-1"></i> Edit
+              </button>
               <button class="btn btn-sm btn-outline-danger btn-del-offer rounded-pill px-2.5" data-id="${offerId}" data-code="${code}" title="Delete Offer">
                 <i class="bi bi-trash me-1"></i> Delete
               </button>
             </td>
           </tr>
         `);
+      });
+
+      // Edit Offer Click
+      $('.btn-edit-offer').off('click').on('click', function() {
+        const $b = $(this);
+        $('#edit-offer-id').val($b.data('id'));
+        $('#edit-offer-code').val($b.data('code'));
+        $('#edit-offer-title').val(decodeURIComponent($b.data('title') || ''));
+        $('#edit-offer-desc').val(decodeURIComponent($b.data('desc') || ''));
+        $('#edit-offer-type').val($b.data('type'));
+        $('#edit-offer-val').val($b.data('val'));
+        $('#edit-offer-start').val($b.data('start'));
+        $('#edit-offer-end').val($b.data('end'));
+        $('#edit-offer-status').val($b.data('status') || 'Active');
+
+        const modalEl = document.getElementById('modalEditOffer');
+        const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        modal.show();
       });
 
       $('.btn-del-offer').off('click').on('click', async function() {
@@ -1281,6 +1312,7 @@ $(document).ready(function() {
     const $btn = $(this);
     const code = $('#offer-code').val().trim();
     const title = $('#offer-title').val().trim();
+    const desc = $('#offer-desc').val().trim();
     const type = $('#offer-type').val();
     const val = Number($('#offer-val').val());
     const startDate = $('#offer-start').val();
@@ -1305,6 +1337,7 @@ $(document).ready(function() {
       await api.createOffer({
         offerCode: code,
         title: title,
+        description: desc,
         discountType: type,
         discountValue: val,
         startDate: startDate,
@@ -1319,11 +1352,66 @@ $(document).ready(function() {
       // Reset form
       $('#offer-code').val('');
       $('#offer-title').val('');
+      $('#offer-desc').val('');
       $('#offer-val').val('');
 
       loadAdminOffers();
     } catch (e) {
       showToast('Error creating offer: ' + e.message, 'danger', 'Offer Error');
+    } finally {
+      SevaButton.setLoading($btn, false);
+    }
+  });
+
+  // Save changes to existing offer (SuperAdmin Edit)
+  $('#btn-update-offer').off('click').on('click', async function() {
+    const $btn = $(this);
+    const offerId = $('#edit-offer-id').val();
+    const code = $('#edit-offer-code').val().trim();
+    const title = $('#edit-offer-title').val().trim();
+    const desc = $('#edit-offer-desc').val().trim();
+    const type = $('#edit-offer-type').val();
+    const val = Number($('#edit-offer-val').val());
+    const startDate = $('#edit-offer-start').val();
+    const endDate = $('#edit-offer-end').val();
+    const status = $('#edit-offer-status').val();
+
+    if (!code) {
+      showToast('Offer Code cannot be empty.', 'warning', 'Required Field');
+      return;
+    }
+    if (!title) {
+      showToast('Offer Title cannot be empty.', 'warning', 'Required Field');
+      return;
+    }
+    if (!val || val <= 0) {
+      showToast('Please enter a valid Discount Value.', 'warning', 'Required Field');
+      return;
+    }
+
+    SevaButton.setLoading($btn, true, 'Saving Changes...');
+
+    try {
+      await api.updateOffer({
+        offerId: offerId,
+        offerCode: code,
+        title: title,
+        description: desc,
+        discountType: type,
+        discountValue: val,
+        startDate: startDate,
+        endDate: endDate,
+        status: status
+      });
+
+      showToast(`Promotional offer "${code}" updated successfully!`, 'success', 'Offer Updated');
+      const modalEl = document.getElementById('modalEditOffer');
+      const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+      modal.hide();
+
+      loadAdminOffers();
+    } catch (err) {
+      showToast('Error updating offer: ' + err.message, 'danger', 'Update Error');
     } finally {
       SevaButton.setLoading($btn, false);
     }
@@ -1353,6 +1441,8 @@ $(document).ready(function() {
         const discVal = Number(String(c.DiscountValue || c.discountValue || c.Discount || c.discount || 0).replace(/[^0-9.]/g, '')) || 0;
         const minOrder = Number(c.MinimumOrderValue || c.minimumOrderValue || c['Min Order'] || c['Minimum Order Value'] || 0) || 0;
         const maxDisc = Number(c.MaximumDiscount || c.maximumDiscount || c['Max Discount'] || c['Maximum Discount'] || discVal) || discVal;
+        const start = c.StartDate || c.startDate || '';
+        const end = c.EndDate || c.endDate || '';
         const status = c.Status || c.status || 'Active';
         const couponId = c.CouponId || c.couponId || c.Id || c.id || ('CPN-' + code);
 
@@ -1373,14 +1463,47 @@ $(document).ready(function() {
             <td>
               <span class="text-muted fw-semibold">Min: ₹${minOrder}</span>
             </td>
-            <td><span class="badge ${String(status).toLowerCase() === 'active' ? 'bg-success' : 'bg-secondary'}"><i class="bi bi-check-circle me-1"></i>${status}</span></td>
+            <td><span class="badge ${String(status).toLowerCase() === 'active' ? 'bg-success' : (String(status).toLowerCase() === 'expired' ? 'bg-danger' : 'bg-secondary')}"><i class="bi bi-check-circle me-1"></i>${status}</span></td>
             <td>
+              <button class="btn btn-sm btn-outline-primary btn-edit-coupon rounded-pill px-2.5 me-1"
+                data-id="${couponId}"
+                data-code="${code}"
+                data-desc="${encodeURIComponent(desc)}"
+                data-type="${discType}"
+                data-val="${discVal}"
+                data-min="${minOrder}"
+                data-max="${maxDisc}"
+                data-start="${start}"
+                data-end="${end}"
+                data-status="${status}"
+                title="Edit Coupon">
+                <i class="bi bi-pencil-square me-1"></i> Edit
+              </button>
               <button class="btn btn-sm btn-outline-danger btn-del-coupon rounded-pill px-2.5" data-id="${couponId}" data-code="${code}" title="Delete Coupon">
                 <i class="bi bi-trash me-1"></i> Delete
               </button>
             </td>
           </tr>
         `);
+      });
+
+      // Edit Coupon Click
+      $('.btn-edit-coupon').off('click').on('click', function() {
+        const $b = $(this);
+        $('#edit-coupon-id').val($b.data('id'));
+        $('#edit-coupon-code').val($b.data('code'));
+        $('#edit-coupon-desc').val(decodeURIComponent($b.data('desc') || ''));
+        $('#edit-coupon-type').val($b.data('type'));
+        $('#edit-coupon-val').val($b.data('val'));
+        $('#edit-coupon-min-order').val($b.data('min'));
+        $('#edit-coupon-max-disc').val($b.data('max'));
+        $('#edit-coupon-start').val($b.data('start'));
+        $('#edit-coupon-end').val($b.data('end'));
+        $('#edit-coupon-status').val($b.data('status') || 'Active');
+
+        const modalEl = document.getElementById('modalEditCoupon');
+        const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        modal.show();
       });
 
       $('.btn-del-coupon').off('click').on('click', async function() {
@@ -1451,6 +1574,58 @@ $(document).ready(function() {
       loadAdminCoupons();
     } catch (e) {
       showToast('Error creating coupon: ' + e.message, 'danger', 'Coupon Error');
+    } finally {
+      SevaButton.setLoading($btn, false);
+    }
+  });
+
+  // Save changes to existing coupon (SuperAdmin Edit)
+  $('#btn-update-coupon').off('click').on('click', async function() {
+    const $btn = $(this);
+    const couponId = $('#edit-coupon-id').val();
+    const code = $('#edit-coupon-code').val().trim();
+    const desc = $('#edit-coupon-desc').val().trim();
+    const type = $('#edit-coupon-type').val();
+    const val = Number($('#edit-coupon-val').val());
+    const minOrder = Number($('#edit-coupon-min-order').val()) || 0;
+    const maxDisc = Number($('#edit-coupon-max-disc').val()) || val;
+    const startDate = $('#edit-coupon-start').val();
+    const endDate = $('#edit-coupon-end').val();
+    const status = $('#edit-coupon-status').val();
+
+    if (!code) {
+      showToast('Coupon Code cannot be empty.', 'warning', 'Required Field');
+      return;
+    }
+    if (!val || val <= 0) {
+      showToast('Please enter a valid Discount Value.', 'warning', 'Required Field');
+      return;
+    }
+
+    SevaButton.setLoading($btn, true, 'Saving Changes...');
+
+    try {
+      await api.updateCoupon({
+        couponId: couponId,
+        couponCode: code,
+        description: desc,
+        discountType: type,
+        discountValue: val,
+        minimumOrderValue: minOrder,
+        maximumDiscount: maxDisc,
+        startDate: startDate,
+        endDate: endDate,
+        status: status
+      });
+
+      showToast(`Discount coupon "${code}" updated successfully!`, 'success', 'Coupon Updated');
+      const modalEl = document.getElementById('modalEditCoupon');
+      const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+      modal.hide();
+
+      loadAdminCoupons();
+    } catch (err) {
+      showToast('Error updating coupon: ' + err.message, 'danger', 'Update Error');
     } finally {
       SevaButton.setLoading($btn, false);
     }

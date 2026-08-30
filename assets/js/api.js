@@ -1282,6 +1282,47 @@ const api = (function () {
         return newCpn;
       }
 
+      case 'updateOffer': {
+        const ofrs = JSON.parse(localStorage.getItem('ssh_offers') || '[]');
+        const targetId = payload.offerId || payload.OfferId;
+        const targetCode = (payload.offerCode || payload.OfferCode || '').toUpperCase();
+        let target = ofrs.find(o => o.OfferId === targetId || (targetCode && o.OfferCode === targetCode));
+        if (target) {
+          if (payload.offerCode !== undefined) target.OfferCode = String(payload.offerCode).toUpperCase();
+          if (payload.title !== undefined) target.Title = payload.title;
+          if (payload.description !== undefined) target.Description = payload.description;
+          if (payload.discountType !== undefined) target.DiscountType = payload.discountType;
+          if (payload.discountValue !== undefined) target.DiscountValue = Number(payload.discountValue);
+          if (payload.startDate !== undefined) target.StartDate = payload.startDate;
+          if (payload.endDate !== undefined) target.EndDate = payload.endDate;
+          if (payload.status !== undefined) target.Status = payload.status;
+          localStorage.setItem('ssh_offers', JSON.stringify(ofrs));
+          appendAuditLog('OFFER_UPDATED', 'Offers', `Promotional offer '${target.OfferCode}' updated.`);
+        }
+        return { success: true, offer: target };
+      }
+
+      case 'updateCoupon': {
+        const cpns = JSON.parse(localStorage.getItem('ssh_coupons') || '[]');
+        const targetId = payload.couponId || payload.CouponId;
+        const targetCode = (payload.couponCode || payload.CouponCode || '').toUpperCase();
+        let target = cpns.find(c => c.CouponId === targetId || (targetCode && c.CouponCode === targetCode));
+        if (target) {
+          if (payload.couponCode !== undefined) target.CouponCode = String(payload.couponCode).toUpperCase();
+          if (payload.description !== undefined) target.Description = payload.description;
+          if (payload.discountType !== undefined) target.DiscountType = payload.discountType;
+          if (payload.discountValue !== undefined) target.DiscountValue = Number(payload.discountValue);
+          if (payload.minimumOrderValue !== undefined) target.MinimumOrderValue = Number(payload.minimumOrderValue);
+          if (payload.maximumDiscount !== undefined) target.MaximumDiscount = Number(payload.maximumDiscount);
+          if (payload.startDate !== undefined) target.StartDate = payload.startDate;
+          if (payload.endDate !== undefined) target.EndDate = payload.endDate;
+          if (payload.status !== undefined) target.Status = payload.status;
+          localStorage.setItem('ssh_coupons', JSON.stringify(cpns));
+          appendAuditLog('COUPON_UPDATED', 'Coupons', `Coupon '${target.CouponCode}' updated.`);
+        }
+        return { success: true, coupon: target };
+      }
+
       case 'deleteOffer': {
         let ofrs = JSON.parse(localStorage.getItem('ssh_offers') || '[]');
         ofrs = ofrs.filter(o => o.OfferId !== payload.offerId);
