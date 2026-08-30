@@ -305,6 +305,7 @@ $(document).ready(async function() {
     }
 
     const orderAmount = selectedService ? selectedService.BasePrice : 599;
+    SevaButton.setLoading(this, true, 'Applying...');
 
     try {
       const res = await api.validateCoupon({
@@ -320,6 +321,8 @@ $(document).ready(async function() {
       activeCoupon = null;
       $('#booking-coupon-status').html(`<span class="text-danger fw-semibold"><i class="bi bi-exclamation-triangle-fill"></i> ${err.message}</span>`);
       updatePriceSummary();
+    } finally {
+      SevaButton.setLoading(this, false);
     }
   });
 
@@ -509,7 +512,7 @@ $(document).ready(async function() {
     }
 
     const $submitBtn = $('#btn-submit-booking');
-    $submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Booking Certified Service...');
+    SevaButton.setLoading($submitBtn, true, 'Booking Certified Service...');
 
     if (window.SevaLoader) {
       SevaLoader.show({
@@ -578,8 +581,8 @@ $(document).ready(async function() {
         if (savedReq) {
           const token = 'SES-LOCAL-' + Math.random().toString(36).substring(2, 12);
           const userObj = {
-            userId: savedReq.CustomerId,
-            customerId: savedReq.CustomerId,
+            id: savedReq.CustomerId || ('CUST-' + Math.floor(100 + Math.random() * 900)),
+            customerId: savedReq.CustomerId || ('CUST-' + Math.floor(100 + Math.random() * 900)),
             firstName: nameParts[0] || 'Customer',
             lastName: nameParts.slice(1).join(' ') || '',
             fullName: fullName,
@@ -598,24 +601,16 @@ $(document).ready(async function() {
       $('#success-schedule').text(`${payload.preferredDate} (${payload.preferredTimeSlot})`);
       $('#success-account').text(`Active (${fullName})`);
 
-      // Verify session is correctly set before showing modal
+      // Final double-check: verify CustomerId is consistent
       const verifiedUser = api.getStoredUser();
-      if (!verifiedUser || verifiedUser.role !== 'Customer') {
-        // Last-resort session fix: read CustomerId from the just-saved request
-        const savedReqs = JSON.parse(localStorage.getItem('ssh_requests') || '[]');
-        const savedReq = savedReqs.find(r =>
-          (email && r.CustomerEmail && r.CustomerEmail.toLowerCase() === email.toLowerCase()) ||
-          (mobile && String(r.CustomerMobile) === mobile)
-        );
-        const nameParts = fullName.split(' ');
-        const fixedCustId = savedReq ? savedReq.CustomerId : ('CUS-' + Math.floor(100000 + Math.random() * 900000));
-        const fixedToken = 'SES-LOCAL-' + Math.random().toString(36).substring(2, 12);
+      if (verifiedUser && verifiedUser.role === 'Customer') {
+        const fixedToken = api.getToken() || ('SES-LOCAL-' + Math.random().toString(36).substring(2, 12));
         api.setSession(fixedToken, {
-          userId: fixedCustId,
-          customerId: fixedCustId,
-          firstName: nameParts[0] || 'Customer',
-          lastName: nameParts.slice(1).join(' ') || '',
-          fullName: fullName,
+          id: verifiedUser.customerId || verifiedUser.id,
+          customerId: verifiedUser.customerId || verifiedUser.id,
+          firstName: verifiedUser.firstName || fullName.split(' ')[0],
+          lastName: verifiedUser.lastName || fullName.split(' ').slice(1).join(' '),
+          fullName: verifiedUser.fullName || fullName,
           email: email,
           mobile: mobile,
           role: 'Customer',
@@ -646,7 +641,7 @@ $(document).ready(async function() {
       if (window.SevaLoader) SevaLoader.hide();
       alert('Booking could not be processed: ' + err.message);
     } finally {
-      $submitBtn.prop('disabled', false).html('<i class="bi bi-check-circle-fill me-1"></i> Confirm Booking &amp; Register');
+      SevaButton.setLoading($submitBtn, false);
     }
   });
 

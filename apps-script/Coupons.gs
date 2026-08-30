@@ -10,16 +10,52 @@ const CouponsModule = {
    */
   getCoupons: function(params) {
     const tenantId = (params && params.tenantId) ? params.tenantId : CONFIG.DEFAULT_TENANT_ID;
-    const now = new Date().toISOString().slice(0, 10);
+    const todayStr = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'yyyy-MM-dd');
+    const allRows = Utils.getAllRows(SHEETS.COUPONS);
 
-    const coupons = Utils.getAllRows(SHEETS.COUPONS).filter(c => {
-      const active = c.Status === 'Active';
-      const validDate = (!c.EndDate || c.EndDate >= now);
-      const tenantMatch = !c.TenantId || c.TenantId === tenantId || c.TenantId === CONFIG.DEFAULT_TENANT_ID;
+    const isAll = params && (params.all === 'true' || params.all === true || params.includeAll === 'true' || params.includeAll === true || params.token);
+
+    if (isAll) {
+      return allRows.map(c => this.normalizeCoupon(c));
+    }
+
+    return allRows.filter(c => {
+      const status = String(c.Status || c.status || 'Active').trim().toLowerCase();
+      const active = (status === 'active' || status === 'enabled' || status === '');
+      const endStr = c.EndDate instanceof Date 
+        ? Utilities.formatDate(c.EndDate, CONFIG.TIMEZONE, 'yyyy-MM-dd') 
+        : String(c.EndDate || '').slice(0, 10);
+      const validDate = (!endStr || endStr >= todayStr);
+      const tId = c.TenantId || c.tenantId;
+      const tenantMatch = !tId || tId === tenantId || tId === CONFIG.DEFAULT_TENANT_ID;
       return active && validDate && tenantMatch;
-    });
+    }).map(c => this.normalizeCoupon(c));
+  },
 
-    return coupons;
+  normalizeCoupon: function(c) {
+    const code = c.CouponCode || c.couponCode || c.Code || c.code || c['Coupon Code'] || c.id || 'COUPON';
+    const desc = c.Description || c.description || c.Title || c.title || 'Promotional Discount Coupon';
+    const discType = c.DiscountType || c.discountType || c['Discount Type'] || (String(c.DiscountValue || '').includes('%') ? 'Percentage' : 'FixedAmount');
+    const discVal = Number(String(c.DiscountValue || c.discountValue || c.Discount || c.discount || 0).replace(/[^0-9.]/g, '')) || 0;
+    const minOrder = Number(c.MinimumOrderValue || c.minimumOrderValue || c['Min Order'] || c['Minimum Order Value'] || 0) || 0;
+    const maxDisc = Number(c.MaximumDiscount || c.maximumDiscount || c['Max Discount'] || c['Maximum Discount'] || discVal) || discVal;
+    const start = c.StartDate instanceof Date ? Utilities.formatDate(c.StartDate, CONFIG.TIMEZONE, 'yyyy-MM-dd') : (c.StartDate || c.startDate || '');
+    const end = c.EndDate instanceof Date ? Utilities.formatDate(c.EndDate, CONFIG.TIMEZONE, 'yyyy-MM-dd') : (c.EndDate || c.endDate || '');
+    const status = c.Status || c.status || 'Active';
+
+    return {
+      CouponId: c.CouponId || c.couponId || c.Id || c.id || ('CPN-' + code),
+      TenantId: c.TenantId || c.tenantId || CONFIG.DEFAULT_TENANT_ID,
+      CouponCode: String(code).toUpperCase().trim(),
+      Description: desc,
+      DiscountType: discType,
+      DiscountValue: discVal,
+      MinimumOrderValue: minOrder,
+      MaximumDiscount: maxDisc,
+      StartDate: String(start).slice(0, 10),
+      EndDate: String(end).slice(0, 10),
+      Status: status
+    };
   },
 
   /**

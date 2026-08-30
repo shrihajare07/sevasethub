@@ -2287,3 +2287,101 @@ body.lang-devanagari .lang-btn {
     }
 }
 
+/* ══════════════════════════════════════════════════════════
+   UNIVERSAL BUTTON LOADER STYLING (Screenshot 2 Spec)
+   ══════════════════════════════════════════════════════════ */
+.btn-loading,
+.btn.is-loading {
+    position: relative !important;
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+    opacity: 0.88 !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    box-shadow: 0 4px 14px rgba(14, 165, 233, 0.25) !important;
+}
+
+.btn-loading .spinner-border,
+.btn.is-loading .spinner-border,
+.btn .spinner-border-sm {
+    width: 1.05rem !important;
+    height: 1.05rem !important;
+    border-width: 0.16em !important;
+    border-color: currentColor transparent currentColor transparent !important;
+    animation: btnSpinnerRotate 0.75s linear infinite !important;
+    vertical-align: -0.125em !important;
+    display: inline-block !important;
+    flex-shrink: 0 !important;
+}
+
+@keyframes btnSpinnerRotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Specific state for gradient buttons when loading */
+.btn-primary.btn-loading,
+.btn-primary.is-loading,
+button[style*="gradient"].btn-loading,
+button[style*="gradient"].is-loading {
+    background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 16px rgba(14, 165, 233, 0.35) !important;
+}
+
+/* Secondary & outline buttons when loading */
+.btn-secondary.btn-loading,
+.btn-secondary.is-loading {
+    background-color: #64748b !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+}
+
+.btn-outline-primary.btn-loading,
+.btn-outline-primary.is-loading {
+    background-color: rgba(14, 165, 233, 0.12) !important;
+    color: #0284c7 !important;
+}
+
+.btn-danger.btn-loading,
+.btn-danger.is-loading {
+    background-color: #ef4444 !important;
+    color: #ffffff !important;
+    opacity: 0.85 !important;
+}
+
+/* ══════════════════════════════════════════════════════════
+   GLOBAL TOP-BAR DATA FETCH & MANIPULATION PROGRESS BAR
+   ══════════════════════════════════════════════════════════ */
+#seva-top-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: linear-gradient(90deg, #0284c7 0%, #38bdf8 50%, #f59e0b 100%);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.8), 0 0 4px rgba(2, 132, 199, 0.5);
+    z-index: 999999;
+    pointer-events: none;
+    transition: width 0.3s ease, opacity 0.4s ease;
+    opacity: 0;
+}
+
+#seva-top-progress-bar.active {
+    opacity: 1;
+}
+
+#seva-top-progress-bar.pulsing {
+    animation: sevaTopBarGlow 1.5s infinite ease-in-out;
+}
+
+@keyframes sevaTopBarGlow {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.3); }
+}
+
+

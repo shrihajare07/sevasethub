@@ -415,7 +415,7 @@
       }
 
       const btn = $('#btn-submit-reg');
-      btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Creating Account...');
+      SevaButton.setLoading(btn, true, 'Creating Account...');
 
       if (window.SevaLoader) {
         SevaLoader.show({
@@ -455,7 +455,7 @@
         if (window.SevaLoader) SevaLoader.hide();
         alert('Registration error: ' + err.message);
       } finally {
-        btn.prop('disabled', false).html('Create Account &amp; Continue &rarr;');
+        SevaButton.setLoading(btn, false);
       }
     });
   });

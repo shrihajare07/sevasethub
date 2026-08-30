@@ -200,21 +200,26 @@
       // Render Offers
       if (offers && offers.length > 0) {
         offers.forEach(o => {
+          const code = o.OfferCode || o.offerCode || o.Code || o.code || o['Offer Code'] || 'OFFER';
+          const title = o.Title || o.title || o.Name || o.name || 'Special Promotional Offer';
+          const desc = o.Description || o.description || o['Description'] || 'Special limited time promotional discount on selected service categories.';
+          const end = o.EndDate || o.endDate || o['End Date'] || '31-Dec-2026';
+
           const card = `
             <div class="col-md-6">
               <div class="promo-card">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                   <span class="badge-brand badge-warning"><i class="bi bi-fire"></i> SPECIAL OFFER</span>
-                  <span class="text-muted small"><i class="bi bi-calendar3 me-1"></i>Valid till ${o.EndDate || '31-Dec-2026'}</span>
+                  <span class="text-muted small"><i class="bi bi-calendar3 me-1"></i>Valid till ${end}</span>
                 </div>
-                <h4 class="fw-bold text-dark mt-2 mb-2" style="letter-spacing: -0.01em;">${o.Title}</h4>
-                <p class="text-muted small flex-grow-1 line-clamp-3">${o.Description || 'Special limited time promotional discount on selected service categories.'}</p>
+                <h4 class="fw-bold text-dark mt-2 mb-2" style="letter-spacing: -0.01em;">${title}</h4>
+                <p class="text-muted small flex-grow-1 line-clamp-3">${desc}</p>
                 <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top">
-                  <div class="coupon-badge-interactive" data-code="${o.OfferCode}" title="Click to copy coupon code">
-                    <span>${o.OfferCode}</span>
+                  <div class="coupon-badge-interactive" data-code="${code}" title="Click to copy coupon code">
+                    <span>${code}</span>
                     <i class="bi bi-copy"></i>
                   </div>
-                  <a href="book.html?coupon=${o.OfferCode}" class="btn btn-primary btn-sm px-3 fw-semibold" style="background:var(--gradient-brand);border:none;">Book with Offer</a>
+                  <a href="book.html?coupon=${code}" class="btn btn-primary btn-sm px-3 fw-semibold" style="background:var(--gradient-brand);border:none;">Book with Offer</a>
                 </div>
               </div>
             </div>
@@ -226,22 +231,28 @@
       // Render Coupons
       if (coupons && coupons.length > 0) {
         coupons.forEach(c => {
-          const discountLabel = c.DiscountType === 'Percentage' ? c.DiscountValue + '% OFF' : 'Flat ₹' + c.DiscountValue + ' OFF';
+          const code = c.CouponCode || c.couponCode || c.Code || c.code || c['Coupon Code'] || 'COUPON';
+          const desc = c.Description || c.description || c.Title || c.title || 'Apply this instant coupon code at checkout to claim your verified service discount.';
+          const discType = c.DiscountType || c.discountType || c['Discount Type'] || (String(c.DiscountValue || '').includes('%') ? 'Percentage' : 'FixedAmount');
+          const discVal = Number(String(c.DiscountValue || c.discountValue || c.Discount || c.discount || 0).replace(/[^0-9.]/g, '')) || 0;
+          const minOrder = Number(c.MinimumOrderValue || c.minimumOrderValue || c['Min Order'] || 0) || 0;
+          const discountLabel = discType === 'Percentage' ? discVal + '% OFF' : 'Flat ₹' + discVal + ' OFF';
+
           const card = `
             <div class="col-md-6">
               <div class="promo-card">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                   <span class="badge-brand badge-success"><i class="bi bi-percent"></i> DISCOUNT COUPON</span>
-                  <span class="text-muted small"><i class="bi bi-cart-check me-1"></i>Min Order: ₹${c.MinimumOrderValue || 0}</span>
+                  <span class="text-muted small"><i class="bi bi-cart-check me-1"></i>Min Order: ₹${minOrder}</span>
                 </div>
                 <h4 class="fw-bold text-dark mt-2 mb-2" style="letter-spacing: -0.01em;">${discountLabel}</h4>
-                <p class="text-muted small flex-grow-1 line-clamp-3">${c.Description || 'Apply this instant coupon code at checkout to claim your verified service discount.'}</p>
+                <p class="text-muted small flex-grow-1 line-clamp-3">${desc}</p>
                 <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top">
-                  <div class="coupon-badge-interactive" data-code="${c.CouponCode}" title="Click to copy coupon code">
-                    <span>${c.CouponCode}</span>
+                  <div class="coupon-badge-interactive" data-code="${code}" title="Click to copy coupon code">
+                    <span>${code}</span>
                     <i class="bi bi-copy"></i>
                   </div>
-                  <a href="book.html?coupon=${c.CouponCode}" class="btn btn-primary btn-sm px-3 fw-semibold" style="background:var(--gradient-brand);border:none;">Apply &amp; Book</a>
+                  <a href="book.html?coupon=${code}" class="btn btn-primary btn-sm px-3 fw-semibold" style="background:var(--gradient-brand);border:none;">Apply &amp; Book</a>
                 </div>
               </div>
             </div>

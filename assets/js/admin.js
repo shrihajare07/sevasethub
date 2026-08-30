@@ -342,7 +342,7 @@ $(document).ready(function() {
     const discount = Number($('#est-modal-discount').val()) || 0;
     const notes = $('#est-modal-notes').val();
 
-    $(this).prop('disabled', true).text('Creating...');
+    SevaButton.setLoading(this, true, 'Generating & Sending...');
 
     try {
       const res = await api.createEstimate({
@@ -359,7 +359,7 @@ $(document).ready(function() {
     } catch (err) {
       showToast('Failed to generate estimate: ' + err.message, 'danger', 'Estimate Error');
     } finally {
-      $(this).prop('disabled', false).text('Generate & Send Estimate');
+      SevaButton.setLoading(this, false);
     }
   });
 
@@ -444,6 +444,8 @@ $(document).ready(function() {
       return;
     }
 
+    SevaButton.setLoading(this, true, 'Dispatching...');
+
     try {
       const wo = await api.createWorkOrder({
         requestId: reqId,
@@ -459,6 +461,8 @@ $(document).ready(function() {
       loadDispatchBoardData();
     } catch (err) {
       showToast('Assignment failed: ' + err.message, 'danger', 'Assignment Error');
+    } finally {
+      SevaButton.setLoading(this, false);
     }
   });
 
@@ -501,12 +505,8 @@ $(document).ready(function() {
       loadDispatchBoardData();
     });
 
-    $('#dispatch-filter-date').on('change', function() {
+    $('#dispatch-filter-date, #dispatch-filter-spec, #dispatch-filter-status').on('change', function() {
       _dispatchDateFilterMode = 'single';
-      loadDispatchBoardData();
-    });
-
-    $('#dispatch-filter-spec, #dispatch-filter-status').on('change', function() {
       loadDispatchBoardData();
     });
 
@@ -542,6 +542,8 @@ $(document).ready(function() {
         return;
       }
 
+      SevaButton.setLoading(this, true, 'Dispatching...');
+
       try {
         const wo = await api.createWorkOrder({
           requestId: reqId,
@@ -557,6 +559,8 @@ $(document).ready(function() {
         loadAdminRequests();
       } catch (err) {
         showToast('Quick dispatch failed: ' + err.message, 'danger', 'Dispatch Error');
+      } finally {
+        SevaButton.setLoading(this, false);
       }
     });
 
@@ -567,6 +571,8 @@ $(document).ready(function() {
       const newTechName = $('#wo-modal-reassign-tech option:selected').data('name');
 
       if (!woId || !newTechId) return;
+
+      SevaButton.setLoading(this, true, 'Reassigning...');
 
       try {
         await api.assignTechnician({
@@ -579,6 +585,8 @@ $(document).ready(function() {
         loadDispatchBoardData();
       } catch (err) {
         showToast('Reassign failed: ' + err.message, 'danger', 'Reassign Error');
+      } finally {
+        SevaButton.setLoading(this, false);
       }
     });
 
@@ -588,6 +596,8 @@ $(document).ready(function() {
       const newStatus = $(this).data('status');
 
       if (!woId || !newStatus) return;
+
+      SevaButton.setLoading(this, true, 'Updating...');
 
       try {
         if (newStatus === 'Completed') {
@@ -601,6 +611,8 @@ $(document).ready(function() {
         loadAdminRequests();
       } catch (err) {
         showToast('Status update failed: ' + err.message, 'danger', 'Status Error');
+      } finally {
+        SevaButton.setLoading(this, false);
       }
     });
 
@@ -977,7 +989,7 @@ $(document).ready(function() {
   $('#form-edit-technician').on('submit', async function(e) {
     e.preventDefault();
     const submitBtn = $('#btn-update-technician');
-    submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Updating...');
+    SevaButton.setLoading(submitBtn, true, 'Updating...');
     try {
       const techId = $('#edit-tech-id').val();
       const password = $('#edit-tech-password').val().trim();
@@ -1003,7 +1015,7 @@ $(document).ready(function() {
     } catch (err) {
       showToast('❌ Error updating technician: ' + err.message, 'danger');
     } finally {
-      submitBtn.prop('disabled', false).html('<i class="bi bi-check2-circle me-1"></i> Save Changes');
+      SevaButton.setLoading(submitBtn, false);
     }
   });
 
@@ -1011,7 +1023,7 @@ $(document).ready(function() {
   $('#form-add-technician').on('submit', async function(e) {
     e.preventDefault();
     const submitBtn = $('#btn-save-technician');
-    submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Registering...');
+    SevaButton.setLoading(submitBtn, true, 'Registering...');
 
     try {
       const payload = {
@@ -1039,9 +1051,9 @@ $(document).ready(function() {
         loadAdminTechnicians();
       });
     } catch (err) {
-      showToast('❌ Error adding technician: ' + err.message, 'danger');
+      showToast('❌ Error registering technician: ' + err.message, 'danger');
     } finally {
-      submitBtn.prop('disabled', false).html('<i class="bi bi-check2-circle me-1"></i> Register &amp; Activate Technician');
+      SevaButton.setLoading(submitBtn, false);
     }
   });
 
@@ -1134,7 +1146,7 @@ $(document).ready(function() {
   $('#form-add-dispatcher').on('submit', async function(e) {
     e.preventDefault();
     const $btn = $('#btn-save-dispatcher');
-    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Registering...');
+    SevaButton.setLoading($btn, true, 'Registering...');
     try {
       const newDisp = await api.createDispatcher({
         fullName: $('#disp-fullname').val().trim(),
@@ -1155,7 +1167,7 @@ $(document).ready(function() {
     } catch (err) {
       showToast('❌ Error adding dispatcher: ' + err.message, 'danger');
     } finally {
-      $btn.prop('disabled', false).html('<i class="bi bi-check2-circle me-1"></i> Register &amp; Activate Dispatcher');
+      SevaButton.setLoading($btn, false);
     }
   });
 
@@ -1163,7 +1175,7 @@ $(document).ready(function() {
   $('#form-edit-dispatcher').on('submit', async function(e) {
     e.preventDefault();
     const $btn = $('#btn-update-dispatcher');
-    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Saving...');
+    SevaButton.setLoading($btn, true, 'Saving...');
     try {
       const userId = $('#edit-disp-id').val();
       const password = $('#edit-disp-password').val().trim();
@@ -1183,7 +1195,7 @@ $(document).ready(function() {
     } catch (err) {
       showToast('Error updating dispatcher: ' + err.message, 'danger', 'Update Error');
     } finally {
-      $btn.prop('disabled', false).html('<i class="bi bi-check2-circle me-1"></i> Save Changes');
+      SevaButton.setLoading($btn, false);
     }
   });
 
@@ -1205,26 +1217,36 @@ $(document).ready(function() {
       }
 
       offers.forEach(o => {
-        const discountBadge = o.DiscountType === 'Percentage'
-          ? `<span class="badge bg-success-subtle text-success border border-success-subtle fw-bold">${o.DiscountValue}% OFF</span>`
-          : `<span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-bold">₹${o.DiscountValue} OFF</span>`;
+        const code = o.OfferCode || o.offerCode || o.Code || o.code || o['Offer Code'] || 'OFFER';
+        const title = o.Title || o.title || o.Name || o.name || 'Promotional Campaign';
+        const desc = o.Description || o.description || o['Description'] || 'Special Promotional Offer';
+        const discType = o.DiscountType || o.discountType || o['Discount Type'] || (String(o.DiscountValue || '').includes('%') ? 'Percentage' : 'FixedAmount');
+        const discVal = Number(String(o.DiscountValue || o.discountValue || o.Discount || o.discount || 0).replace(/[^0-9.]/g, '')) || 0;
+        const start = o.StartDate || o.startDate || o['Start Date'] || 'Active';
+        const end = o.EndDate || o.endDate || o['End Date'] || 'Ongoing';
+        const status = o.Status || o.status || 'Active';
+        const offerId = o.OfferId || o.offerId || o.Id || o.id || ('OFR-' + code);
+
+        const discountBadge = discType === 'Percentage'
+          ? `<span class="badge bg-success-subtle text-success border border-success-subtle fw-bold">${discVal}% OFF</span>`
+          : `<span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-bold">₹${discVal} OFF</span>`;
 
         $tbody.append(`
           <tr>
             <td>
-              <span class="badge bg-light text-dark border font-monospace px-2 py-1" style="font-size:0.82rem;letter-spacing:0.04em;">${o.OfferCode}</span>
+              <span class="badge bg-light text-dark border font-monospace px-2 py-1" style="font-size:0.82rem;letter-spacing:0.04em;">${code}</span>
             </td>
             <td>
-              <strong class="d-block text-dark">${o.Title}</strong>
-              <small class="text-muted">${o.Description || 'Promotional Campaign'}</small>
+              <strong class="d-block text-dark">${title}</strong>
+              <small class="text-muted">${desc}</small>
             </td>
             <td>${discountBadge}</td>
             <td>
-              <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>${o.StartDate || 'Active'} to ${o.EndDate || 'Ongoing'}</small>
+              <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>${start} to ${end}</small>
             </td>
-            <td><span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>${o.Status || 'Active'}</span></td>
+            <td><span class="badge ${String(status).toLowerCase() === 'active' ? 'bg-success' : 'bg-secondary'}"><i class="bi bi-check-circle me-1"></i>${status}</span></td>
             <td>
-              <button class="btn btn-sm btn-outline-danger btn-del-offer rounded-pill px-2.5" data-id="${o.OfferId}" data-code="${o.OfferCode}" title="Delete Offer">
+              <button class="btn btn-sm btn-outline-danger btn-del-offer rounded-pill px-2.5" data-id="${offerId}" data-code="${code}" title="Delete Offer">
                 <i class="bi bi-trash me-1"></i> Delete
               </button>
             </td>
@@ -1277,7 +1299,7 @@ $(document).ready(function() {
       return;
     }
 
-    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Publishing...');
+    SevaButton.setLoading($btn, true, 'Publishing...');
 
     try {
       await api.createOffer({
@@ -1303,7 +1325,7 @@ $(document).ready(function() {
     } catch (e) {
       showToast('Error creating offer: ' + e.message, 'danger', 'Offer Error');
     } finally {
-      $btn.prop('disabled', false).text('Create & Publish Offer');
+      SevaButton.setLoading($btn, false);
     }
   });
 
@@ -1325,26 +1347,35 @@ $(document).ready(function() {
       }
 
       coupons.forEach(c => {
-        const discountBadge = c.DiscountType === 'Percentage'
-          ? `<span class="badge bg-success-subtle text-success border border-success-subtle fw-bold">${c.DiscountValue}% OFF</span>`
-          : `<span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-bold">₹${c.DiscountValue} OFF</span>`;
+        const code = c.CouponCode || c.couponCode || c.Code || c.code || c['Coupon Code'] || 'COUPON';
+        const desc = c.Description || c.description || c.Title || c.title || 'Promotional Discount Coupon';
+        const discType = c.DiscountType || c.discountType || c['Discount Type'] || (String(c.DiscountValue || '').includes('%') ? 'Percentage' : 'FixedAmount');
+        const discVal = Number(String(c.DiscountValue || c.discountValue || c.Discount || c.discount || 0).replace(/[^0-9.]/g, '')) || 0;
+        const minOrder = Number(c.MinimumOrderValue || c.minimumOrderValue || c['Min Order'] || c['Minimum Order Value'] || 0) || 0;
+        const maxDisc = Number(c.MaximumDiscount || c.maximumDiscount || c['Max Discount'] || c['Maximum Discount'] || discVal) || discVal;
+        const status = c.Status || c.status || 'Active';
+        const couponId = c.CouponId || c.couponId || c.Id || c.id || ('CPN-' + code);
+
+        const discountBadge = discType === 'Percentage'
+          ? `<span class="badge bg-success-subtle text-success border border-success-subtle fw-bold">${discVal}% OFF</span>`
+          : `<span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-bold">₹${discVal} OFF</span>`;
 
         $tbody.append(`
           <tr>
             <td>
-              <span class="badge bg-light text-dark border font-monospace px-2 py-1" style="font-size:0.82rem;letter-spacing:0.04em;">${c.CouponCode}</span>
+              <span class="badge bg-light text-dark border font-monospace px-2 py-1" style="font-size:0.82rem;letter-spacing:0.04em;">${code}</span>
             </td>
             <td>
-              <strong class="d-block text-dark">${c.Description || 'Promotional Coupon'}</strong>
-              <small class="text-muted">Max Discount: ₹${c.MaximumDiscount || c.DiscountValue}</small>
+              <strong class="d-block text-dark">${desc}</strong>
+              <small class="text-muted">Max Discount: ₹${maxDisc}</small>
             </td>
             <td>${discountBadge}</td>
             <td>
-              <span class="text-muted fw-semibold">Min: ₹${c.MinimumOrderValue || 0}</span>
+              <span class="text-muted fw-semibold">Min: ₹${minOrder}</span>
             </td>
-            <td><span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>${c.Status || 'Active'}</span></td>
+            <td><span class="badge ${String(status).toLowerCase() === 'active' ? 'bg-success' : 'bg-secondary'}"><i class="bi bi-check-circle me-1"></i>${status}</span></td>
             <td>
-              <button class="btn btn-sm btn-outline-danger btn-del-coupon rounded-pill px-2.5" data-id="${c.CouponId}" data-code="${c.CouponCode}" title="Delete Coupon">
+              <button class="btn btn-sm btn-outline-danger btn-del-coupon rounded-pill px-2.5" data-id="${couponId}" data-code="${code}" title="Delete Coupon">
                 <i class="bi bi-trash me-1"></i> Delete
               </button>
             </td>
@@ -1393,7 +1424,7 @@ $(document).ready(function() {
       return;
     }
 
-    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Publishing...');
+    SevaButton.setLoading($btn, true, 'Publishing...');
 
     try {
       await api.createCoupon({
@@ -1414,12 +1445,14 @@ $(document).ready(function() {
       $('#coupon-code').val('');
       $('#coupon-desc').val('');
       $('#coupon-val').val('');
+      $('#coupon-min-order').val('');
+      $('#coupon-max-disc').val('');
 
       loadAdminCoupons();
     } catch (e) {
       showToast('Error creating coupon: ' + e.message, 'danger', 'Coupon Error');
     } finally {
-      $btn.prop('disabled', false).text('Publish Coupon');
+      SevaButton.setLoading($btn, false);
     }
   });
 
@@ -1527,14 +1560,14 @@ $(document).ready(function() {
   });
 
   $('#btn-test-api-ping').on('click', async function() {
-    $(this).prop('disabled', true).text('Pinging...');
+    SevaButton.setLoading(this, true, 'Testing Connection...');
     try {
       const res = await api.ping();
       showToast(`API Connection Test Successful! Status: ${res.status}, App: ${res.app}`, 'success', 'API Online');
     } catch (e) {
       showToast(`Connection failed: ${e.message}`, 'danger', 'API Offline');
     } finally {
-      $(this).prop('disabled', false).text('Test Connection');
+      SevaButton.setLoading(this, false);
     }
   });
 

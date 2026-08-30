@@ -357,6 +357,66 @@ const SevaLoader = (() => {
     /**
      * Hide and dismiss the liquid loader
      */
+    /* ════════════════════════════════════════════════════════
+       GLOBAL TOP-BAR DATA FETCH / MANIPULATION PROGRESS BAR
+       ════════════════════════════════════════════════════════ */
+    let progressBarEl = null;
+    let activeRequestCount = 0;
+    let progressTimer = null;
+
+    function getProgressBar() {
+        if (!progressBarEl) {
+            progressBarEl = document.getElementById('seva-top-progress-bar');
+            if (!progressBarEl) {
+                progressBarEl = document.createElement('div');
+                progressBarEl.id = 'seva-top-progress-bar';
+                document.body.appendChild(progressBarEl);
+            }
+        }
+        return progressBarEl;
+    }
+
+    function startProgress() {
+        activeRequestCount++;
+        const bar = getProgressBar();
+        bar.classList.add('active', 'pulsing');
+        if (activeRequestCount === 1) {
+            bar.style.width = '30%';
+            if (progressTimer) clearInterval(progressTimer);
+            let cur = 30;
+            progressTimer = setInterval(() => {
+                if (cur < 85) {
+                    cur += Math.random() * 12;
+                    bar.style.width = `${Math.min(cur, 85)}%`;
+                }
+            }, 180);
+        }
+    }
+
+    function finishProgress() {
+        activeRequestCount = Math.max(0, activeRequestCount - 1);
+        if (activeRequestCount === 0) {
+            if (progressTimer) {
+                clearInterval(progressTimer);
+                progressTimer = null;
+            }
+            const bar = getProgressBar();
+            bar.style.width = '100%';
+            bar.classList.remove('pulsing');
+            setTimeout(() => {
+                if (activeRequestCount === 0) {
+                    bar.classList.remove('active');
+                    setTimeout(() => {
+                        if (activeRequestCount === 0) bar.style.width = '0%';
+                    }, 300);
+                }
+            }, 250);
+        }
+    }
+
+    /**
+     * Hide and dismiss the liquid loader
+     */
     function hide(delayMs = 0) {
         if (!overlayEl) return;
         setTimeout(() => {
@@ -401,7 +461,84 @@ const SevaLoader = (() => {
         ensureGooeyFilter();
     }
 
-    return { show, update, hide, getHtml };
+    return { show, update, hide, getHtml, startProgress, finishProgress };
+})();
+
+/* ════════════════════════════════════════════════════════
+   UNIVERSAL BUTTON LOADER ENGINE (Screenshot 2 Spec)
+   ════════════════════════════════════════════════════════ */
+const SevaButton = (() => {
+    /**
+     * Set button loading state with spinner and text
+     * @param {HTMLElement|jQuery|string} btn - Button element or selector
+     * @param {boolean} isLoading - true to enable loading, false to reset
+     * @param {string} [loadingText='Processing...'] - Text shown with spinner
+     */
+    function setLoading(btn, isLoading = true, loadingText = 'Processing...') {
+        if (!btn) return;
+        const $el = (window.jQuery && (btn instanceof window.jQuery || typeof btn === 'string' || btn instanceof HTMLElement)) ? window.jQuery(btn) : null;
+        const domEl = $el && $el.length ? $el[0] : (typeof btn === 'string' ? document.querySelector(btn) : btn);
+        if (!domEl) return;
+
+        if (isLoading) {
+            if (domEl.dataset.sevaIsLoading === 'true') return;
+            
+            // Save original attributes & HTML
+            domEl.dataset.sevaIsLoading = 'true';
+            domEl.dataset.sevaOrigHtml = domEl.innerHTML;
+            domEl.dataset.sevaOrigDisabled = domEl.disabled ? 'true' : 'false';
+            
+            // Lock width to prevent layout jumping
+            const currentWidth = domEl.getBoundingClientRect().width;
+            if (currentWidth > 0 && !domEl.style.minWidth) {
+                domEl.dataset.sevaOrigMinWidth = domEl.style.minWidth || '';
+                domEl.style.minWidth = `${Math.ceil(currentWidth)}px`;
+            }
+
+            domEl.disabled = true;
+            domEl.setAttribute('aria-busy', 'true');
+            domEl.classList.add('btn-loading', 'is-loading');
+
+            const textHtml = loadingText ? `<span class="btn-loading-text">${loadingText}</span>` : '';
+            domEl.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${textHtml}`;
+        } else {
+            if (domEl.dataset.sevaIsLoading !== 'true') return;
+
+            domEl.classList.remove('btn-loading', 'is-loading');
+            domEl.removeAttribute('aria-busy');
+            
+            if (domEl.dataset.sevaOrigHtml !== undefined) {
+                domEl.innerHTML = domEl.dataset.sevaOrigHtml;
+                delete domEl.dataset.sevaOrigHtml;
+            }
+
+            if (domEl.dataset.sevaOrigMinWidth !== undefined) {
+                domEl.style.minWidth = domEl.dataset.sevaOrigMinWidth;
+                delete domEl.dataset.sevaOrigMinWidth;
+            } else {
+                domEl.style.minWidth = '';
+            }
+
+            domEl.disabled = domEl.dataset.sevaOrigDisabled === 'true';
+            delete domEl.dataset.sevaOrigDisabled;
+            delete domEl.dataset.sevaIsLoading;
+        }
+    }
+
+    function reset(btn) {
+        setLoading(btn, false);
+    }
+
+    async function wrap(btn, loadingText, asyncFn) {
+        setLoading(btn, true, loadingText);
+        try {
+            return await asyncFn();
+        } finally {
+            setLoading(btn, false);
+        }
+    }
+
+    return { setLoading, reset, wrap };
 })();
 
 // Export globals
@@ -411,4 +548,6 @@ window.SevaScroll     = SevaScroll;
 window.SevaAnimations = SevaAnimations;
 window.SevaCounter    = SevaCounter;
 window.SevaLoader     = SevaLoader;
+window.SevaButton     = SevaButton;
+
 

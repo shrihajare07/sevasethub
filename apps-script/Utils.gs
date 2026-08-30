@@ -20,11 +20,24 @@ const Utils = {
   },
 
   /**
-   * Get or create a sheet with specific name
+   * Get or create a sheet with specific name (with case-insensitive and space-tolerant fallback)
    */
   getSheet: function(sheetName) {
     const ss = this.getSpreadsheet();
     let sheet = ss.getSheetByName(sheetName);
+    if (!sheet) {
+      // Case-insensitive / whitespace-tolerant matching for sheet tab names
+      const targetClean = String(sheetName).toLowerCase().replace(/[\s_-]/g, '');
+      const allSheets = ss.getSheets();
+      for (let i = 0; i < allSheets.length; i++) {
+        const sName = allSheets[i].getName();
+        const sClean = sName.toLowerCase().replace(/[\s_-]/g, '');
+        if (sClean === targetClean || sClean.includes(targetClean) || targetClean.includes(sClean)) {
+          sheet = allSheets[i];
+          break;
+        }
+      }
+    }
     if (!sheet) {
       sheet = ss.insertSheet(sheetName);
     }
@@ -49,9 +62,20 @@ const Utils = {
 
       const obj = { _rowIndex: i + 1 };
       for (let j = 0; j < headers.length; j++) {
-        const key = headers[j];
-        if (key) {
-          obj[key] = row[j];
+        const rawKey = headers[j];
+        if (rawKey) {
+          let val = row[j];
+          if (val instanceof Date) {
+            val = Utilities.formatDate(val, CONFIG.TIMEZONE, 'yyyy-MM-dd');
+          }
+          obj[rawKey] = val;
+          // Also provide clean aliases: e.g. "Offer Code" -> "OfferCode" & "offerCode"
+          const cleanKey = rawKey.replace(/[^a-zA-Z0-9]/g, '');
+          if (cleanKey && cleanKey !== rawKey) {
+            obj[cleanKey] = val;
+            const camelKey = cleanKey.charAt(0).toLowerCase() + cleanKey.slice(1);
+            obj[camelKey] = val;
+          }
         }
       }
       rows.push(obj);

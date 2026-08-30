@@ -457,7 +457,7 @@
       const email = $('#login-email').val().trim();
       const password = $('#login-password').val();
       const btn = $('#btn-submit-login');
-      btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Verifying...');
+      SevaButton.setLoading(btn, true, 'Verifying Credentials...');
 
       if (window.SevaLoader) {
         SevaLoader.show({
@@ -485,7 +485,7 @@
         if (window.SevaLoader) SevaLoader.hide();
         alert('Login failed: ' + err.message);
       } finally {
-        btn.prop('disabled', false).text('Sign In to Dashboard');
+        SevaButton.setLoading(btn, false);
       }
     });
 

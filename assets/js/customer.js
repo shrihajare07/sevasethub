@@ -443,17 +443,31 @@ $(document).ready(function() {
 
         $('.btn-approve-est').on('click', async function() {
           const estId = $(this).data('id');
-          await api.approveEstimate({ estimateId: estId });
-          alert('Estimate approved! Technician dispatch scheduled.');
-          viewRequestDetails(reqId);
-          loadCustomerDashboard();
+          SevaButton.setLoading(this, true, 'Approving...');
+          try {
+            await api.approveEstimate({ estimateId: estId });
+            alert('Estimate approved! Technician dispatch scheduled.');
+            viewRequestDetails(reqId);
+            loadCustomerDashboard();
+          } catch (err) {
+            alert('Error approving estimate: ' + err.message);
+          } finally {
+            SevaButton.setLoading(this, false);
+          }
         });
 
         $('.btn-reject-est').on('click', async function() {
           const estId = $(this).data('id');
-          await api.rejectEstimate({ estimateId: estId });
-          alert('Estimate rejected.');
-          viewRequestDetails(reqId);
+          SevaButton.setLoading(this, true, 'Rejecting...');
+          try {
+            await api.rejectEstimate({ estimateId: estId });
+            alert('Estimate rejected.');
+            viewRequestDetails(reqId);
+          } catch (err) {
+            alert('Error rejecting estimate: ' + err.message);
+          } finally {
+            SevaButton.setLoading(this, false);
+          }
         });
       } else {
         if (req.Status === 'Completed') {
@@ -526,7 +540,7 @@ $(document).ready(function() {
     if (activeTabId === 'tab-cash-btn') method = 'Cash';
 
     const $btn = $(this);
-    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Processing Secure Payment...');
+    SevaButton.setLoading($btn, true, 'Processing Secure Payment...');
 
     try {
       const res = await api.createPayment({
@@ -559,7 +573,7 @@ $(document).ready(function() {
     } catch (err) {
       alert('Payment failed: ' + err.message);
     } finally {
-      $btn.prop('disabled', false).html('<i class="bi bi-shield-check me-2"></i>Pay &amp; Generate Receipt');
+      SevaButton.setLoading($btn, false);
     }
   });
 
@@ -655,7 +669,7 @@ $(document).ready(function() {
     const comments = $('#feedback-comments').val();
     const $btn = $(this);
 
-    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Submitting...');
+    SevaButton.setLoading($btn, true, 'Submitting Review...');
     try {
       await api.submitFeedback({
         requestId: reqId,
@@ -669,7 +683,7 @@ $(document).ready(function() {
     } catch (e) {
       alert('Error submitting feedback: ' + e.message);
     } finally {
-      $btn.prop('disabled', false).html('<i class="bi bi-send-fill me-1"></i> Submit Feedback');
+      SevaButton.setLoading($btn, false);
     }
   });
 
@@ -783,38 +797,37 @@ $(document).ready(function() {
             ${n.unread ? '<span class="badge bg-primary rounded-pill">New</span>' : ''}
           </div>
         </div>
-      `);
-    });
-
-    $('#btn-clear-notifications').off('click').on('click', function() {
-      $container.find('.border-primary').removeClass('border-primary bg-light').addClass('bg-white');
-      $container.find('.badge.bg-primary').remove();
-    });
+        const inv = myInvoices.find(i => i.InvoiceId === invId);
+        if (inv) openReceiptModal(inv);
+      });
+    } catch (e) {
+      $tbody.html(`<tr><td colspan="6" class="text-center py-4 text-danger">Failed to load invoices.</td></tr>`);
+    }
   }
 
   /**
-   * 11. Load Catalog for Booking Wizard
+   * 9. Service Booking Wizard in Customer Portal
    */
-  async function loadCatalogData() {
+  let allCategories = [];
+  let allServices = [];
+  let selectedService = null;
+  let activeCoupon = null;
+
+  async function initBookingWizard() {
     try {
       allCategories = await api.getServiceCategories();
       allServices = await api.getServices();
 
       const $catSelect = $('#wizard-category');
-      $catSelect.empty().append('<option value="">-- Select Service Category --</option>');
-      allCategories.forEach(c => {
-        $catSelect.append(`<option value="${c.CategoryId}">${c.Name}</option>`);
+      $catSelect.empty().append('<option value="">-- Choose Category --</option>');
+      allCategories.forEach(cat => {
+        $catSelect.append(`<option value="${cat.CategoryId}">${cat.CategoryName}</option>`);
       });
-
-      // Default date to today & prevent past dates
-      const todayStr = new Date().toISOString().slice(0, 10);
-      $('#wizard-date').val(todayStr).attr('min', todayStr);
     } catch (e) {
-      console.error(e);
+      console.warn('Failed to load categories/services for wizard:', e);
     }
   }
 
-  // Category changed in wizard -> populate services
   $('#wizard-category').on('change', function() {
     const catId = $(this).val();
     const $srvSelect = $('#wizard-service');
@@ -824,16 +837,14 @@ $(document).ready(function() {
     filtered.forEach(s => {
       $srvSelect.append(`<option value="${s.ServiceId}" data-price="${s.BasePrice}">${s.ServiceName} (₹${s.BasePrice})</option>`);
     });
+    selectedService = null;
+    calculateWizardTotal();
   });
 
-  // Service selected -> update price preview
   $('#wizard-service').on('change', function() {
     const srvId = $(this).val();
-    selectedService = allServices.find(s => s.ServiceId === srvId);
-    if (selectedService) {
-      $('#wizard-base-price').text('₹' + selectedService.BasePrice);
-      calculateWizardTotal();
-    }
+    selectedService = allServices.find(s => s.ServiceId === srvId) || null;
+    calculateWizardTotal();
   });
 
   /**
@@ -847,6 +858,8 @@ $(document).ready(function() {
     }
 
     const orderAmount = selectedService ? selectedService.BasePrice : 599;
+    const $btn = $(this);
+    SevaButton.setLoading($btn, true, 'Validating...');
 
     try {
       const res = await api.validateCoupon({
@@ -862,6 +875,8 @@ $(document).ready(function() {
       activeCoupon = null;
       $('#coupon-status-msg').html(`<span class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> ${err.message}</span>`);
       calculateWizardTotal();
+    } finally {
+      SevaButton.setLoading($btn, false);
     }
   });
 
@@ -912,7 +927,7 @@ $(document).ready(function() {
   $('#form-book-service').on('submit', async function(e) {
     e.preventDefault();
     const submitBtn = $(this).find('button[type="submit"]');
-    submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Submitting...');
+    SevaButton.setLoading(submitBtn, true, 'Submitting Request...');
 
     try {
       const payload = {
@@ -944,7 +959,7 @@ $(document).ready(function() {
     } catch (err) {
       alert('Error booking service: ' + err.message);
     } finally {
-      submitBtn.prop('disabled', false).text('Confirm & Place Request');
+      SevaButton.setLoading(submitBtn, false);
     }
   });
 

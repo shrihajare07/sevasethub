@@ -141,44 +141,65 @@ $(document).ready(function() {
 
   // Start Trip Action (Captures Geolocation)
   $('#btn-start-trip').on('click', function() {
-    $(this).prop('disabled', true).text('Capturing GPS...');
+    const $btn = $(this);
+    SevaButton.setLoading($btn, true, 'Starting Trip...');
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
-          await api.updateJobStatus({
-            workOrderId: activeWorkOrder.WorkOrderId,
-            status: 'En Route',
-            latitude: position.coords.latitude.toFixed(6),
-            longitude: position.coords.longitude.toFixed(6)
-          });
-          alert('Trip started! GPS coordinates recorded.');
-          updateJobWorkflowButtons('En Route');
+          try {
+            await api.updateJobStatus({
+              workOrderId: activeWorkOrder.WorkOrderId,
+              status: 'En Route',
+              latitude: position.coords.latitude.toFixed(6),
+              longitude: position.coords.longitude.toFixed(6)
+            });
+            alert('Trip started! GPS coordinates recorded.');
+            updateJobWorkflowButtons('En Route');
+          } catch (e) {
+            alert('Failed to update trip status: ' + e.message);
+          } finally {
+            SevaButton.setLoading($btn, false);
+          }
         },
         async (err) => {
-          // If GPS denied, continue gracefully
-          await api.updateJobStatus({
-            workOrderId: activeWorkOrder.WorkOrderId,
-            status: 'En Route'
-          });
-          alert('Trip started!');
-          updateJobWorkflowButtons('En Route');
+          try {
+            // If GPS denied, continue gracefully
+            await api.updateJobStatus({
+              workOrderId: activeWorkOrder.WorkOrderId,
+              status: 'En Route'
+            });
+            alert('Trip started!');
+            updateJobWorkflowButtons('En Route');
+          } catch (e) {
+            alert('Failed to update trip status: ' + e.message);
+          } finally {
+            SevaButton.setLoading($btn, false);
+          }
         }
       );
     } else {
+      SevaButton.setLoading($btn, false);
       updateJobWorkflowButtons('En Route');
     }
   });
 
   // Check In Action
   $('#btn-checkin').on('click', async function() {
-    $(this).prop('disabled', true);
-    await api.updateJobStatus({
-      workOrderId: activeWorkOrder.WorkOrderId,
-      status: 'In Progress'
-    });
-    alert('Checked In at customer site! Ready to execute checklist.');
-    updateJobWorkflowButtons('In Progress');
+    const $btn = $(this);
+    SevaButton.setLoading($btn, true, 'Checking In...');
+    try {
+      await api.updateJobStatus({
+        workOrderId: activeWorkOrder.WorkOrderId,
+        status: 'In Progress'
+      });
+      alert('Checked In at customer site! Ready to execute checklist.');
+      updateJobWorkflowButtons('In Progress');
+    } catch (e) {
+      alert('Failed to check in: ' + e.message);
+    } finally {
+      SevaButton.setLoading($btn, false);
+    }
   });
 
   // Image Upload Preview (Before & After photos)
@@ -242,7 +263,7 @@ $(document).ready(function() {
     const signatureData = canvas.toDataURL('image/png');
     const workPerformed = $('#tech-notes-performed').val();
 
-    $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Finalizing...');
+    SevaButton.setLoading(this, true, 'Finalizing & Invoicing...');
 
     try {
       const res = await api.completeWorkOrder({
@@ -259,7 +280,7 @@ $(document).ready(function() {
     } catch (err) {
       alert('Error completing job: ' + err.message);
     } finally {
-      $(this).prop('disabled', false).text('Complete Job & Issue Certificate');
+      SevaButton.setLoading(this, false);
     }
   });
 });

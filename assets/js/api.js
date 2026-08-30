@@ -49,65 +49,117 @@ const api = (function () {
    * Generic request dispatcher
    */
   async function request(action, method = 'GET', data = {}) {
-    const apiUrl = APP_CONFIG.API_URL && APP_CONFIG.API_URL.trim() !== '' ? APP_CONFIG.API_URL.trim() : null;
+    if (window.SevaLoader && typeof window.SevaLoader.startProgress === 'function') {
+      window.SevaLoader.startProgress();
+    }
+    try {
+      const apiUrl = APP_CONFIG.API_URL && APP_CONFIG.API_URL.trim() !== '' ? APP_CONFIG.API_URL.trim() : null;
 
-    // Attach auth token if available
-    const token = getToken();
-    const payload = { ...data, token: token, action: action, tenantId: APP_CONFIG.TENANT_ID };
+      // Attach auth token if available
+      const token = getToken();
+      const payload = { ...data, token: token, action: action, tenantId: APP_CONFIG.TENANT_ID };
 
-    // If live Apps Script API URL is configured, perform HTTP request
-    if (apiUrl) {
-      try {
-        let response;
-        if (method === 'GET') {
-          const queryParams = new URLSearchParams();
-          for (let k in payload) {
-            if (payload[k] !== undefined && payload[k] !== null) {
-              queryParams.append(k, payload[k]);
+      // If live Apps Script API URL is configured, perform HTTP request
+      if (apiUrl) {
+        try {
+          let response;
+          if (method === 'GET') {
+            const queryParams = new URLSearchParams();
+            for (let k in payload) {
+              if (payload[k] !== undefined && payload[k] !== null) {
+                queryParams.append(k, payload[k]);
+              }
+            }
+            response = await fetch(`${apiUrl}?${queryParams.toString()}`, {
+              method: 'GET',
+              mode: 'cors'
+            });
+          } else {
+            // Google Apps Script doPost handles JSON payloads
+            response = await fetch(apiUrl, {
+              method: 'POST',
+              mode: 'cors',
+              headers: {
+                'Content-Type': 'text/plain;charset=utf-8' // GAS prefers text/plain for CORS preflight bypass
+              },
+              body: JSON.stringify(payload)
+            });
+          }
+
+          const result = await response.json();
+          if (!result.success) {
+            throw new Error(result.message || 'API request failed');
+          }
+
+          // Auto-save session on successful auth actions
+          if ((action === 'login' || action === 'register') && result.data && result.data.token) {
+            setSession(result.data.token, result.data.user);
+          } else if (action === 'logout') {
+            clearSession();
+          }
+
+          // Normalize and cache offers from live Google Sheets
+          if (action === 'getOffers' && Array.isArray(result.data)) {
+            const normalized = result.data.map(o => ({
+              OfferId: o.OfferId || o.offerId || o.Id || o.id || ('OFR-' + (o.OfferCode || o.offerCode || '001')),
+              TenantId: o.TenantId || o.tenantId || APP_CONFIG.TENANT_ID,
+              OfferCode: String(o.OfferCode || o.offerCode || o.Code || o.code || o['Offer Code'] || '').toUpperCase().trim(),
+              Title: o.Title || o.title || o.Name || o.name || 'Promotional Campaign',
+              Description: o.Description || o.description || o['Description'] || '',
+              DiscountType: o.DiscountType || o.discountType || o['Discount Type'] || (String(o.DiscountValue || '').includes('%') ? 'Percentage' : 'FixedAmount'),
+              DiscountValue: Number(String(o.DiscountValue || o.discountValue || o.Discount || o.discount || 0).replace(/[^0-9.]/g, '')) || 0,
+              MinimumOrderValue: Number(o.MinimumOrderValue || o.minimumOrderValue || o['Min Order Value'] || 0) || 0,
+              MaximumDiscount: Number(o.MaximumDiscount || o.maximumDiscount || o['Max Discount'] || 0) || 0,
+              StartDate: String(o.StartDate || o.startDate || o['Start Date'] || '').slice(0, 10),
+              EndDate: String(o.EndDate || o.endDate || o['End Date'] || '').slice(0, 10),
+              Status: o.Status || o.status || 'Active'
+            }));
+            if (normalized.length > 0) {
+              localStorage.setItem('ssh_offers', JSON.stringify(normalized));
+              return normalized;
             }
           }
-          response = await fetch(`${apiUrl}?${queryParams.toString()}`, {
-            method: 'GET',
-            mode: 'cors'
-          });
-        } else {
-          // Google Apps Script doPost handles JSON payloads
-          response = await fetch(apiUrl, {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-              'Content-Type': 'text/plain;charset=utf-8' // GAS prefers text/plain for CORS preflight bypass
-            },
-            body: JSON.stringify(payload)
-          });
-        }
 
-        const result = await response.json();
-        if (!result.success) {
-          throw new Error(result.message || 'API request failed');
-        }
+          // Normalize and cache coupons from live Google Sheets
+          if (action === 'getCoupons' && Array.isArray(result.data)) {
+            const normalized = result.data.map(c => ({
+              CouponId: c.CouponId || c.couponId || c.Id || c.id || ('CPN-' + (c.CouponCode || c.couponCode || '001')),
+              TenantId: c.TenantId || c.tenantId || APP_CONFIG.TENANT_ID,
+              CouponCode: String(c.CouponCode || c.couponCode || c.Code || c.code || c['Coupon Code'] || '').toUpperCase().trim(),
+              Description: c.Description || c.description || c.Title || c.title || 'Promotional Discount Coupon',
+              DiscountType: c.DiscountType || c.discountType || c['Discount Type'] || (String(c.DiscountValue || '').includes('%') ? 'Percentage' : 'FixedAmount'),
+              DiscountValue: Number(String(c.DiscountValue || c.discountValue || c.Discount || c.discount || 0).replace(/[^0-9.]/g, '')) || 0,
+              MinimumOrderValue: Number(c.MinimumOrderValue || c.minimumOrderValue || c['Min Order'] || c['Minimum Order Value'] || 0) || 0,
+              MaximumDiscount: Number(c.MaximumDiscount || c.maximumDiscount || c['Max Discount'] || c['Maximum Discount'] || 0) || 0,
+              StartDate: String(c.StartDate || c.startDate || '').slice(0, 10),
+              EndDate: String(c.EndDate || c.endDate || '').slice(0, 10),
+              Status: c.Status || c.status || 'Active'
+            }));
+            if (normalized.length > 0) {
+              localStorage.setItem('ssh_coupons', JSON.stringify(normalized));
+              return normalized;
+            }
+          }
 
-        // Auto-save session on successful auth actions
-        if ((action === 'login' || action === 'register') && result.data && result.data.token) {
-          setSession(result.data.token, result.data.user);
-        } else if (action === 'logout') {
-          clearSession();
-        }
+          // If live API returns empty categories/services/offers/coupons array, fall back to local rich seed data
+          if ((action === 'getServiceCategories' || action === 'getServices' || action === 'getOffers' || action === 'getCoupons') && (!result.data || !Array.isArray(result.data) || result.data.length === 0)) {
+            return executeLocalFallback(action, method, payload);
+          }
 
-        // If live API returns empty categories/services array, fall back to local rich seed data
-        if ((action === 'getServiceCategories' || action === 'getServices') && (!result.data || !Array.isArray(result.data) || result.data.length === 0)) {
+          return result.data;
+        } catch (err) {
+          console.warn(`[SevaSetuHub Live API warning for ${action}]:`, err.message);
+          // If network failure on live URL, fallback to local engine if needed
           return executeLocalFallback(action, method, payload);
         }
-
-        return result.data;
-      } catch (err) {
-        console.warn(`[SevaSetuHub Live API warning for ${action}]:`, err.message);
-        // If network failure on live URL, fallback to local engine if needed
+      } else {
+        // Standalone browser / GitHub Pages live simulation engine
         return executeLocalFallback(action, method, payload);
       }
-    } else {
-      // Standalone browser / GitHub Pages live simulation engine
-      return executeLocalFallback(action, method, payload);
+    } finally {
+      if (window.SevaLoader && typeof window.SevaLoader.finishProgress === 'function') {
+        window.SevaLoader.finishProgress();
+      }
     }
   }
 
@@ -1431,8 +1483,8 @@ const api = (function () {
     getCurrentUser: () => request('getCurrentUser', 'GET'),
     getServices: (params) => request('getServices', 'GET', params),
     getServiceCategories: (params) => request('getServiceCategories', 'GET', params),
-    getOffers: (params) => request('getOffers', 'GET', params),
-    getCoupons: (params) => request('getCoupons', 'GET', params),
+    getOffers: (params) => request('getOffers', 'GET', { all: 'true', ...params }),
+    getCoupons: (params) => request('getCoupons', 'GET', { all: 'true', ...params }),
     validateCoupon: (payload) => request('validateCoupon', 'POST', payload),
     createServiceRequest: async (payload) => {
       // ALWAYS persist locally first so the session + request are in sync.

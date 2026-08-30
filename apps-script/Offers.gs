@@ -6,20 +6,57 @@
 
 const OffersModule = {
   /**
-   * Get Active Offers for Landing & Customer Portals
+   * Get Active Offers for Landing & Customer Portals or All for Admin
    */
   getOffers: function(params) {
     const tenantId = (params && params.tenantId) ? params.tenantId : CONFIG.DEFAULT_TENANT_ID;
-    const now = new Date().toISOString().slice(0, 10);
+    const todayStr = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'yyyy-MM-dd');
+    const allRows = Utils.getAllRows(SHEETS.OFFERS);
 
-    const offers = Utils.getAllRows(SHEETS.OFFERS).filter(o => {
-      const active = o.Status === 'Active';
-      const validDate = (!o.EndDate || o.EndDate >= now);
-      const tenantMatch = !o.TenantId || o.TenantId === tenantId || o.TenantId === CONFIG.DEFAULT_TENANT_ID;
+    // If admin token provided or includeAll / all requested, return all records
+    const isAll = params && (params.all === 'true' || params.all === true || params.includeAll === 'true' || params.includeAll === true || params.token);
+
+    if (isAll) {
+      return allRows.map(o => this.normalizeOffer(o));
+    }
+
+    return allRows.filter(o => {
+      const status = String(o.Status || o.status || 'Active').trim().toLowerCase();
+      const active = (status === 'active' || status === 'enabled' || status === '');
+      const endStr = o.EndDate instanceof Date 
+        ? Utilities.formatDate(o.EndDate, CONFIG.TIMEZONE, 'yyyy-MM-dd') 
+        : String(o.EndDate || '').slice(0, 10);
+      const validDate = (!endStr || endStr >= todayStr);
+      const tId = o.TenantId || o.tenantId;
+      const tenantMatch = !tId || tId === tenantId || tId === CONFIG.DEFAULT_TENANT_ID;
       return active && validDate && tenantMatch;
-    });
+    }).map(o => this.normalizeOffer(o));
+  },
 
-    return offers;
+  normalizeOffer: function(o) {
+    const code = o.OfferCode || o.offerCode || o.Code || o.code || o['Offer Code'] || o.id || 'OFFER';
+    const title = o.Title || o.title || o.Name || o.name || 'Promotional Campaign';
+    const discType = o.DiscountType || o.discountType || o['Discount Type'] || (String(o.DiscountValue || '').includes('%') ? 'Percentage' : 'FixedAmount');
+    const discVal = Number(String(o.DiscountValue || o.discountValue || o.Discount || o.discount || 0).replace(/[^0-9.]/g, '')) || 0;
+    const start = o.StartDate instanceof Date ? Utilities.formatDate(o.StartDate, CONFIG.TIMEZONE, 'yyyy-MM-dd') : (o.StartDate || o.startDate || o['Start Date'] || '');
+    const end = o.EndDate instanceof Date ? Utilities.formatDate(o.EndDate, CONFIG.TIMEZONE, 'yyyy-MM-dd') : (o.EndDate || o.endDate || o['End Date'] || '');
+    const status = o.Status || o.status || 'Active';
+
+    return {
+      OfferId: o.OfferId || o.offerId || o.Id || o.id || ('OFR-' + code),
+      TenantId: o.TenantId || o.tenantId || CONFIG.DEFAULT_TENANT_ID,
+      OfferCode: String(code).toUpperCase().trim(),
+      Title: title,
+      Description: o.Description || o.description || o['Description'] || '',
+      DiscountType: discType,
+      DiscountValue: discVal,
+      MinimumOrderValue: Number(o.MinimumOrderValue || o.minimumOrderValue || o['Min Order Value'] || 0) || 0,
+      MaximumDiscount: Number(o.MaximumDiscount || o.maximumDiscount || o['Max Discount'] || discVal) || discVal,
+      ApplicableCategories: o.ApplicableCategories || o.applicableCategories || 'ALL',
+      StartDate: String(start).slice(0, 10),
+      EndDate: String(end).slice(0, 10),
+      Status: status
+    };
   },
 
   /**
